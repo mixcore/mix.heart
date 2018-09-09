@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Swastika</id>
+    <version>0.0.8</version>
+    <authors>Swastika I/O Team, Smileway Team</authors>
+    <owners>Swastika I/O Team, Smileway Team</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/Swastika-IO/Swastika-Heart/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://www.swastika.io/</projectUrl>
+    <iconUrl>https://avatars2.githubusercontent.com/u/26378971</iconUrl>
+    <description>Package Description</description>
+    <copyright>Swastika I/O, Smileway, Befirst.Solution</copyright>
+    <tags>dotnet core, asp.net core, framework base</tags>
+    <repository url="https://github.com/Swastika-IO/Swastika-Heart" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="AutoMapper" version="6.2.2" exclude="Build,Analyzers" />
+        <dependency id="MSBuild.SonarQube.Runner.Tool" version="4.2.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore" version="2.0.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Identity" version="2.0.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Identity.EntityFrameworkCore" version="2.0.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Mvc" version="2.0.4" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.SignalR" version="1.0.0-alpha2-final" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Data.OData" version="5.8.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.EntityFrameworkCore" version="2.0.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.EntityFrameworkCore.Design" version="2.0.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.EntityFrameworkCore.SqlServer" version="2.0.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.DependencyInjection" version="2.0.0" exclude="Build,Analyzers" />
+        <dependency id="Newtonsoft.Json" version="11.0.2" exclude="Build,Analyzers" />
+        <dependency id="System.Net.Http" version="4.3.3" exclude="Build,Analyzers" />
+        <dependency id="System.Net.Requests" version="4.3.0" exclude="Build,Analyzers" />
+        <dependency id="System.Runtime.Loader" version="4.3.0" exclude="Build,Analyzers" />
+        <dependency id="System.Security.Claims" version="4.3.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="E:\_Workspace\Github\Swastika-Heart\src\Swastika\bin\Debug\netstandard2.0\Swastika.dll" target="lib\netstandard2.0\Swastika.dll" />
+  </files>
+</package>

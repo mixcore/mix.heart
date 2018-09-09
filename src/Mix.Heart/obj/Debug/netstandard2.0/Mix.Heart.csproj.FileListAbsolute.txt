@@ -1,0 +1,8 @@
+E:\_Workspace\Github\mix.heart\src\Mix.Heart\bin\Debug\netstandard2.0\Mix.Heart.deps.json
+E:\_Workspace\Github\mix.heart\src\Mix.Heart\bin\Debug\netstandard2.0\Mix.Heart.dll
+E:\_Workspace\Github\mix.heart\src\Mix.Heart\bin\Debug\netstandard2.0\Mix.Heart.pdb
+E:\_Workspace\Github\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.csproj.CoreCompileInputs.cache
+E:\_Workspace\Github\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.AssemblyInfoInputs.cache
+E:\_Workspace\Github\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.AssemblyInfo.cs
+E:\_Workspace\Github\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.dll
+E:\_Workspace\Github\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.pdb

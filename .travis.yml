@@ -1,0 +1,8 @@
+language: csharp
+mono: none
+dotnet: 2.1.4
+before_install:
+  - cd src/Swastika
+script:
+  - dotnet restore
+  - dotnet build
