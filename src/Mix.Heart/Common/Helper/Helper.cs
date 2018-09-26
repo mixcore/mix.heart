@@ -21,9 +21,9 @@ namespace Mix.UI.Base
         /// <param name="responseKey">The response key.</param>
         /// <param name="errors">The errors.</param>
         /// <returns></returns>
-        public static ApiResult<T> GetResult(int status, T data, string responseKey, List<string> errors)
+        public static RepositoryResponse<T> GetResult(int status, T data, string responseKey, List<string> errors)
         {
-            ApiResult<T> result = new ApiResult<T>()
+            RepositoryResponse<T> result = new RepositoryResponse<T>()
             {
                 Status = status,
                 ResponseKey = responseKey,

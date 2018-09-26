@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "15973a7c0edec3922bd581a54934501b5cf7370b"
+    "signature": "42a41a37d5dc77baa10dcef921154ffa6f311694"
   },
   "compilationOptions": {},
   "targets": {
@@ -15,6 +15,7 @@
           "Microsoft.AspNetCore.Identity": "2.1.2",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "2.1.2",
           "Microsoft.AspNetCore.Mvc": "2.1.1",
+          "Microsoft.AspNetCore.Owin": "2.1.1",
           "Microsoft.AspNetCore.SignalR": "1.0.2",
           "Microsoft.Data.OData": "5.8.3",
           "Microsoft.EntityFrameworkCore": "2.1.1",
@@ -673,6 +674,17 @@
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.AspNetCore.Mvc.ViewFeatures.dll": {
+            "assemblyVersion": "2.1.1.0",
+            "fileVersion": "2.1.1.18157"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Owin/2.1.1": {
+        "dependencies": {
+          "Microsoft.AspNetCore.Http": "2.1.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Owin.dll": {
             "assemblyVersion": "2.1.1.0",
             "fileVersion": "2.1.1.18157"
           }
@@ -3094,6 +3106,13 @@
       "path": "microsoft.aspnetcore.mvc.viewfeatures/2.1.1",
       "hashPath": "microsoft.aspnetcore.mvc.viewfeatures.2.1.1.nupkg.sha512"
     },
+    "Microsoft.AspNetCore.Owin/2.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-X6M3UwpwYcBK33mCp/xa9kcMKgfxZnMd4+q8RWGpLWI2Gy5V0jri0+HFfgHVXc9pVkKOrEHGn1K6Z+iT4nibWA==",
+      "path": "microsoft.aspnetcore.owin/2.1.1",
+      "hashPath": "microsoft.aspnetcore.owin.2.1.1.nupkg.sha512"
+    },
     "Microsoft.AspNetCore.Razor/2.1.1": {
       "type": "package",
       "serviceable": true,
@@ -4105,7 +4124,7 @@
     "System.Runtime.Loader/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-F5bMUpBvBYsB8ARksdtNuqZ1u8UvQLXXvxrgfH0ZjBscY2NVi5twtf+CH3+B6jE80RYt4D9iLCMgPBg64Qrjow==",
+      "sha512": "sha512-DHMaRn8D8YCK2GG2pw+UzNxn/OHVfaWx7OTLBD/hPegHZZgcZh3H6seWegrC4BYwsfuGrywIuT+MQs+rPqRLTQ==",
       "path": "system.runtime.loader/4.3.0",
       "hashPath": "system.runtime.loader.4.3.0.nupkg.sha512"
     },

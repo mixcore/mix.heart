@@ -373,6 +373,15 @@ namespace Mix.Domain.Core.ViewModels
         public string Keyword { get; set; }
 
         /// <summary>
+        /// Gets or sets the keyword.
+        /// </summary>
+        /// <value>
+        /// The keyword.
+        /// </value>
+        [JsonProperty("query")]
+        public string Query { get; set; }
+
+        /// <summary>
         /// Gets or sets the status.
         /// </summary>
         /// <value>

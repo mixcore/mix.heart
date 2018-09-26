@@ -152,16 +152,7 @@ namespace Mix.Domain.Data.ViewModels
         /// The priority.
         /// </value>
         [JsonProperty("priority")]
-        public int? Priority { get; set; } = 0;
-
-        /// <summary>
-        /// Gets or sets the priority.
-        /// </summary>
-        /// <value>
-        /// The priority.
-        /// </value>
-        [JsonProperty("status")]
-        public SWStatus Status { get; set; } = SWStatus.Preview;
+        public int Priority { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the specificulture.

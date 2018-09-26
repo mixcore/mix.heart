@@ -698,6 +698,18 @@
           "lib/netstandard2.0/Microsoft.AspNetCore.Mvc.ViewFeatures.dll": {}
         }
       },
+      "Microsoft.AspNetCore.Owin/2.1.1": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Http": "2.1.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Owin.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Owin.dll": {}
+        }
+      },
       "Microsoft.AspNetCore.Razor/2.1.1": {
         "type": "package",
         "dependencies": {
@@ -3957,6 +3969,18 @@
         "lib/netstandard2.0/Microsoft.AspNetCore.Mvc.ViewFeatures.xml",
         "microsoft.aspnetcore.mvc.viewfeatures.2.1.1.nupkg.sha512",
         "microsoft.aspnetcore.mvc.viewfeatures.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.Owin/2.1.1": {
+      "sha512": "X6M3UwpwYcBK33mCp/xa9kcMKgfxZnMd4+q8RWGpLWI2Gy5V0jri0+HFfgHVXc9pVkKOrEHGn1K6Z+iT4nibWA==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.owin/2.1.1",
+      "files": [
+        ".signature.p7s",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Owin.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Owin.xml",
+        "microsoft.aspnetcore.owin.2.1.1.nupkg.sha512",
+        "microsoft.aspnetcore.owin.nuspec"
       ]
     },
     "Microsoft.AspNetCore.Razor/2.1.1": {
@@ -8102,7 +8126,7 @@
       ]
     },
     "System.Runtime.Loader/4.3.0": {
-      "sha512": "F5bMUpBvBYsB8ARksdtNuqZ1u8UvQLXXvxrgfH0ZjBscY2NVi5twtf+CH3+B6jE80RYt4D9iLCMgPBg64Qrjow==",
+      "sha512": "DHMaRn8D8YCK2GG2pw+UzNxn/OHVfaWx7OTLBD/hPegHZZgcZh3H6seWegrC4BYwsfuGrywIuT+MQs+rPqRLTQ==",
       "type": "package",
       "path": "system.runtime.loader/4.3.0",
       "files": [
@@ -9630,6 +9654,7 @@
       "Microsoft.AspNetCore.Identity >= 2.1.2",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 2.1.2",
       "Microsoft.AspNetCore.Mvc >= 2.1.1",
+      "Microsoft.AspNetCore.Owin >= 2.1.1",
       "Microsoft.AspNetCore.SignalR >= 1.0.2",
       "Microsoft.Data.OData >= 5.8.3",
       "Microsoft.EntityFrameworkCore >= 2.1.1",
@@ -9645,23 +9670,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\smile\\.nuget\\packages\\": {},
+    "C:\\Users\\tinku\\.nuget\\packages\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "0.0.1",
     "restore": {
-      "projectUniqueName": "E:\\_Workspace\\Github\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
+      "projectUniqueName": "C:\\Git\\GitHub\\Mixcore\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
       "projectName": "Mix.Heart",
-      "projectPath": "E:\\_Workspace\\Github\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
-      "packagesPath": "C:\\Users\\smile\\.nuget\\packages\\",
-      "outputPath": "E:\\_Workspace\\Github\\mix.heart\\src\\Mix.Heart\\obj\\",
+      "projectPath": "C:\\Git\\GitHub\\Mixcore\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
+      "packagesPath": "C:\\Users\\tinku\\.nuget\\packages\\",
+      "outputPath": "C:\\Git\\GitHub\\Mixcore\\mix.heart\\src\\Mix.Heart\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\smile\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\tinku\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -9669,7 +9694,6 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Users\\smile\\.dotnet\\NuGetFallbackFolder": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -9707,6 +9731,10 @@
             "version": "[2.1.2, )"
           },
           "Microsoft.AspNetCore.Mvc": {
+            "target": "Package",
+            "version": "[2.1.1, )"
+          },
+          "Microsoft.AspNetCore.Owin": {
             "target": "Package",
             "version": "[2.1.1, )"
           },

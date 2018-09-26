@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Mix.Common.Helper
 {
@@ -302,31 +303,5 @@ namespace Mix.Common.Helper
             }
         }
 
-        //TODO: Still need?
-        //public static string UploadPhoto(string fullPath, Image img)
-        //{
-        //    try
-        //    {
-        //        if (!Directory.Exists(fullPath))
-        //        {
-        //            Directory.CreateDirectory(fullPath);
-        //        }
-
-        //        if (img != null)
-        //        {
-        //            //string fileExt = GetFilenameExtension(img.RawFormat);
-        //            //file_name = (guid + fileExt).Trim();
-        //            //file_dir = filePath + file_name;
-        //            //ImageResizer.ResizeStream(TTXConstants.Params.photoSize, img, file_dir);
-
-        //            return ImageHelper.ResizeImage(img, fullPath);
-        //        }
-        //    }
-        //    catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
-        //    {
-        //        return string.Empty;
-        //    }
-        //    return string.Empty;
-        //}
     }
 }
