@@ -65,7 +65,6 @@ namespace Mix.Common.Helper
         /// <returns></returns>
         public static string GetFullPath(string[] subPaths)
         {
-            string result = string.Empty;
             string strFormat = string.Empty;
             for (int i = 0; i < subPaths.Length; i++)
             {
@@ -173,17 +172,10 @@ namespace Mix.Common.Helper
         public static bool RemoveFile(string filePath)
         {
             bool result = false;
-            try
+            if (File.Exists(filePath))
             {
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                    result = true;
-                }
-            }
-            catch
-            {
-                throw;
+                File.Delete(filePath);
+                result = true;
             }
             return result;
         }
