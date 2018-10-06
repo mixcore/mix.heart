@@ -37,6 +37,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="C:\Git\GitHub\Mixcore\mix.heart\src\Mix.Heart\bin\Debug\netstandard2.0\Mix.Heart.dll" target="lib\netstandard2.0\Mix.Heart.dll" />
+    <file src="C:\_workspace\github\mixcore\mix.heart\src\Mix.Heart\bin\Debug\netstandard2.0\Mix.Heart.dll" target="lib\netstandard2.0\Mix.Heart.dll" />
   </files>
 </package>

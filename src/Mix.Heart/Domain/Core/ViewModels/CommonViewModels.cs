@@ -269,7 +269,7 @@ namespace Mix.Domain.Core.ViewModels
         [JsonProperty("data")]
         public TResult Data { get; set; }
     }
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -283,7 +283,7 @@ namespace Mix.Domain.Core.ViewModels
         /// </value>
         [JsonProperty("viewType")]
         public string ViewType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the key.
         /// </summary>
@@ -310,7 +310,6 @@ namespace Mix.Domain.Core.ViewModels
         /// </value>
         [JsonProperty("status")]
         public Common.Utility.Enums.SWStatus? Status { get; set; }
-
     }
 
     /// <summary>

@@ -1969,6 +1969,9 @@
           }
         }
       },
+      "SonarAnalyzer.CSharp/7.6.0.7024": {
+        "type": "package"
+      },
       "System.AppContext/4.3.0": {
         "type": "package",
         "dependencies": {
@@ -5526,6 +5529,21 @@
         "version.txt"
       ]
     },
+    "SonarAnalyzer.CSharp/7.6.0.7024": {
+      "sha512": "b8fpQDQ38cn9UJlVpIlV13X65WCJHZU3RIhOEMIDYqGuZEY2/B6w1cppIcP1mcGfiJ7q7Qw2RW4qMvCiOhGgZw==",
+      "type": "package",
+      "path": "sonaranalyzer.csharp/7.6.0.7024",
+      "files": [
+        ".signature.p7s",
+        "analyzers/Google.Protobuf.dll",
+        "analyzers/SonarAnalyzer.CSharp.dll",
+        "analyzers/SonarAnalyzer.dll",
+        "sonaranalyzer.csharp.7.6.0.7024.nupkg.sha512",
+        "sonaranalyzer.csharp.nuspec",
+        "tools/install.ps1",
+        "tools/uninstall.ps1"
+      ]
+    },
     "System.AppContext/4.3.0": {
       "sha512": "fKC+rmaLfeIzUhagxY17Q9siv/sPrjjKcfNg1Ic8IlQkZLipo8ljcaZQu4VtI4Jqbzjc2VTjzGLF6WmsRXAEgA==",
       "type": "package",
@@ -6972,10 +6990,11 @@
       ]
     },
     "System.Net.Http/4.3.3": {
-      "sha512": "7rCqIbkC/P2+A00NoDH5gnvFhADmX7Dc4INvsOajbU1MVhktE9vZNrjPtF82N6Uo7obK+yzlrPUv/M+snnN/9w==",
+      "sha512": "K8Bf1xc41hhxmOp1X3W/y1eRyCwTD5JdEua97gn+7FXCwUeWKK9joR/bTbud07Via/S4W4oYewyzmFeIbt5w4A==",
       "type": "package",
       "path": "system.net.http/4.3.3",
       "files": [
+        ".signature.p7s",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
         "lib/Xamarinmac20/_._",
@@ -9663,6 +9682,7 @@
       "Microsoft.Extensions.DependencyInjection >= 2.1.1",
       "NETStandard.Library >= 2.0.3",
       "Newtonsoft.Json >= 11.0.2",
+      "SonarAnalyzer.CSharp >= 7.6.0.7024",
       "System.Net.Http >= 4.3.3",
       "System.Net.Requests >= 4.3.0",
       "System.Runtime.Loader >= 4.3.0",
@@ -9670,23 +9690,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\tinku\\.nuget\\packages\\": {},
+    "C:\\Users\\smile\\.nuget\\packages\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "0.0.1",
     "restore": {
-      "projectUniqueName": "C:\\Git\\GitHub\\Mixcore\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
+      "projectUniqueName": "C:\\_workspace\\github\\mixcore\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
       "projectName": "Mix.Heart",
-      "projectPath": "C:\\Git\\GitHub\\Mixcore\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
-      "packagesPath": "C:\\Users\\tinku\\.nuget\\packages\\",
-      "outputPath": "C:\\Git\\GitHub\\Mixcore\\mix.heart\\src\\Mix.Heart\\obj\\",
+      "projectPath": "C:\\_workspace\\github\\mixcore\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
+      "packagesPath": "C:\\Users\\smile\\.nuget\\packages\\",
+      "outputPath": "C:\\_workspace\\github\\mixcore\\mix.heart\\src\\Mix.Heart\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\tinku\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\smile\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -9771,6 +9791,12 @@
           "Newtonsoft.Json": {
             "target": "Package",
             "version": "[11.0.2, )"
+          },
+          "SonarAnalyzer.CSharp": {
+            "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[7.6.0.7024, )"
           },
           "System.Net.Http": {
             "target": "Package",

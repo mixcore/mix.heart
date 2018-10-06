@@ -5,18 +5,17 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Newtonsoft.Json;
 using Mix.Common.Helper;
 using Mix.Domain.Core.Models;
 using Mix.Domain.Core.ViewModels;
 using Mix.Domain.Data.Repository;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using static Mix.Common.Utility.Enums;
 
 namespace Mix.Domain.Data.ViewModels
 {
@@ -54,7 +53,7 @@ namespace Mix.Domain.Data.ViewModels
         private IMapper _modelMapper;
 
         [JsonIgnore]
-        public static readonly DefaultRepository<TDbContext, TModel, TView> Repository;        
+        public static readonly DefaultRepository<TDbContext, TModel, TView> Repository;
 
         static ViewModelBase()
         {
@@ -104,8 +103,7 @@ namespace Mix.Domain.Data.ViewModels
         /// The mapper.
         /// </value>
         [JsonIgnore]
-        public IMapper Mapper
-        {
+        public IMapper Mapper {
             get { return _mapper ?? (_mapper = this.CreateMapper()); }
             set => _mapper = value;
         }
@@ -117,10 +115,8 @@ namespace Mix.Domain.Data.ViewModels
         /// The model.
         /// </value>
         [JsonIgnore]
-        public TModel Model
-        {
-            get
-            {
+        public TModel Model {
+            get {
                 if (_model == null)
                 {
                     Type classType = typeof(TModel);
@@ -139,8 +135,7 @@ namespace Mix.Domain.Data.ViewModels
         /// The model mapper.
         /// </value>
         [JsonIgnore]
-        public IMapper ModelMapper
-        {
+        public IMapper ModelMapper {
             get { return _modelMapper ?? (_modelMapper = this.CreateModelMapper()); }
             set => _modelMapper = value;
         }
@@ -253,7 +248,6 @@ namespace Mix.Domain.Data.ViewModels
             taskSource.SetResult(true);
             return taskSource.Task;
         }
-
 
         /// <summary>
         /// Initializes the view.
@@ -627,7 +621,6 @@ namespace Mix.Domain.Data.ViewModels
             }
         }
 
-
         /// <summary>
         /// Parses the view.
         /// </summary>
@@ -812,7 +805,6 @@ namespace Mix.Domain.Data.ViewModels
             catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
-
             }
             finally
             {
@@ -964,6 +956,5 @@ namespace Mix.Domain.Data.ViewModels
         }
 
         #endregion Contructor
-
     }
 }

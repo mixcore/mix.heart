@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "42a41a37d5dc77baa10dcef921154ffa6f311694"
+    "signature": "977eeed0e0a9be629ea33e4880d1c32fba207151"
   },
   "compilationOptions": {},
   "targets": {
@@ -24,6 +24,7 @@
           "Microsoft.Extensions.DependencyInjection": "2.1.1",
           "NETStandard.Library": "2.0.3",
           "Newtonsoft.Json": "11.0.2",
+          "SonarAnalyzer.CSharp": "7.6.0.7024",
           "System.Net.Http": "4.3.3",
           "System.Net.Requests": "4.3.0",
           "System.Runtime.Loader": "4.3.0",
@@ -1680,6 +1681,7 @@
       "runtime.win-arm64.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
       "runtime.win-x64.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
       "runtime.win-x86.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
+      "SonarAnalyzer.CSharp/7.6.0.7024": {},
       "System.AppContext/4.3.0": {
         "dependencies": {
           "System.Runtime": "4.3.0"
@@ -3771,6 +3773,13 @@
       "path": "runtime.win-x86.runtime.native.system.data.sqlclient.sni/4.4.0",
       "hashPath": "runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512"
     },
+    "SonarAnalyzer.CSharp/7.6.0.7024": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-b8fpQDQ38cn9UJlVpIlV13X65WCJHZU3RIhOEMIDYqGuZEY2/B6w1cppIcP1mcGfiJ7q7Qw2RW4qMvCiOhGgZw==",
+      "path": "sonaranalyzer.csharp/7.6.0.7024",
+      "hashPath": "sonaranalyzer.csharp.7.6.0.7024.nupkg.sha512"
+    },
     "System.AppContext/4.3.0": {
       "type": "package",
       "serviceable": true,
@@ -3970,7 +3979,7 @@
     "System.Net.Http/4.3.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-7rCqIbkC/P2+A00NoDH5gnvFhADmX7Dc4INvsOajbU1MVhktE9vZNrjPtF82N6Uo7obK+yzlrPUv/M+snnN/9w==",
+      "sha512": "sha512-K8Bf1xc41hhxmOp1X3W/y1eRyCwTD5JdEua97gn+7FXCwUeWKK9joR/bTbud07Via/S4W4oYewyzmFeIbt5w4A==",
       "path": "system.net.http/4.3.3",
       "hashPath": "system.net.http.4.3.3.nupkg.sha512"
     },
