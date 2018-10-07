@@ -1,12 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Newtonsoft.Json.Linq;
 using Mix.Domain.Core.ViewModels;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text;
 
 namespace Mix.Common.Helper
 {
@@ -47,7 +46,6 @@ namespace Mix.Common.Helper
         public static RepositoryResponse<TResult> HandleException<TResult>(Exception ex, bool isRoot, IDbContextTransaction transaction)
             where TResult : class
         {
-            // LogErrorMessage(ex);
             if (isRoot)
             {
                 //if current transaction is root transaction
@@ -68,7 +66,6 @@ namespace Mix.Common.Helper
         public static RepositoryResponse<TResult> HandleObjectException<TResult>(Exception ex, bool isRoot, IDbContextTransaction transaction)
             where TResult : IConvertible
         {
-            // LogErrorMessage(ex);
             if (isRoot)
             {
                 //if current transaction is root transaction
@@ -85,6 +82,7 @@ namespace Mix.Common.Helper
                 Errors = errors
             };
         }
+
         public static void LogException(Exception ex)
         {
             string fullPath = string.Format($"{Environment.CurrentDirectory}/logs");
@@ -103,7 +101,6 @@ namespace Mix.Common.Helper
                     using (StreamReader s = file.OpenText())
                     {
                         content = s.ReadToEnd();
-                        s.Dispose();
                     }
                     File.Delete(filePath);
                 }
@@ -119,8 +116,7 @@ namespace Mix.Common.Helper
 
                 using (var writer = File.CreateText(filePath))
                 {
-                    writer.WriteLine(content); //or .Write(), if you wish
-                    writer.Dispose();
+                    writer.WriteLine(content);
                 }
             }
             catch
@@ -128,6 +124,7 @@ namespace Mix.Common.Helper
                 // File invalid
             }
         }
+
         public static void InitTransaction(TDbContext _context, IDbContextTransaction _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot)
         {
             isRoot = _context == null;

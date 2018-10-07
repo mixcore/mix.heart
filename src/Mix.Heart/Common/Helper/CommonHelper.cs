@@ -2,17 +2,16 @@
 // The Mixcore Foundation licenses this file to you under the GNU General Public License v3.0.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.AspNetCore.Http;
-using System;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
-
 namespace Mix.Common.Helper
 {
+    using Microsoft.AspNetCore.Http;
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using System.Security.Cryptography;
+    using System.Text;
+
     /// <summary>
     /// Common helper
     /// </summary>
@@ -21,14 +20,14 @@ namespace Mix.Common.Helper
         /// <summary>
         /// The base62chars
         /// </summary>
-        private static readonly char[] _base62chars =
+        private static readonly char[] Base62Chars =
             "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
             .ToCharArray();
 
         /// <summary>
         /// The random
         /// </summary>
-        private static readonly Random _random = new Random();
+        private static readonly Random Random = new Random();
 
         /// <summary>
         /// Generates the key.
@@ -52,7 +51,9 @@ namespace Mix.Common.Helper
             var sb = new StringBuilder(length);
 
             for (int i = 0; i < length; i++)
-                sb.Append(_base62chars[_random.Next(62)]);
+            {
+                sb.Append(Base62Chars[Random.Next(62)]);
+            }
 
             return sb.ToString();
         }
@@ -64,7 +65,6 @@ namespace Mix.Common.Helper
         /// <returns></returns>
         public static string GetFullPath(string[] subPaths)
         {
-            string result = string.Empty;
             string strFormat = string.Empty;
             for (int i = 0; i < subPaths.Length; i++)
             {
@@ -172,17 +172,10 @@ namespace Mix.Common.Helper
         public static bool RemoveFile(string filePath)
         {
             bool result = false;
-            try
+            if (File.Exists(filePath))
             {
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                    result = true;
-                }
-            }
-            catch
-            {
-                throw;
+                File.Delete(filePath);
+                result = true;
             }
             return result;
         }
@@ -231,7 +224,7 @@ namespace Mix.Common.Helper
                 }
                 return true;
             }
-            catch//(Exception ex)
+            catch
             {
                 return false;
             }
@@ -302,6 +295,5 @@ namespace Mix.Common.Helper
                 w.Close();
             }
         }
-
     }
 }

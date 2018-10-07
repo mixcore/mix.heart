@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using AutoMapper;
-using Microsoft.Data.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Mix.Common.Helper;
@@ -376,7 +375,7 @@ namespace Mix.Domain.Data.Repository
         }
 
         /// <summary>
-        /// Logs the error message.		User.Claims.ToList()	error CS0103: The name 'User' does not exist in the current context	
+        /// Logs the error message.		User.Claims.ToList()	error CS0103: The name 'User' does not exist in the current context
         /// </summary>
         /// <param name="ex">The ex.</param>
         public virtual void LogErrorMessage(Exception ex)

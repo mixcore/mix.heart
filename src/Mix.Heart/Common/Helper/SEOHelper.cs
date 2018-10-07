@@ -77,7 +77,6 @@ namespace Mix.Common.Helper
             {
                 text = "";
             }
-            //text = text.Replace(" ", "-");
 
             System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"\p{IsCombiningDiacriticalMarks}+");
 
