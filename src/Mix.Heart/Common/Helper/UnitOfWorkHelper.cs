@@ -92,7 +92,7 @@ namespace Mix.Common.Helper
             {
                 Directory.CreateDirectory(fullPath);
             }
-            string filePath = $"{fullPath}/log_exceptions.txt";
+            string filePath = $"{fullPath}/{DateTime.Now.ToString("YYYYMMDD")}/log_exceptions.json";
 
             try
             {

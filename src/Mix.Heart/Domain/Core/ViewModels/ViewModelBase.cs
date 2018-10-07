@@ -26,7 +26,7 @@ namespace Mix.Domain.Data.ViewModels
     /// <typeparam name="TDbContext">The type of the database context.</typeparam>
     /// <typeparam name="TModel">The type of the model.</typeparam>
     /// <typeparam name="TView">The type of the view.</typeparam>
-    public abstract class ViewModelBase<TDbContext, TModel, TView>
+    public abstract class ViewModelBase<TDbContext, TModel, TView> : IViewModel
         where TDbContext : DbContext
         where TModel : class
         where TView : ViewModelBase<TDbContext, TModel, TView> // instance of inherited

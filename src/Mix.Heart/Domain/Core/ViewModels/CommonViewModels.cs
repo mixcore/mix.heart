@@ -313,6 +313,14 @@ namespace Mix.Domain.Core.ViewModels
 
     }
 
+    public class RequestEncrypted
+    {
+        [JsonProperty("encrypted")]
+        public string Encrypted { get; set; }
+        [JsonProperty("key")]
+        public string Key { get; set; }
+    }
+
     /// <summary>
     ///
     /// </summary>
