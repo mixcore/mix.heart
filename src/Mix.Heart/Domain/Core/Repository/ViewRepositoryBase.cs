@@ -32,7 +32,6 @@ namespace Mix.Domain.Data.Repository
         /// </summary>
         protected ViewRepositoryBase()
         {
-            //RegisterAutoMapper();
         }
 
         /// <summary>
@@ -49,11 +48,8 @@ namespace Mix.Domain.Data.Repository
             {
                 //For the former case use:
                 return context.Set<TModel>().Any(e => e == entity);
-
-                //For the latter case use(it will check loaded entities as well):
-                //return (_context.Set<T>().Find(keys) != null);
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex)
             {
                 LogErrorMessage(ex);
                 if (isRoot)
@@ -87,11 +83,8 @@ namespace Mix.Domain.Data.Repository
             {
                 //For the former case use:
                 return context.Set<TModel>().Any(predicate);
-
-                //For the latter case use(it will check loaded entities as well):
-                //return (_context.Set<T>().Find(keys) != null);
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex)
             {
                 LogErrorMessage(ex);
                 if (isRoot)
@@ -133,7 +126,7 @@ namespace Mix.Domain.Data.Repository
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex)
             {
                 LogErrorMessage(ex);
                 result.IsSucceed = false;
@@ -175,7 +168,7 @@ namespace Mix.Domain.Data.Repository
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
             }
@@ -212,7 +205,7 @@ namespace Mix.Domain.Data.Repository
 
                 return result;
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
             }
@@ -247,7 +240,7 @@ namespace Mix.Domain.Data.Repository
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
             }
@@ -298,7 +291,7 @@ namespace Mix.Domain.Data.Repository
                     };
                 }
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
             }
@@ -347,7 +340,7 @@ namespace Mix.Domain.Data.Repository
                     };
                 }
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
             }
@@ -452,7 +445,7 @@ namespace Mix.Domain.Data.Repository
                 result.Items = lstView;
                 return result;
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 LogErrorMessage(ex);
                 return null;
@@ -529,7 +522,7 @@ namespace Mix.Domain.Data.Repository
                 result.Items = lstView;
                 return result;
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 LogErrorMessage(ex);
                 return null;
@@ -601,7 +594,7 @@ namespace Mix.Domain.Data.Repository
             bool isRoot = _context == null;
             var context = _context ?? InitContext();
             var transaction = _transaction ?? context.Database.BeginTransaction();
-            List<TView> result = new List<TView>();
+            List<TView> result;
             try
             {
                 var lstModel = context.Set<TModel>().ToList();
@@ -614,7 +607,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
             }
@@ -659,7 +652,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
             }
@@ -697,7 +690,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
             }
@@ -740,7 +733,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
             }
@@ -780,7 +773,7 @@ namespace Mix.Domain.Data.Repository
                     Data = lstViewResult
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
             }
@@ -823,7 +816,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
             }
@@ -861,7 +854,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
             }
@@ -906,7 +899,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
             }
@@ -970,7 +963,7 @@ namespace Mix.Domain.Data.Repository
                     };
                 }
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(ex, isRoot, transaction);
             }
@@ -1032,7 +1025,7 @@ namespace Mix.Domain.Data.Repository
                     };
                 }
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(ex, isRoot, transaction);
             }
@@ -1075,7 +1068,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1117,7 +1110,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1160,7 +1153,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1202,7 +1195,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1296,7 +1289,7 @@ namespace Mix.Domain.Data.Repository
                 result.Data = total;
                 return result;
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1331,7 +1324,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1370,7 +1363,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1405,7 +1398,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(ex, isRoot, transaction);
                 return new RepositoryResponse<int>()
@@ -1447,7 +1440,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1480,7 +1473,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1555,7 +1548,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1626,7 +1619,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) // TODO: Add more specific exeption types instead of Exception only
+            catch (Exception ex) 
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }

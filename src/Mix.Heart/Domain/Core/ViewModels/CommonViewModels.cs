@@ -316,6 +316,10 @@ namespace Mix.Domain.Core.ViewModels
     {
         [JsonProperty("encrypted")]
         public string Encrypted { get; set; }
+        [JsonProperty("plainText")]
+        public string PlainText { get; set; }
+        [JsonProperty("iv")]
+        public string IV{ get; set; }
         [JsonProperty("key")]
         public string Key { get; set; }
     }
