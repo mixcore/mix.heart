@@ -158,6 +158,10 @@ namespace Mix.Domain.Data.ViewModels
         [JsonProperty("specificulture")]
         public string Specificulture { get; set; }
 
+        [JsonProperty("status")]
+        public int Status { get; set; }
+
+
         /// <summary>
         /// Creates the mapper.
         /// </summary>
@@ -930,20 +934,6 @@ namespace Mix.Domain.Data.ViewModels
         {
             this.Model = model;
             ParseView(_context: _context, _transaction: _transaction);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ViewModelBase{TDbContext, TModel, TView}"/> class.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="isLazyLoad">if set to <c>true</c> [is lazy load].</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        protected ViewModelBase(TModel model, bool isLazyLoad, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            this.Model = model;
-            IsLazyLoad = isLazyLoad;
-            ParseView(isExpand: isLazyLoad, _context: _context, _transaction: _transaction);
         }
 
         /// <summary>
