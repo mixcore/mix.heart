@@ -205,7 +205,7 @@ namespace Mix.Domain.Data.Repository
 
                 return result;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
             }
@@ -240,7 +240,7 @@ namespace Mix.Domain.Data.Repository
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
             }
@@ -291,7 +291,7 @@ namespace Mix.Domain.Data.Repository
                     };
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
             }
@@ -340,7 +340,7 @@ namespace Mix.Domain.Data.Repository
                     };
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
             }
@@ -402,9 +402,9 @@ namespace Mix.Domain.Data.Repository
             IQueryable<TModel> sorted = null;
             try
             {
-                result.PageSize = pageSize ?? result.TotalItems;
+                result.PageSize = pageSize > 0 ? pageSize : result.TotalItems;
 
-                if (pageSize.HasValue)
+                if (pageSize > 0)
                 {
                     result.TotalPage = (result.TotalItems / pageSize.Value) + (result.TotalItems % pageSize.Value > 0 ? 1 : 0);
                 }
@@ -445,7 +445,7 @@ namespace Mix.Domain.Data.Repository
                 result.Items = lstView;
                 return result;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 LogErrorMessage(ex);
                 return null;
@@ -522,7 +522,7 @@ namespace Mix.Domain.Data.Repository
                 result.Items = lstView;
                 return result;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 LogErrorMessage(ex);
                 return null;
@@ -607,7 +607,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
             }
@@ -652,7 +652,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
             }
@@ -690,7 +690,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
             }
@@ -733,7 +733,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
             }
@@ -773,7 +773,7 @@ namespace Mix.Domain.Data.Repository
                     Data = lstViewResult
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
             }
@@ -816,7 +816,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
             }
@@ -854,7 +854,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
             }
@@ -899,7 +899,7 @@ namespace Mix.Domain.Data.Repository
                     Data = result
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
             }
@@ -963,7 +963,7 @@ namespace Mix.Domain.Data.Repository
                     };
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(ex, isRoot, transaction);
             }
@@ -1025,7 +1025,7 @@ namespace Mix.Domain.Data.Repository
                     };
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(ex, isRoot, transaction);
             }
@@ -1068,7 +1068,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1110,7 +1110,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1153,7 +1153,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1195,7 +1195,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1289,7 +1289,7 @@ namespace Mix.Domain.Data.Repository
                 result.Data = total;
                 return result;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1324,7 +1324,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1363,7 +1363,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1398,7 +1398,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(ex, isRoot, transaction);
                 return new RepositoryResponse<int>()
@@ -1440,7 +1440,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1473,7 +1473,7 @@ namespace Mix.Domain.Data.Repository
                     Data = total
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleObjectException<int>(ex, isRoot, transaction);
             }
@@ -1548,7 +1548,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -1619,7 +1619,7 @@ namespace Mix.Domain.Data.Repository
                     Data = model
                 };
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
