@@ -268,6 +268,9 @@ namespace Mix.Domain.Core.ViewModels
         /// </value>
         [JsonProperty("data")]
         public TResult Data { get; set; }
+
+        [JsonProperty("lastUpdateConfiguration")]
+        public DateTime? LastUpdateConfiguration { get; set; }
     }
 
     /// <summary>

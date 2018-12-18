@@ -71,7 +71,7 @@ namespace Mix.Common.Helper
                 // TODO: Use regular string literal instead of verbatim string literal => Remove @?
                 strFormat += @"{" + i + "}" + (i < subPaths.Length - 1 ? "/" : string.Empty);
             }
-            return string.Format(strFormat, subPaths).Replace("//", "/");
+            return string.Format(strFormat, subPaths);
         }
 
         /// <summary>

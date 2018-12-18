@@ -9673,23 +9673,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\tinku\\.nuget\\packages\\": {},
+    "C:\\Users\\nhathoang.nguyen\\.nuget\\packages\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "0.0.1",
     "restore": {
-      "projectUniqueName": "C:\\Git\\GitHub\\Mixcore\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
+      "projectUniqueName": "D:\\NhatHoang\\Git\\GitHub\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
       "projectName": "Mix.Heart",
-      "projectPath": "C:\\Git\\GitHub\\Mixcore\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
-      "packagesPath": "C:\\Users\\tinku\\.nuget\\packages\\",
-      "outputPath": "C:\\Git\\GitHub\\Mixcore\\mix.heart\\src\\Mix.Heart\\obj\\",
+      "projectPath": "D:\\NhatHoang\\Git\\GitHub\\mix.heart\\src\\Mix.Heart\\Mix.Heart.csproj",
+      "packagesPath": "C:\\Users\\nhathoang.nguyen\\.nuget\\packages\\",
+      "outputPath": "D:\\NhatHoang\\Git\\GitHub\\mix.heart\\src\\Mix.Heart\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\tinku\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\nhathoang.nguyen\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -9697,7 +9697,8 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "https://api.nuget.org/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {},
+        "https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json": {}
       },
       "frameworks": {
         "netstandard2.0": {
