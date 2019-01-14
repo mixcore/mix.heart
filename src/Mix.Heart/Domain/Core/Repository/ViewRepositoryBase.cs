@@ -304,7 +304,7 @@ namespace Mix.Domain.Data.Repository
                 }
             }
         }
-
+        
         /// <summary>
         /// Gets the single model asynchronous.
         /// </summary>
@@ -320,6 +320,107 @@ namespace Mix.Domain.Data.Repository
             try
             {
                 TModel model = await context.Set<TModel>().SingleOrDefaultAsync(predicate).ConfigureAwait(false);
+                if (model != null)
+                {
+                    context.Entry(model).State = EntityState.Detached;
+
+                    var viewResult = ParseView(model, context, transaction);
+                    return new RepositoryResponse<TView>()
+                    {
+                        IsSucceed = true,
+                        Data = viewResult
+                    };
+                }
+                else
+                {
+                    return new RepositoryResponse<TView>()
+                    {
+                        IsSucceed = false,
+                        Data = default
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the single model.
+        /// </summary>
+        /// <param name="predicate">The predicate.</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual RepositoryResponse<TView> GetFirstModel(
+        Expression<Func<TModel, bool>> predicate
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            try
+            {
+                context = _context ?? InitContext();
+                transaction = _transaction ?? context.Database.BeginTransaction();
+
+                TModel model = context.Set<TModel>().FirstOrDefault(predicate);
+                if (model != null)
+                {
+                    context.Entry(model).State = EntityState.Detached;
+                    var viewResult = ParseView(model, context, transaction);
+                    return new RepositoryResponse<TView>()
+                    {
+                        IsSucceed = true,
+                        Data = viewResult
+                    };
+                }
+                else
+                {
+                    return new RepositoryResponse<TView>()
+                    {
+                        IsSucceed = false,
+                        Data = default
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context?.Dispose();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the single model asynchronous.
+        /// </summary>
+        /// <param name="predicate">The predicate.</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual async Task<RepositoryResponse<TView>> GetFirstModelAsync(
+        Expression<Func<TModel, bool>> predicate
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            try
+            {
+                TModel model = await context.Set<TModel>().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
@@ -1339,6 +1440,82 @@ namespace Mix.Domain.Data.Repository
         }
 
         #endregion Max
+        #region Min
+
+        /// <summary>
+        /// Maximums the specified predicate.
+        /// </summary>
+        /// <param name="predicate">The predicate.</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual RepositoryResponse<T> Min<T>(
+            Expression<Func<TModel, bool>> predicate, Expression<Func<TModel, T>> min
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            T total = default(T);
+            var result = new RepositoryResponse<T>()
+            {
+                IsSucceed = true,
+                Data = total
+            };
+            try
+            {
+                total = context.Set<TModel>().Where(predicate).Min(min);
+                result.Data = total;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleObjectException<T>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Maximums the asynchronous.
+        /// </summary>
+        /// <param name="predicate">The predicate.</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual async Task<RepositoryResponse<T>> MinAsync<T>(
+            Expression<Func<TModel, bool>> predicate, Expression<Func<TModel, T>> min
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            T total = default(T);
+            try
+            {
+                total = await context.Set<TModel>().Where(predicate).MinAsync(min).ConfigureAwait(false);
+                return new RepositoryResponse<T>()
+                {
+                    IsSucceed = true,
+                    Data = total
+                };
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleObjectException<T>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context.Dispose();
+                }
+            }
+        }
+        #endregion
 
         #region Count
 
