@@ -1,9 +1,0 @@
-C:\_Simon\MixCore\_Git\Src\mix.heart\src\Mix.Heart\bin\Debug\netstandard2.0\Mix.Heart.deps.json
-C:\_Simon\MixCore\_Git\Src\mix.heart\src\Mix.Heart\bin\Debug\netstandard2.0\Mix.Heart.dll
-C:\_Simon\MixCore\_Git\Src\mix.heart\src\Mix.Heart\bin\Debug\netstandard2.0\Mix.Heart.pdb
-C:\_Simon\MixCore\_Git\Src\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.csproj.CoreCompileInputs.cache
-C:\_Simon\MixCore\_Git\Src\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.AssemblyInfoInputs.cache
-C:\_Simon\MixCore\_Git\Src\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.AssemblyInfo.cs
-C:\_Simon\MixCore\_Git\Src\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.dll
-C:\_Simon\MixCore\_Git\Src\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.pdb
-C:\_Simon\MixCore\_Git\Src\mix.heart\src\Mix.Heart\obj\Debug\netstandard2.0\Mix.Heart.csprojAssemblyReference.cache
