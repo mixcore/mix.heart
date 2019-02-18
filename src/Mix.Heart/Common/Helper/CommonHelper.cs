@@ -5,7 +5,13 @@
 namespace Mix.Common.Helper
 {
     using Microsoft.AspNetCore.Http;
+    using Mix.Domain.Core.ViewModels;
+    using Newtonsoft.Json.Linq;
+    using OfficeOpenXml;
+    using OfficeOpenXml.Table;
     using System;
+    using System.Collections.Generic;
+    using System.Data;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -193,14 +199,40 @@ namespace Mix.Common.Helper
             //this image is a single pixel (black)
             try
             {
+
+                string fileData = strBase64.Substring(strBase64.IndexOf(',') + 1);
+                byte[] bytes = Convert.FromBase64String(fileData);
+                return SaveFileBytes(folder, filename, bytes);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Saves the file base64.
+        /// </summary>
+        /// <param name="folder">The folder.</param>
+        /// <param name="filename">The filename.</param>
+        /// <param name="strBase64">The string base64.</param>
+        /// <returns></returns>
+        public static bool SaveFileBytes(string folder, string filename, byte[] bytes)
+        {
+            //data:image/gif;base64,
+            //this image is a single pixel (black)
+            try
+            {
+                folder = GetFullPath(new string[]
+                {
+                    "wwwroot",
+                    folder
+                });
                 string fullPath = GetFullPath(new string[]
                 {
                     folder,
                     filename
                 });
-                string fileData = strBase64.Substring(strBase64.IndexOf(',') + 1);
-                byte[] bytes = Convert.FromBase64String(fileData);
-
                 if (!Directory.Exists(folder))
                 {
                     Directory.CreateDirectory(folder);
@@ -274,10 +306,20 @@ namespace Mix.Common.Helper
         /// </summary>
         /// <param name="fullPath">The full path.</param>
         /// <param name="strBase64">The string base64.</param>
-        public static void WriteBytesToFile(string fullPath, string strBase64)
+        public static void WriteBase64ToFile(string fullPath, string strBase64)
         {
             string fileData = strBase64.Substring(strBase64.IndexOf(',') + 1);
             byte[] bytes = Convert.FromBase64String(fileData);
+            WriteBytesToFile(fullPath, bytes);
+        }
+
+        /// <summary>
+        /// Writes the bytes to file.
+        /// </summary>
+        /// <param name="fullPath">The full path.</param>
+        /// <param name="strBase64">The string base64.</param>
+        public static void WriteBytesToFile(string fullPath, byte[] bytes)
+        {
             if (File.Exists(fullPath))
             {
                 File.Delete(fullPath);
@@ -294,6 +336,179 @@ namespace Mix.Common.Helper
                 fs.Close();
                 w.Close();
             }
+        }
+
+        public static RepositoryResponse<string> ExportToExcel<T>(List<T> lstData, string sheetName
+            , string folderPath, string fileName
+            , List<string> headers = null)
+        {
+            var result = new RepositoryResponse<string>();
+            try
+            {
+                if (lstData.Count > 0)
+                {
+                    var filenameE = fileName + "-" + DateTime.Now.ToString("yyyyMMdd") + ".xlsx";
+
+                    // create new data table
+                    var dtable = new DataTable();
+
+                    if (headers == null)
+                    {
+
+                        // get first item
+                        var listColumn = lstData[0].GetType().GetProperties();
+
+                        // add column name to table
+                        foreach (var item in listColumn)
+                        {
+                            dtable.Columns.Add(item.Name, typeof(string));
+                        }
+                    }
+                    else
+                    {
+                        foreach (var item in headers)
+                        {
+                            dtable.Columns.Add(item, typeof(string));
+                        }
+                    }
+
+                    // Row value
+                    foreach (var a in lstData)
+                    {
+                        var r = dtable.NewRow();
+                        if (headers == null)
+                        {
+                            foreach (var prop in a.GetType().GetProperties())
+                            {
+                                r[prop.Name] = prop.GetValue(a, null);
+                            }
+                        }
+                        else
+                        {
+                            var props = a.GetType().GetProperties();
+                            for (int i = 0; i < headers.Count; i++)
+                            {
+                                r[i] = props[i].GetValue(a, null);
+                            }
+                        }
+
+                        dtable.Rows.Add(r);
+                    }
+
+                    // Save Excel file
+                    using (var pck = new ExcelPackage())
+                    {
+                        string SheetName = sheetName != string.Empty ? sheetName : "Report";
+                        var wsDt = pck.Workbook.Worksheets.Add(SheetName);
+                        wsDt.Cells["A1"].LoadFromDataTable(dtable, true, TableStyles.None);
+                        wsDt.Cells[wsDt.Dimension.Address].AutoFitColumns();
+
+                        SaveFileBytes(folderPath, filenameE, pck.GetAsByteArray());
+                        result.IsSucceed = true;
+                        result.Data = GetFullPath(new string[]
+                        {
+                            folderPath,
+                            filenameE
+                        });
+
+                        return result;
+                    }
+                    
+                }
+                else
+                {
+                    result.Errors.Add("Can not export data of empty list");
+                    return result;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add(ex.Message);
+                return result;
+            }
+
+            
+        }
+        public static RepositoryResponse<string> ExportJObjectToExcel(List<JObject> lstData, string sheetName
+            , string folderPath, string fileName
+            , List<string> headers = null)
+        {
+            var result = new RepositoryResponse<string>();
+            try
+            {
+                if (lstData.Count > 0)
+                {
+                    var filenameE = fileName + "-" + DateTime.Now.ToString("yyyyMMdd") + ".xlsx";
+
+                    // create new data table
+                    var dtable = new DataTable();
+
+                    if (headers == null)
+                    {
+
+                        // get first item
+                        var listColumn = lstData[0].Properties();
+
+                        // add column name to table
+                        foreach (var item in listColumn)
+                        {
+                            dtable.Columns.Add(item.Name, typeof(string));
+                        }
+                    }
+                    else
+                    {
+                        foreach (var item in headers)
+                        {
+                            dtable.Columns.Add(item, typeof(string));
+                        }
+                    }
+
+                    // Row value
+                    foreach (var a in lstData)
+                    {
+                        var r = dtable.NewRow();
+                            foreach (var prop in a.Properties())
+                            {
+                                r[prop.Name] = a[prop.Name]["value"];
+                        }
+                        dtable.Rows.Add(r);
+                    }
+
+                    // Save Excel file
+                    using (var pck = new ExcelPackage())
+                    {
+                        string SheetName = sheetName != string.Empty ? sheetName : "Report";
+                        var wsDt = pck.Workbook.Worksheets.Add(SheetName);
+                        wsDt.Cells["A1"].LoadFromDataTable(dtable, true, TableStyles.None);
+                        wsDt.Cells[wsDt.Dimension.Address].AutoFitColumns();
+
+                        SaveFileBytes(folderPath, filenameE, pck.GetAsByteArray());
+                        result.IsSucceed = true;
+                        result.Data = GetFullPath(new string[]
+                        {
+                            folderPath,
+                            filenameE
+                        });
+
+                        return result;
+                    }
+                    
+                }
+                else
+                {
+                    result.Errors.Add("Can not export data of empty list");
+                    return result;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add(ex.Message);
+                return result;
+            }
+
+            
         }
     }
 }
