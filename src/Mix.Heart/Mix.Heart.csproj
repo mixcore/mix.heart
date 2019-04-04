@@ -18,6 +18,10 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Application\**" />
     <Compile Remove="Domain\Core\Bus\**" />
@@ -54,7 +58,6 @@
   <ItemGroup>
     <Compile Remove="Common\Constants.cs" />
     <Compile Remove="Common\Helper\ImageHelper.cs" />
-    <Compile Remove="Domain\Core\Repository\ModelRepositoryBase.cs" />
     <Compile Remove="Domain\Core\Repository\RepositoryBase.cs" />
     <Compile Remove="Domain\Core\Repository\SWRepositoryBase.cs" />
     <Compile Remove="Domain\Core\ViewModels\ExpandViewModelBase.cs" />

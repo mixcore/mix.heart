@@ -55,9 +55,13 @@ namespace Mix.Domain.Data.ViewModels
         [JsonIgnore]
         public static readonly DefaultRepository<TDbContext, TModel, TView> Repository;
 
+        [JsonIgnore]
+        public static readonly DefaultModelRepository<TDbContext, TModel> ModelRepository;
+
         static ViewModelBase()
         {
             Repository = DefaultRepository<TDbContext, TModel, TView>.Instance;
+            ModelRepository = DefaultModelRepository<TDbContext, TModel>.Instance;
         }
 
         /// <summary>

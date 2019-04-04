@@ -1024,44 +1024,61 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual RepositoryResponse<List<TModel>> RemoveListModel(Expression<Func<TModel, bool>> predicate
+        public virtual  RepositoryResponse<List<TModel>> RemoveListModel(bool isRemoveRelatedModels, Expression<Func<TModel, bool>> predicate
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                var Items = context.Set<TModel>().Where(predicate).ToList();
-                bool result = true;
-                if (Items != null)
+                var getData = GetModelListBy(predicate, context, transaction);
+                //context.Set<TModel>().Where(predicate).ToList().Configure(false);
+                var result = new RepositoryResponse<List<TModel>>() { IsSucceed = true };
+                if (getData.IsSucceed)
                 {
-                    foreach (var model in Items)
+                    foreach (var item in getData.Data)
                     {
-                        if (result)
+                        if (isRemoveRelatedModels)
                         {
-                            var r = RemoveModel(model, context, transaction);
-                            result = result && r.IsSucceed;
+                            var removeRelatedResult = item.RemoveRelatedModels(item, context, transaction);
+                            if (removeRelatedResult.IsSucceed)
+                            {
+                                var temp =  RemoveModel(item.Model, context, transaction);
+                                if (!temp.IsSucceed)
+                                {
+                                    result.IsSucceed = false;
+                                    result.Exception = temp.Exception;
+                                    result.Errors = temp.Errors;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                result.IsSucceed = false;
+                                result.Errors.AddRange(removeRelatedResult.Errors);
+                                result.Exception = removeRelatedResult.Exception;
+                                break;
+                            }
                         }
                         else
                         {
-                            break;
+                            var temp =  RemoveModel(item.Model, context, transaction);
+                            if (!temp.IsSucceed)
+                            {
+                                result.IsSucceed = false;
+                                result.Exception = temp.Exception;
+                                result.Errors = temp.Errors;
+                                break;
+                            }
                         }
                     }
 
-                    UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
+                    UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
 
-                    return new RepositoryResponse<List<TModel>>()
-                    {
-                        IsSucceed = result,
-                        Data = Items
-                    };
+                    return result;
                 }
                 else
                 {
-                    return new RepositoryResponse<List<TModel>>()
-                    {
-                        IsSucceed = result,
-                        Data = Items
-                    };
+                    return result;
                 }
             }
             catch (Exception ex)
@@ -1086,44 +1103,61 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual async Task<RepositoryResponse<List<TModel>>> RemoveListModelAsync(Expression<Func<TModel, bool>> predicate
+        public virtual async Task<RepositoryResponse<List<TModel>>> RemoveListModelAsync(bool isRemoveRelatedModels, Expression<Func<TModel, bool>> predicate
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                var Items = await context.Set<TModel>().Where(predicate).ToListAsync().ConfigureAwait(false);
-                bool result = true;
-                if (Items != null)
+                var getData = await GetModelListByAsync(predicate, context, transaction).ConfigureAwait(false);
+                //context.Set<TModel>().Where(predicate).ToListAsync().ConfigureAwait(false);
+                var result = new RepositoryResponse<List<TModel>>() { IsSucceed = true };
+                if (getData.IsSucceed)
                 {
-                    foreach (var model in Items)
+                    foreach (var item in getData.Data)
                     {
-                        if (result)
+                        if (isRemoveRelatedModels)
                         {
-                            var r = await RemoveModelAsync(model, context, transaction).ConfigureAwait(false);
-                            result = result && r.IsSucceed;
+                            var removeRelatedResult = await item.RemoveRelatedModelsAsync(item, context, transaction).ConfigureAwait(false);
+                            if (removeRelatedResult.IsSucceed)
+                            {
+                                var temp = await RemoveModelAsync(item.Model, context, transaction).ConfigureAwait(false);
+                                if (!temp.IsSucceed)
+                                {
+                                    result.IsSucceed = false;
+                                    result.Exception = temp.Exception;
+                                    result.Errors = temp.Errors;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                result.IsSucceed = false;
+                                result.Errors.AddRange(removeRelatedResult.Errors);
+                                result.Exception = removeRelatedResult.Exception;
+                                break;
+                            }
                         }
                         else
                         {
-                            break;
+                            var temp = await RemoveModelAsync(item.Model, context, transaction).ConfigureAwait(false);
+                            if (!temp.IsSucceed)
+                            {
+                                result.IsSucceed = false;
+                                result.Exception = temp.Exception;
+                                result.Errors = temp.Errors;
+                                break;
+                            }
                         }
                     }
 
-                    UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
+                    UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
 
-                    return new RepositoryResponse<List<TModel>>()
-                    {
-                        IsSucceed = result,
-                        Data = Items
-                    };
+                    return result;
                 }
                 else
                 {
-                    return new RepositoryResponse<List<TModel>>()
-                    {
-                        IsSucceed = true,
-                        Data = Items
-                    };
+                    return result;
                 }
             }
             catch (Exception ex)
@@ -1281,20 +1315,16 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                bool result = true;
+                var result = new RepositoryResponse<TModel>() { IsSucceed = true };
                 if (model != null && CheckIsExists(model, context, transaction))
                 {
                     context.Entry(model).State = EntityState.Deleted;
-                    result = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
+                    result.IsSucceed = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
                 }
 
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
 
-                return new RepositoryResponse<TModel>()
-                {
-                    IsSucceed = result,
-                    Data = model
-                };
+                return result;
             }
             catch (Exception ex)
             {
