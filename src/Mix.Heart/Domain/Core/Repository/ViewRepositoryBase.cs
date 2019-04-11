@@ -1362,6 +1362,50 @@ namespace Mix.Domain.Data.Repository
         }
 
         /// <summary>
+        /// Saves the model hronous.
+        /// </summary>
+        /// <param name="data">The view.</param>
+        /// <param name="isSaveSubModels">if set to <c>true</c> [is save sub models].</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual  RepositoryResponse<List<TView>> SaveListModel(List<TView> data, bool isSaveSubModels = false
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            var result = new RepositoryResponse<List<TView>>() { IsSucceed = true };
+            try
+            {
+                foreach (var item in data)
+                {
+                    var saveResult =  item.SaveModel(isSaveSubModels, context, transaction);
+                    if (!saveResult.IsSucceed)
+                    {
+                        result.IsSucceed = false;
+                        result.Exception = saveResult.Exception;
+                        result.Errors = saveResult.Errors;
+                        break;
+                    }
+                }
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
         /// Saves the model asynchronous.
         /// </summary>
         /// <param name="view">The view.</param>
@@ -1379,6 +1423,50 @@ namespace Mix.Domain.Data.Repository
             else
             {
                 return CreateModelAsync(view, _context, _transaction);
+            }
+        }
+        
+        /// <summary>
+        /// Saves the model asynchronous.
+        /// </summary>
+        /// <param name="data">The view.</param>
+        /// <param name="isSaveSubModels">if set to <c>true</c> [is save sub models].</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual async Task<RepositoryResponse<List<TView>>> SaveListModelAsync(List<TView> data, bool isSaveSubModels = false
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            var result = new RepositoryResponse<List<TView>>() { IsSucceed = true };
+            try
+            {
+                foreach (var item in data)
+                {
+                    var saveResult = await item.SaveModelAsync(isSaveSubModels, context, transaction);
+                    if (!saveResult.IsSucceed)
+                    {
+                        result.IsSucceed = false;
+                        result.Exception = saveResult.Exception;
+                        result.Errors = saveResult.Errors;
+                        break;
+                    }
+                }
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context.Dispose();
+                }
             }
         }
 
