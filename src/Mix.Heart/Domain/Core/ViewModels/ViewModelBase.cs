@@ -948,8 +948,8 @@ namespace Mix.Domain.Data.ViewModels
         /// </summary>
         protected ViewModelBase()
         {
-            this.Model = InitModel();
-            ParseView(isExpand: false);
+            //this.Model = InitModel();
+            //ParseView(isExpand: false);
         }
         protected ViewModelBase(SerializationInfo info, StreamingContext context)
         {
