@@ -941,8 +941,8 @@ namespace Mix.Domain.Data.ViewModels
         /// </summary>
         protected ViewModelBase()
         {
-            this.Model = InitModel();
-            ParseView(isExpand: false);
+            //this.Model = InitModel();
+            //ParseView(isExpand: false);
         }
 
         #endregion Contructor
