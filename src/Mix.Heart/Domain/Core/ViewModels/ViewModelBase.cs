@@ -107,7 +107,8 @@ namespace Mix.Domain.Data.ViewModels
         /// The mapper.
         /// </value>
         [JsonIgnore]
-        public IMapper Mapper {
+        public IMapper Mapper
+        {
             get { return _mapper ?? (_mapper = this.CreateMapper()); }
             set => _mapper = value;
         }
@@ -119,8 +120,10 @@ namespace Mix.Domain.Data.ViewModels
         /// The model.
         /// </value>
         [JsonIgnore]
-        public TModel Model {
-            get {
+        public TModel Model
+        {
+            get
+            {
                 if (_model == null)
                 {
                     Type classType = typeof(TModel);
@@ -139,7 +142,8 @@ namespace Mix.Domain.Data.ViewModels
         /// The model mapper.
         /// </value>
         [JsonIgnore]
-        public IMapper ModelMapper {
+        public IMapper ModelMapper
+        {
             get { return _modelMapper ?? (_modelMapper = this.CreateModelMapper()); }
             set => _modelMapper = value;
         }
@@ -317,7 +321,7 @@ namespace Mix.Domain.Data.ViewModels
                         return null;
                     }
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     Repository.LogErrorMessage(ex);
                     if (isRoot)
@@ -364,39 +368,38 @@ namespace Mix.Domain.Data.ViewModels
                     {
                         string desSpecificulture = culture.Specificulture;
 
-                        TView view = InitView();
-                        view.Model = model;
-                        view.ParseView(isExpand: false, _context: context, _transaction: transaction);
-                        view.Specificulture = desSpecificulture;
+                        //TView view = InitView();
+                        //view.Model = model;
+                        //view.ParseView(isExpand: false, _context: context, _transaction: transaction);
+                        //view.Specificulture = desSpecificulture;
 
-                        bool isExist = Repository.CheckIsExists(view.ParseModel(context, transaction), _context: context, _transaction: transaction);
+                        //TView view = InitView();
+                        TModel m = (TModel)context.Entry(model).CurrentValues.ToObject();
+                        Type myType = typeof(TModel);
+                        var myFieldInfo = myType.GetProperty("Specificulture");
+                        myFieldInfo.SetValue(m, desSpecificulture);
+                        //view.Model = m;
+                        //view.ParseView(isExpand: false, _context: context, _transaction: transaction);
+                        bool isExist = Repository.CheckIsExists(m, _context: context, _transaction: transaction);
 
                         if (isExist)
                         {
                             result.IsSucceed = true;
-                            result.Data.Add(view);
+                            //result.Data.Add(view);
                         }
                         else
                         {
-                            var cloneResult = await view.SaveModelAsync(false, context, transaction).ConfigureAwait(false);
-                            if (cloneResult.IsSucceed)
-                            {
-                                var cloneSubResult = await CloneSubModelsAsync(cloneResult.Data, cloneCultures, context, transaction).ConfigureAwait(false);
-                                if (!cloneSubResult.IsSucceed)
-                                {
-                                    cloneResult.Errors.AddRange(cloneSubResult.Errors);
-                                    cloneResult.Exception = cloneSubResult.Exception;
-                                }
+                            context.Entry(m).State = EntityState.Added;
 
-                                result.IsSucceed = result.IsSucceed && cloneResult.IsSucceed && cloneSubResult.IsSucceed;
-                                //result.Data.Add(cloneResult.Data);
-                            }
-                            else
+                            var cloneSubResult = await CloneSubModelsAsync(m, cloneCultures, context, transaction).ConfigureAwait(false);
+                            if (!cloneSubResult.IsSucceed)
                             {
-                                result.IsSucceed = result.IsSucceed && cloneResult.IsSucceed;
-                                result.Errors.AddRange(cloneResult.Errors);
-                                result.Exception = cloneResult.Exception;
+                                cloneSubResult.Errors.AddRange(cloneSubResult.Errors);
+                                cloneSubResult.Exception = cloneSubResult.Exception;
                             }
+
+                            result.IsSucceed = result.IsSucceed && cloneSubResult.IsSucceed && cloneSubResult.IsSucceed;
+
                         }
                         UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     }
@@ -407,7 +410,7 @@ namespace Mix.Domain.Data.ViewModels
                     return result;
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
             }
@@ -428,7 +431,7 @@ namespace Mix.Domain.Data.ViewModels
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual async Task<RepositoryResponse<bool>> CloneSubModelsAsync(TView parent, List<SupportedCulture> cloneCultures, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual async Task<RepositoryResponse<bool>> CloneSubModelsAsync(TModel parent, List<SupportedCulture> cloneCultures, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             var taskSource = new TaskCompletionSource<RepositoryResponse<bool>>();
             taskSource.SetResult(new RepositoryResponse<bool>() { IsSucceed = true, Data = true });
@@ -471,7 +474,7 @@ namespace Mix.Domain.Data.ViewModels
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -546,7 +549,7 @@ namespace Mix.Domain.Data.ViewModels
                     UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     return result;
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
                 }
@@ -644,7 +647,7 @@ namespace Mix.Domain.Data.ViewModels
                 {
                     ExpandView(context, transaction);
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     Repository.LogErrorMessage(ex);
                     if (isRoot)
@@ -699,39 +702,34 @@ namespace Mix.Domain.Data.ViewModels
                     {
                         string desSpecificulture = culture.Specificulture;
 
-                        TView view = InitView();
-                        view.Model = model;
-                        view.ParseView(isExpand: false, _context: context, _transaction: transaction);
-                        view.Specificulture = desSpecificulture;
-
-                        bool isExist = Repository.CheckIsExists(view.ParseModel(context, transaction), _context: context, _transaction: transaction);
+                        //TView view = InitView();
+                        TModel m = (TModel)context.Entry(model).CurrentValues.ToObject();
+                        Type myType = typeof(TModel);
+                        var myFieldInfo = myType.GetProperty("Specificulture");
+                        myFieldInfo.SetValue(m, desSpecificulture);
+                        //view.Model = m;
+                        //view.ParseView(isExpand: false, _context: context, _transaction: transaction);
+                        bool isExist = Repository.CheckIsExists(m, _context: context, _transaction: transaction);
 
                         if (isExist)
                         {
                             result.IsSucceed = true;
-                            result.Data.Add(view);
+                            //result.Data.Add(view);
                         }
                         else
                         {
-                            var cloneResult = view.SaveModel(false, context, transaction);
-                            if (cloneResult.IsSucceed)
-                            {
-                                var cloneSubResult = CloneSubModels(cloneResult.Data, cloneCultures, context, transaction);
-                                if (!cloneSubResult.IsSucceed)
-                                {
-                                    cloneResult.Errors.AddRange(cloneSubResult.Errors);
-                                    cloneResult.Exception = cloneSubResult.Exception;
-                                }
+                            context.Entry(m).State = EntityState.Added;
 
-                                result.IsSucceed = result.IsSucceed && cloneResult.IsSucceed && cloneSubResult.IsSucceed;
-                                //result.Data.Add(cloneResult.Data);
-                            }
-                            else
+                            var cloneSubResult = CloneSubModels(m, cloneCultures, context, transaction);
+                            if (!cloneSubResult.IsSucceed)
                             {
-                                result.IsSucceed = result.IsSucceed && cloneResult.IsSucceed;
-                                result.Errors.AddRange(cloneResult.Errors);
-                                result.Exception = cloneResult.Exception;
+                                cloneSubResult.Errors.AddRange(cloneSubResult.Errors);
+                                cloneSubResult.Exception = cloneSubResult.Exception;
                             }
+
+                            result.IsSucceed = result.IsSucceed && cloneSubResult.IsSucceed && cloneSubResult.IsSucceed;
+                            //result.Data.Add(cloneResult.Data);
+
                         }
                         UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     }
@@ -742,7 +740,7 @@ namespace Mix.Domain.Data.ViewModels
                     return result;
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 result.IsSucceed = false;
                 result.Exception = ex;
@@ -765,7 +763,7 @@ namespace Mix.Domain.Data.ViewModels
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual RepositoryResponse<bool> CloneSubModels(TView parent, List<SupportedCulture> cloneCultures, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual RepositoryResponse<bool> CloneSubModels(TModel parent, List<SupportedCulture> cloneCultures, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             return new RepositoryResponse<bool>() { IsSucceed = true };
         }
@@ -806,7 +804,7 @@ namespace Mix.Domain.Data.ViewModels
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
             }
@@ -879,7 +877,7 @@ namespace Mix.Domain.Data.ViewModels
                     UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     return result;
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
                 }
