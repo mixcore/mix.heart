@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace Mix.Domain.Data.ViewModels
@@ -25,7 +26,9 @@ namespace Mix.Domain.Data.ViewModels
     /// <typeparam name="TDbContext">The type of the database context.</typeparam>
     /// <typeparam name="TModel">The type of the model.</typeparam>
     /// <typeparam name="TView">The type of the view.</typeparam>
-    public abstract class ViewModelBase<TDbContext, TModel, TView> : IViewModel
+    /// 
+    [Serializable]
+    public abstract class ViewModelBase<TDbContext, TModel, TView> : IViewModel, ISerializable
         where TDbContext : DbContext
         where TModel : class
         where TView : ViewModelBase<TDbContext, TModel, TView> // instance of inherited
@@ -390,7 +393,7 @@ namespace Mix.Domain.Data.ViewModels
                         else
                         {
                             context.Entry(m).State = EntityState.Added;
-
+                            await context.SaveChangesAsync();
                             var cloneSubResult = await CloneSubModelsAsync(m, cloneCultures, context, transaction).ConfigureAwait(false);
                             if (!cloneSubResult.IsSucceed)
                             {
@@ -719,7 +722,7 @@ namespace Mix.Domain.Data.ViewModels
                         else
                         {
                             context.Entry(m).State = EntityState.Added;
-
+                            context.SaveChanges();
                             var cloneSubResult = CloneSubModels(m, cloneCultures, context, transaction);
                             if (!cloneSubResult.IsSucceed)
                             {
@@ -918,6 +921,12 @@ namespace Mix.Domain.Data.ViewModels
             return new RepositoryResponse<bool>() { IsSucceed = true };
         }
 
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            
+        }
+
+
         #endregion Sync
 
         #region Contructor
@@ -942,7 +951,10 @@ namespace Mix.Domain.Data.ViewModels
             this.Model = InitModel();
             ParseView(isExpand: false);
         }
+        protected ViewModelBase(SerializationInfo info, StreamingContext context)
+        {
 
+        }
         #endregion Contructor
     }
 }
