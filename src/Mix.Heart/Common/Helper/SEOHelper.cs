@@ -35,9 +35,9 @@ namespace Mix.Common.Helper
         /// </summary>
         /// <param name="s">The s.</param>
         /// <returns></returns>
-        public static string GetSEOString(string s)
+        public static string GetSEOString(string s, char replaceChar = '-')
         {
-            return !string.IsNullOrEmpty(s) ? WhiteSpaceToHyphen(ConvertToUnSign(DeleteSpecialCharaters(s))) : s;
+            return !string.IsNullOrEmpty(s) ? WhiteSpaceToHyphen(ConvertToUnSign(DeleteSpecialCharaters(s)), replaceChar) : s;
         }
 
         // Chuyển tiếng việt có dấu thành không dấu
@@ -93,9 +93,8 @@ namespace Mix.Common.Helper
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string WhiteSpaceToHyphen(string str)
-        {
-            char replaceChar = '-';
+        public static string WhiteSpaceToHyphen(string str, char replaceChar = '-')
+        {           
             string pattern = " |–";
             MatchCollection matchs = Regex.Matches(str, pattern, RegexOptions.IgnoreCase);
             foreach (Match m in matchs)

@@ -429,7 +429,25 @@ namespace Mix.Domain.Core.ViewModels
         /// The size of the page.
         /// </value>
         [JsonProperty("pageSize")]
-        public int? PageSize { get; set; } = 10;
+        public int? PageSize { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the index of the page.
+        /// </summary>
+        /// <value>
+        /// The index of the page.
+        /// </value>
+        [JsonProperty("skip")]
+        public int? Skip { get; set; }
+
+        /// <summary>
+        /// Gets or sets the topof the page.
+        /// </summary>
+        /// <value>
+        /// The top of the page.
+        /// </value>
+        [JsonProperty("top")]
+        public int? Top { get; set; }
 
         /// <summary>
         /// Gets or sets the user agent.

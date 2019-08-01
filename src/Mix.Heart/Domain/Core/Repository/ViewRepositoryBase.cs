@@ -566,7 +566,7 @@ namespace Mix.Domain.Data.Repository
         /// <returns></returns>
         public virtual async Task<PaginationModel<TView>> ParsePagingQueryAsync(IQueryable<TModel> query
         , string orderByPropertyName, int direction
-        , int? pageSize, int? pageIndex
+        , int? pageSize, int? pageIndex, int? skip, int? top
         , TDbContext context, IDbContextTransaction transaction)
         {
             List<TModel> lstModel = new List<TModel>();
@@ -599,7 +599,16 @@ namespace Mix.Domain.Data.Repository
                         }
                         else
                         {
-                            lstModel = sorted.ToList();
+                            if (top.HasValue)
+                            {
+                                lstModel = await sorted.Skip(skip.HasValue ? skip.Value : 0)
+                            .Take(top.Value)
+                            .ToListAsync().ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                lstModel = sorted.ToList();
+                            }
                         }
                         break;
 
@@ -608,13 +617,24 @@ namespace Mix.Domain.Data.Repository
                         if (pageSize.HasValue)
                         {
                             lstModel = await sorted
-                            .Skip(pageIndex.Value * pageSize.Value)
-                            .Take(pageSize.Value)
-                            .ToListAsync().ConfigureAwait(false);
+                                .Skip(pageIndex.Value * pageSize.Value)
+                                .Take(pageSize.Value)
+                                .ToListAsync().ConfigureAwait(false);
                         }
                         else
                         {
-                            lstModel = await sorted.ToListAsync().ConfigureAwait(false);
+                            if (top.HasValue)
+                            {
+                                lstModel = await sorted
+                                    .Skip(skip.HasValue ? skip.Value : 0)
+                                    .Take(top.Value)
+                                    .ToListAsync().ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                lstModel = await sorted.ToListAsync().ConfigureAwait(false);
+                            }
+                            
                         }
                         break;
                 }
@@ -816,7 +836,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
         public virtual async Task<RepositoryResponse<PaginationModel<TView>>> GetModelListAsync(
-        string orderByPropertyName, int direction, int? pageSize, int? pageIndex
+        string orderByPropertyName, int direction, int? pageSize, int? pageIndex, int? skip= null, int? top = null
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             bool isRoot = _context == null;
@@ -827,7 +847,7 @@ namespace Mix.Domain.Data.Repository
             {
                 var query = context.Set<TModel>();
 
-                var result = await ParsePagingQueryAsync(query, orderByPropertyName, direction, pageSize, pageIndex, context, transaction).ConfigureAwait(false);
+                var result = await ParsePagingQueryAsync(query, orderByPropertyName, direction, pageSize, pageIndex, skip, top, context, transaction).ConfigureAwait(false);
                 return new RepositoryResponse<PaginationModel<TView>>()
                 {
                     IsSucceed = true,
@@ -982,7 +1002,7 @@ namespace Mix.Domain.Data.Repository
         /// <returns></returns>
         public virtual async Task<RepositoryResponse<PaginationModel<TView>>> GetModelListByAsync(
         Expression<Func<TModel, bool>> predicate, string orderByPropertyName
-        , int direction, int? pageSize, int? pageIndex
+        , int direction, int? pageSize, int? pageIndex, int? skip = null, int? top = null
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
@@ -992,7 +1012,7 @@ namespace Mix.Domain.Data.Repository
 
                 var result = await ParsePagingQueryAsync(query
                 , orderByPropertyName, direction
-                , pageSize, pageIndex
+                , pageSize, pageIndex, skip, top
                 , context, transaction).ConfigureAwait(false);
                 return new RepositoryResponse<PaginationModel<TView>>()
                 {
