@@ -474,6 +474,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="ex">The ex.</param>
         public virtual void LogErrorMessage(Exception ex)
         {
+            Console.WriteLine(ex.Message);
         }
 
         /// <summary>
@@ -1831,18 +1832,7 @@ namespace Mix.Domain.Data.Repository
                         if (lamda != null)
                         {
                             var prop = context.Entry(model).Property(field.PropertyName);
-                            if (DateTime.TryParse(field.PropertyValue, out DateTime dateValue))
-                            {
-                                prop.CurrentValue = dateValue;
-                            }
-                            else if (int.TryParse(field.PropertyValue, out int integerValue))
-                            {
-                                prop.CurrentValue = integerValue;
-                            }
-                            else
-                            {
-                                prop.CurrentValue = field.PropertyValue;
-                            }
+                            prop.CurrentValue = field.PropertyValue;
 
                             context.SaveChanges();
                             result = true;
@@ -1902,19 +1892,7 @@ namespace Mix.Domain.Data.Repository
                         if (lamda != null)
                         {
                             var prop = context.Entry(model).Property(field.PropertyName);
-                            if (DateTime.TryParse(field.PropertyValue, out DateTime dateValue))
-                            {
-                                prop.CurrentValue = dateValue;
-                            }
-                            else if (int.TryParse(field.PropertyValue, out int integerValue))
-                            {
-                                prop.CurrentValue = integerValue;
-                            }
-                            else
-                            {
-                                prop.CurrentValue = field.PropertyValue;
-                            }
-
+                            prop.CurrentValue = field.PropertyValue;
                             await context.SaveChangesAsync().ConfigureAwait(false);
                             result = true;
                         }

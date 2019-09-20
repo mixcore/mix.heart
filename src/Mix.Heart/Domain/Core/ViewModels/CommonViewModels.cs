@@ -82,7 +82,7 @@ namespace Mix.Domain.Core.ViewModels
         /// The property value.
         /// </value>
         [JsonProperty("propertyValue")]
-        public string PropertyValue { get; set; }
+        public object PropertyValue { get; set; }
     }
 
     /// <summary>
