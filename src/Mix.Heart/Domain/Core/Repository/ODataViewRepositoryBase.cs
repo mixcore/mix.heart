@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Mix.Common.Helper;
 using Mix.Domain.Core.ViewModels;
+using Mix.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,12 +28,19 @@ namespace Mix.Domain.Data.Repository
         where TModel : class
         where TView : ViewModels.ODataViewModelBase<TDbContext, TModel, TView>
     {
+        #region Properties
+        public string ModelName { get { return typeof(TView).FullName; } }
+        public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
+        public string CachedFileName { get { return typeof(TView).Name; } }
+        #endregion
         /// <summary>
         /// Initializes a new instance of the <see cref="ODataViewRepositoryBase{TDbContext, TModel, TView}"/> class.
         /// </summary>
         protected ODataViewRepositoryBase()
         {
         }
+
+        #region Common
 
         /// <summary>
         /// Checks the is exists.
@@ -105,48 +113,71 @@ namespace Mix.Domain.Data.Repository
         }
 
         /// <summary>
-        /// Creates the model.
+        /// Initializes the context.
         /// </summary>
-        /// <param name="view">The view.</param>
+        /// <returns></returns>
+        public virtual TDbContext InitContext()
+        {
+            Type classType = typeof(TDbContext);
+            ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { });
+            TDbContext context = (TDbContext)classConstructor.Invoke(new object[] { });
+
+            return context;
+        }
+
+        /// <summary>
+        /// Logs the error message.		User.Claims.ToList()	error CS0103: The name 'User' does not exist in the current context
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        public virtual void LogErrorMessage(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        /// <summary>
+        /// Parses the view.
+        /// </summary>
+        /// <param name="lstModels">The LST models.</param>
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual RepositoryResponse<TView> CreateModel(TView view
-        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual List<TView> ParseView(List<TModel> lstModels, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            bool isRoot = _context == null;
-            TDbContext context = _context ?? InitContext();
-            var transaction = _transaction ?? context.Database.BeginTransaction();
-            RepositoryResponse<TView> result = new RepositoryResponse<TView>() { IsSucceed = true };
-            try
+            List<TView> lstView = new List<TView>();
+            foreach (var model in lstModels)
             {
-                context.Entry(view.Model).State = EntityState.Added;
-                result.IsSucceed = context.SaveChanges() > 0;
-                result.Data = view;
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-                return result;
+                lstView.Add(ParseView(model, _context, _transaction));
             }
-            catch (Exception ex)
+
+            return lstView;
+        }
+
+        /// <summary>
+        /// Parses the view.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual TView ParseView(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            Type classType = typeof(TView);
+
+            ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { model.GetType(), typeof(TDbContext), typeof(IDbContextTransaction) });
+            if (classConstructor != null)
             {
-                LogErrorMessage(ex);
-                result.IsSucceed = false;
-                result.Exception = ex;
-                if (isRoot)
-                {
-                    transaction.Rollback();
-                }
-                return result;
+                return (TView)classConstructor.Invoke(new object[] { model, _context, _transaction });
             }
-            finally
+            else
             {
-                if (isRoot)
-                {
-                    //if current Context is Root
-                    transaction.Dispose();
-                    context.Dispose();
-                }
+                classConstructor = classType.GetConstructor(new Type[] { model.GetType() });
+                return (TView)classConstructor.Invoke(new object[] { model });
             }
         }
+
+        #endregion
+
+        #region Async
 
         /// <summary>
         /// Creates the model asynchronous.
@@ -184,43 +215,6 @@ namespace Mix.Domain.Data.Repository
         }
 
         /// <summary>
-        /// Edits the model.
-        /// </summary>
-        /// <param name="view">The view.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<TView> EditModel(TView view
-        , TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            RepositoryResponse<TView> result = new RepositoryResponse<TView>() { IsSucceed = true };
-            try
-            {
-                //context.Entry(view.Model).State = EntityState.Modified;
-                context.Set<TModel>().Update(view.Model);
-                result.IsSucceed = context.SaveChanges() > 0;
-                result.Data = view;
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
-            }
-            finally
-            {
-                if (isRoot)
-                {
-                    //if current Context is Root
-                    transaction.Dispose();
-                    context.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
         /// Edits the model asynchronous.
         /// </summary>
         /// <param name="view">The view.</param>
@@ -234,10 +228,11 @@ namespace Mix.Domain.Data.Repository
             try
             {
                 //context.Entry(view.Model).State = EntityState.Modified;
+                
                 context.Set<TModel>().Update(view.Model);
                 result.IsSucceed = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
                 result.Data = view;
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);                
                 return result;
             }
             catch (Exception ex)
@@ -254,57 +249,6 @@ namespace Mix.Domain.Data.Repository
             }
         }
 
-        /// <summary>
-        /// Gets the single model.
-        /// </summary>
-        /// <param name="predicate">The predicate.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<TView> GetSingleModel(
-        Expression<Func<TModel, bool>> predicate
-        , TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            try
-            {
-                context = _context ?? InitContext();
-                transaction = _transaction ?? context.Database.BeginTransaction();
-
-                TModel model = context.Set<TModel>().SingleOrDefault(predicate);
-                if (model != null)
-                {
-                    context.Entry(model).State = EntityState.Detached;
-                    var viewResult = ParseView(model, context, transaction);
-                    return new RepositoryResponse<TView>()
-                    {
-                        IsSucceed = true,
-                        Data = viewResult
-                    };
-                }
-                else
-                {
-                    return new RepositoryResponse<TView>()
-                    {
-                        IsSucceed = false,
-                        Data = default
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
-            }
-            finally
-            {
-                if (isRoot)
-                {
-                    //if current Context is Root
-                    context?.Dispose();
-                }
-            }
-        }
-        
         /// <summary>
         /// Gets the single model asynchronous.
         /// </summary>
@@ -324,11 +268,11 @@ namespace Mix.Domain.Data.Repository
                 {
                     context.Entry(model).State = EntityState.Detached;
 
-                    var viewResult = ParseView(model, context, transaction);
+                    //var viewResult = ParseView(model, context, transaction);
                     return new RepositoryResponse<TView>()
                     {
                         IsSucceed = true,
-                        Data = viewResult
+                        Data = GetCachedData(model, context, transaction)
                     };
                 }
                 else
@@ -353,59 +297,6 @@ namespace Mix.Domain.Data.Repository
                 }
             }
         }
-
-        /// <summary>
-        /// Gets the single model.
-        /// </summary>
-        /// <param name="predicate">The predicate.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<TView> GetFirstModel(
-        Expression<Func<TModel, bool>> predicate
-        , TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            try
-            {
-                context = _context ?? InitContext();
-                transaction = _transaction ?? context.Database.BeginTransaction();
-
-                TModel model = context.Set<TModel>().FirstOrDefault(predicate);
-                if (model != null)
-                {
-                    context.Entry(model).State = EntityState.Detached;
-                    var viewResult = ParseView(model, context, transaction);
-                    return new RepositoryResponse<TView>()
-                    {
-                        IsSucceed = true,
-                        Data = viewResult
-                    };
-                }
-                else
-                {
-                    return new RepositoryResponse<TView>()
-                    {
-                        IsSucceed = false,
-                        Data = default
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
-            }
-            finally
-            {
-                if (isRoot)
-                {
-                    //if current Context is Root
-                    context?.Dispose();
-                }
-            }
-        }
-
-
         /// <summary>
         /// Gets the single model asynchronous.
         /// </summary>
@@ -452,105 +343,6 @@ namespace Mix.Domain.Data.Repository
                     //if current Context is Root
                     context.Dispose();
                 }
-            }
-        }
-
-        /// <summary>
-        /// Initializes the context.
-        /// </summary>
-        /// <returns></returns>
-        public virtual TDbContext InitContext()
-        {
-            Type classType = typeof(TDbContext);
-            ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { });
-            TDbContext context = (TDbContext)classConstructor.Invoke(new object[] { });
-
-            return context;
-        }
-
-        /// <summary>
-        /// Logs the error message.		User.Claims.ToList()	error CS0103: The name 'User' does not exist in the current context
-        /// </summary>
-        /// <param name="ex">The ex.</param>
-        public virtual void LogErrorMessage(Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-
-        /// <summary>
-        /// Parses the paging query.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="orderByPropertyName">Name of the order by property.</param>
-        /// <param name="direction">The direction.</param>
-        /// <param name="pageSize">Size of the page.</param>
-        /// <param name="pageIndex">Index of the page.</param>
-        /// <param name="context">The context.</param>
-        /// <param name="transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual PaginationModel<TView> ParsePagingQuery(IQueryable<TModel> query
-        , string orderByPropertyName, int direction
-        , int? pageSize, int? pageIndex
-        , TDbContext context, IDbContextTransaction transaction)
-        {
-            List<TModel> lstModel = new List<TModel>();
-
-            PaginationModel<TView> result = new PaginationModel<TView>()
-            {
-                TotalItems = query.Count(),
-                PageIndex = pageIndex ?? 0
-            };
-            dynamic orderBy = GetLambda(orderByPropertyName);
-            IQueryable<TModel> sorted = null;
-            try
-            {
-                result.PageSize = pageSize > 0 ? pageSize : result.TotalItems;
-
-                if (pageSize > 0)
-                {
-                    result.TotalPage = (result.TotalItems / pageSize.Value) + (result.TotalItems % pageSize.Value > 0 ? 1 : 0);
-                }
-
-                switch (direction)
-                {
-                    case 1:
-                        sorted = Queryable.OrderByDescending(query, orderBy);
-                        if (pageSize.HasValue)
-                        {
-                            lstModel = sorted.Skip(pageIndex.Value * pageSize.Value)
-                            .Take(pageSize.Value)
-                            .ToList();
-                        }
-                        else
-                        {
-                            lstModel = sorted.ToList();
-                        }
-                        break;
-
-                    default:
-                        sorted = Queryable.OrderBy(query, orderBy);
-                        if (pageSize.HasValue)
-                        {
-                            lstModel = sorted
-                            .Skip(pageIndex.Value * pageSize.Value)
-                            .Take(pageSize.Value)
-                            .ToList();
-                        }
-                        else
-                        {
-                            lstModel = sorted.ToList();
-                        }
-                        break;
-                }
-                lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                var lstView = ParseView(lstModel, context, transaction);
-                result.Items = lstView;
-                return result;
-            }
-            catch (Exception ex)
-            {
-                LogErrorMessage(ex);
-                return null;
             }
         }
 
@@ -635,12 +427,15 @@ namespace Mix.Domain.Data.Repository
                             {
                                 lstModel = await sorted.ToListAsync().ConfigureAwait(false);
                             }
-                            
+
                         }
                         break;
                 }
-                lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                var lstView = ParseView(lstModel, context, transaction);
+                lstModel.ForEach(model =>
+                {
+                    context.Entry(model).State = EntityState.Detached;
+                });
+                var lstView = GetCachedData(lstModel, context, transaction);
                 result.Items = lstView;
                 return result;
             }
@@ -651,46 +446,349 @@ namespace Mix.Domain.Data.Repository
             }
         }
 
+        #endregion
+
+        #region Sync
         /// <summary>
-        /// Parses the view.
+        /// Creates the model.
         /// </summary>
-        /// <param name="lstModels">The LST models.</param>
+        /// <param name="view">The view.</param>
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual List<TView> ParseView(List<TModel> lstModels, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual RepositoryResponse<TView> CreateModel(TView view
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            List<TView> lstView = new List<TView>();
-            foreach (var model in lstModels)
+            bool isRoot = _context == null;
+            TDbContext context = _context ?? InitContext();
+            var transaction = _transaction ?? context.Database.BeginTransaction();
+            RepositoryResponse<TView> result = new RepositoryResponse<TView>() { IsSucceed = true };
+            try
             {
-                lstView.Add(ParseView(model, _context, _transaction));
+                context.Entry(view.Model).State = EntityState.Added;
+                result.IsSucceed = context.SaveChanges() > 0;
+                result.Data = view;
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
+                return result;
             }
+            catch (Exception ex)
+            {
+                LogErrorMessage(ex);
+                result.IsSucceed = false;
+                result.Exception = ex;
+                if (isRoot)
+                {
+                    transaction.Rollback();
+                }
+                return result;
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    transaction.Dispose();
+                    context.Dispose();
+                }
+            }
+        }
 
-            return lstView;
+
+
+        /// <summary>
+        /// Edits the model.
+        /// </summary>
+        /// <param name="view">The view.</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual RepositoryResponse<TView> EditModel(TView view
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            RepositoryResponse<TView> result = new RepositoryResponse<TView>() { IsSucceed = true };
+            try
+            {
+                //context.Entry(view.Model).State = EntityState.Modified;
+                context.Set<TModel>().Update(view.Model);
+                result.IsSucceed = context.SaveChanges() > 0;
+                result.Data = view;
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);              
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    transaction.Dispose();
+                    context.Dispose();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the single model.
+        /// </summary>
+        /// <param name="predicate">The predicate.</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual RepositoryResponse<TView> GetSingleModel(
+        Expression<Func<TModel, bool>> predicate
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            try
+            {
+                context = _context ?? InitContext();
+                transaction = _transaction ?? context.Database.BeginTransaction();
+
+                TModel model = context.Set<TModel>().SingleOrDefault(predicate);
+                if (model != null)
+                {
+                    //context.Entry(model).State = EntityState.Detached;
+                    //var viewResult = ParseView(model, context, transaction);
+
+                    return new RepositoryResponse<TView>()
+                    {
+                        IsSucceed = true,
+                        Data = GetCachedData(model, context, transaction)
+                    };
+                }
+                else
+                {
+                    return new RepositoryResponse<TView>()
+                    {
+                        IsSucceed = false,
+                        Data = default
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context?.Dispose();
+                }
+            }
+        }
+        /// <summary>
+        /// Gets the single model.
+        /// </summary>
+        /// <param name="predicate">The predicate.</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual RepositoryResponse<TView> GetFirstModel(
+        Expression<Func<TModel, bool>> predicate
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            try
+            {
+                context = _context ?? InitContext();
+                transaction = _transaction ?? context.Database.BeginTransaction();
+
+                TModel model = context.Set<TModel>().FirstOrDefault(predicate);
+                if (model != null)
+                {
+                    context.Entry(model).State = EntityState.Detached;
+                    var viewResult = ParseView(model, context, transaction);
+                    return new RepositoryResponse<TView>()
+                    {
+                        IsSucceed = true,
+                        Data = viewResult
+                    };
+                }
+                else
+                {
+                    return new RepositoryResponse<TView>()
+                    {
+                        IsSucceed = false,
+                        Data = default
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context?.Dispose();
+                }
+            }
         }
 
         /// <summary>
-        /// Parses the view.
+        /// Saves the model.
         /// </summary>
-        /// <param name="model">The model.</param>
+        /// <param name="view">The view.</param>
+        /// <param name="isSaveSubModels">if set to <c>true</c> [is save sub models].</param>
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual TView ParseView(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual RepositoryResponse<TView> SaveModel(TView view, bool isSaveSubModels = false
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            Type classType = typeof(TView);
-            ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { model.GetType(), typeof(TDbContext), typeof(IDbContextTransaction) });
-            if (classConstructor != null)
+            RepositoryResponse<TView> result = null;
+            if (CheckIsExists(view.Model, _context, _transaction))
             {
-                return (TView)classConstructor.Invoke(new object[] { model, _context, _transaction });
+                result = EditModel(view, _context, _transaction);
             }
             else
             {
-                classConstructor = classType.GetConstructor(new Type[] { model.GetType() });
-                return (TView)classConstructor.Invoke(new object[] { model });
+                result = CreateModel(view, _context, _transaction);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Saves the model hronous.
+        /// </summary>
+        /// <param name="data">The view.</param>
+        /// <param name="isSaveSubModels">if set to <c>true</c> [is save sub models].</param>
+        /// <param name="_context">The context.</param>
+        /// <param name="_transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual RepositoryResponse<List<TView>> SaveListModel(List<TView> data, bool isSaveSubModels = false
+        , TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            var result = new RepositoryResponse<List<TView>>() { IsSucceed = true };
+            try
+            {
+                foreach (var item in data)
+                {
+                    var saveResult = item.SaveModel(isSaveSubModels, context, transaction);
+                    if (!saveResult.IsSucceed)
+                    {
+                        result.IsSucceed = false;
+                        result.Exception = saveResult.Exception;
+                        result.Errors = saveResult.Errors;
+                        break;
+                    }
+                }
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context.Dispose();
+                }
             }
         }
 
+        #endregion
+
+        /// <summary>
+        /// Parses the paging query.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="orderByPropertyName">Name of the order by property.</param>
+        /// <param name="direction">The direction.</param>
+        /// <param name="pageSize">Size of the page.</param>
+        /// <param name="pageIndex">Index of the page.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual PaginationModel<TView> ParsePagingQuery(IQueryable<TModel> query
+        , string orderByPropertyName, int direction
+        , int? pageSize, int? pageIndex
+        , TDbContext context, IDbContextTransaction transaction)
+        {
+            List<TModel> lstModel = new List<TModel>();
+
+            PaginationModel<TView> result = new PaginationModel<TView>()
+            {
+                TotalItems = query.Count(),
+                PageIndex = pageIndex ?? 0
+            };
+            dynamic orderBy = GetLambda(orderByPropertyName);
+            IQueryable<TModel> sorted = null;
+            try
+            {
+                result.PageSize = pageSize > 0 ? pageSize : result.TotalItems;
+
+                if (pageSize > 0)
+                {
+                    result.TotalPage = (result.TotalItems / pageSize.Value) + (result.TotalItems % pageSize.Value > 0 ? 1 : 0);
+                }
+
+                switch (direction)
+                {
+                    case 1:
+                        sorted = Queryable.OrderByDescending(query, orderBy);
+                        if (pageSize.HasValue)
+                        {
+                            lstModel = sorted.Skip(pageIndex.Value * pageSize.Value)
+                            .Take(pageSize.Value)
+                            .ToList();
+                        }
+                        else
+                        {
+                            lstModel = sorted.ToList();
+                        }
+                        break;
+
+                    default:
+                        sorted = Queryable.OrderBy(query, orderBy);
+                        if (pageSize.HasValue)
+                        {
+                            lstModel = sorted
+                            .Skip(pageIndex.Value * pageSize.Value)
+                            .Take(pageSize.Value)
+                            .ToList();
+                        }
+                        else
+                        {
+                            lstModel = sorted.ToList();
+                        }
+                        break;
+                }
+                lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
+                var lstView = GetCachedData(lstModel, context, transaction);
+                result.Items = lstView;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogErrorMessage(ex);
+                return null;
+            }
+        }
+
+        public string GetCachedKey(TModel model)
+        {
+            return $"{GetPropValue(model, "Specificulture")}_{GetPropValue(model, model.GetType().GetProperties()[0].Name)}";
+        }
+
+        public object GetPropValue(object src, string propName)
+        {
+            return src.GetType().GetProperty(propName)?.GetValue(src, null);
+        }
         /// <summary>
         /// Registers the automatic mapper.
         /// </summary>
@@ -837,7 +935,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
         public virtual async Task<RepositoryResponse<PaginationModel<TView>>> GetModelListAsync(
-        string orderByPropertyName, int direction, int? pageSize, int? pageIndex, int? skip= null, int? top = null
+        string orderByPropertyName, int direction, int? pageSize, int? pageIndex, int? skip = null, int? top = null
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             bool isRoot = _context == null;
@@ -963,7 +1061,6 @@ namespace Mix.Domain.Data.Repository
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-
             try
             {
                 var query = context.Set<TModel>().Where(predicate);
@@ -1045,7 +1142,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual  RepositoryResponse<List<TModel>> RemoveListModel(bool isRemoveRelatedModels, Expression<Func<TModel, bool>> predicate
+        public virtual RepositoryResponse<List<TModel>> RemoveListModel(bool isRemoveRelatedModels, Expression<Func<TModel, bool>> predicate
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
@@ -1063,7 +1160,7 @@ namespace Mix.Domain.Data.Repository
                             var removeRelatedResult = item.RemoveRelatedModels(item, context, transaction);
                             if (removeRelatedResult.IsSucceed)
                             {
-                                var temp =  RemoveModel(item.Model, context, transaction);
+                                var temp = RemoveModel(item.Model, context, transaction);
                                 if (!temp.IsSucceed)
                                 {
                                     result.IsSucceed = false;
@@ -1082,7 +1179,7 @@ namespace Mix.Domain.Data.Repository
                         }
                         else
                         {
-                            var temp =  RemoveModel(item.Model, context, transaction);
+                            var temp = RemoveModel(item.Model, context, transaction);
                             if (!temp.IsSucceed)
                             {
                                 result.IsSucceed = false;
@@ -1361,71 +1458,7 @@ namespace Mix.Domain.Data.Repository
             }
         }
 
-        /// <summary>
-        /// Saves the model.
-        /// </summary>
-        /// <param name="view">The view.</param>
-        /// <param name="isSaveSubModels">if set to <c>true</c> [is save sub models].</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<TView> SaveModel(TView view, bool isSaveSubModels = false
-        , TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            if (CheckIsExists(view.Model, _context, _transaction))
-            {
-                return EditModel(view, _context, _transaction);
-            }
-            else
-            {
-                return CreateModel(view, _context, _transaction);
-            }
-        }
-
-        /// <summary>
-        /// Saves the model hronous.
-        /// </summary>
-        /// <param name="data">The view.</param>
-        /// <param name="isSaveSubModels">if set to <c>true</c> [is save sub models].</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual  RepositoryResponse<List<TView>> SaveListModel(List<TView> data, bool isSaveSubModels = false
-        , TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            var result = new RepositoryResponse<List<TView>>() { IsSucceed = true };
-            try
-            {
-                foreach (var item in data)
-                {
-                    var saveResult =  item.SaveModel(isSaveSubModels, context, transaction);
-                    if (!saveResult.IsSucceed)
-                    {
-                        result.IsSucceed = false;
-                        result.Exception = saveResult.Exception;
-                        result.Errors = saveResult.Errors;
-                        break;
-                    }
-                }
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
-            }
-            finally
-            {
-                if (isRoot)
-                {
-                    //if current Context is Root
-                    context.Dispose();
-                }
-            }
-        }
-
+        
         /// <summary>
         /// Saves the model asynchronous.
         /// </summary>
@@ -1434,19 +1467,21 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual Task<RepositoryResponse<TView>> SaveModelAsync(TView view, bool isSaveSubModels = false
+        public virtual async Task<RepositoryResponse<TView>> SaveModelAsync(TView view, bool isSaveSubModels = false
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
+            RepositoryResponse<TView> result = null;
             if (CheckIsExists(view.Model, _context, _transaction))
             {
-                return EditModelAsync(view, _context, _transaction);
+                result = await EditModelAsync(view, _context, _transaction);
             }
             else
             {
-                return CreateModelAsync(view, _context, _transaction);
+                result = await CreateModelAsync(view, _context, _transaction);
             }
+            return result;
         }
-        
+
         /// <summary>
         /// Saves the model asynchronous.
         /// </summary>
@@ -1946,5 +1981,63 @@ namespace Mix.Domain.Data.Repository
             var memberExpression = Expression.Property(parameter, propName);
             return Expression.Lambda(memberExpression, parameter);
         }
+
+        #region Cached       
+        public virtual TView GetCachedData(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            string key = GetCachedKey(model);
+            string folder = $"{CachedFolder}/{key}";
+            var data = CacheService.Get<TView>(CachedFileName, folder);
+            if (data != null)
+            {
+                return data;
+            }
+            else
+            {
+                data = ParseView(model, _context, _transaction);
+                _ = CacheService.SetAsync(CachedFileName, data, folder);
+                return data;
+            }
+        }
+        public virtual List<TView> GetCachedData(List<TModel> models, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            List<TView> result = new List<TView>();
+            foreach (var model in models)
+            {
+                string key = GetCachedKey(model);
+                string folder = $"{CachedFolder}/{key}";
+                TView data = CacheService.Get<TView>(CachedFileName, folder);
+                if (data != null)
+                {
+                    result.Add(data);
+                }
+                else
+                {
+                    data = ParseView(model, _context, _transaction);
+                    if (data != null)
+                    {
+                        _ = CacheService.SetAsync(CachedFileName, data, folder);
+                        result.Add(data);
+                    }
+                }
+            }
+            return result;
+        }
+
+        private Task AddToCache(TView view)
+        {
+            string key = GetCachedKey(view.Model);
+            string folder = $"{CachedFolder}/{key}";
+            CacheService.Set(CachedFileName, view, folder);
+            return Task.CompletedTask;
+        }
+        private Task RemoveCache(TModel model)
+        {
+            string key = GetCachedKey(model);
+            string folder = $"{CachedFolder}/{key}";
+            CacheService.RemoveCacheAsync(folder);
+            return Task.CompletedTask;
+        }
+        #endregion
     }
 }

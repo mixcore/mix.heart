@@ -9,6 +9,7 @@ using Mix.Common.Helper;
 using Mix.Domain.Core.Models;
 using Mix.Domain.Core.ViewModels;
 using Mix.Domain.Data.Repository;
+using Mix.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,9 @@ namespace Mix.Domain.Data.ViewModels
         where TView : ViewModelBase<TDbContext, TModel, TView> // instance of inherited
     {
         #region Properties
+        public string ModelName { get { return typeof(TView).FullName; } }        
+        public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
+        public string CachedFileName { get { return typeof(TView).Name; } }
 
         /// <summary>
         /// Returns true if ... is valid.
@@ -462,7 +466,7 @@ namespace Mix.Domain.Data.ViewModels
                     if (removeRelatedResult.IsSucceed)
                     {
                         result = await Repository.RemoveModelAsync(Model, context, transaction).ConfigureAwait(false);
-                    }
+                    }   
                     else
                     {
                         result.IsSucceed = result.IsSucceed && removeRelatedResult.IsSucceed;
@@ -473,6 +477,10 @@ namespace Mix.Domain.Data.ViewModels
                 else
                 {
                     result = await Repository.RemoveModelAsync(Model, context, transaction).ConfigureAwait(false);
+                }
+                if (result.IsSucceed)
+                {
+                    _ = RemoveCache();
                 }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
@@ -548,7 +556,10 @@ namespace Mix.Domain.Data.ViewModels
                         }
                         result.IsSucceed = result.IsSucceed && cloneResult.IsSucceed;
                     }
-
+                    if (result.IsSucceed)
+                    {
+                        _ = GenerateCache();
+                    }
                     UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     return result;
                 }
@@ -803,7 +814,10 @@ namespace Mix.Domain.Data.ViewModels
                 {
                     result = Repository.RemoveModel(Model, context, transaction);
                 }
-
+                if (result.IsSucceed)
+                {
+                    _ = RemoveCache();
+                }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
@@ -876,7 +890,10 @@ namespace Mix.Domain.Data.ViewModels
                         }
                         result.IsSucceed = result.IsSucceed && cloneResult.IsSucceed;
                     }
-
+                    if (result.IsSucceed)
+                    {
+                        _ = GenerateCache();
+                    }
                     UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     return result;
                 }
@@ -956,5 +973,76 @@ namespace Mix.Domain.Data.ViewModels
 
         }
         #endregion Contructor
+
+        #region Cached      
+        public string GetCachedKey(TModel model)
+        {
+            return $"{GetPropValue(model, "Specificulture")}_{GetPropValue(model, model.GetType().GetProperties()[0].Name)}";
+        }
+
+        public object GetPropValue(object src, string propName)
+        {
+            return src.GetType().GetProperty(propName)?.GetValue(src, null);
+        }
+        public virtual TView GetCachedData(TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            string key = GetCachedKey(Model);
+            string folder = $"{CachedFolder}/{key}";
+            return CacheService.Get<TView>(CachedFileName, folder);            
+        }
+        public virtual Task GenerateCache()
+        {
+            return RemoveCache().ContinueWith(resp =>
+            {
+                UnitOfWorkHelper<TDbContext>.InitTransaction(null, null, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+                var viewTypes = Assembly.GetAssembly(typeof(TView)).GetTypes()
+                                      .Where(t => t.Namespace == typeof(TView).Namespace && t.Name != typeof(TView).Name && !t.IsNested)
+                                      .ToList();
+                foreach (var classType in viewTypes)
+                {
+                    ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { Model.GetType(), typeof(TDbContext), typeof(IDbContextTransaction) });
+                    if (classConstructor != null)
+                    {
+                        var view =  classConstructor.Invoke(new object[] { Model, context, transaction });
+                        if (view != null)
+                        {
+                            MethodInfo addCacheMethod = classType.GetMethod("AddToCache");
+                            addCacheMethod.Invoke(view, new object[] {  });
+                        }
+                    }
+                    else
+                    {
+                        classConstructor = classType.GetConstructor(new Type[] { Model.GetType() });
+                        if (classConstructor != null)
+                        {
+                            var view = classConstructor.Invoke(new object[] { Model });
+                            if (view != null)
+                            {
+                                MethodInfo addCacheMethod = classType.GetMethod("AddToCache");
+                                addCacheMethod.Invoke(view, new object[] { });
+                            }
+                        }
+                    }
+
+                }
+                AddToCache();
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(true, isRoot, transaction);
+            });
+        }
+        public virtual Task AddToCache()
+        {
+            string key = GetCachedKey(Model);
+            string folder = $"{CachedFolder}/{key}";
+            CacheService.Set(CachedFileName, this, folder);
+            return Task.CompletedTask;
+        }
+        public virtual Task RemoveCache()
+        {
+            string key = GetCachedKey(Model);
+            string folder = $"{CachedFolder}/{key}";
+            CacheService.RemoveCacheAsync(folder);
+            return Task.CompletedTask;
+        }
+        #endregion
     }
 }
