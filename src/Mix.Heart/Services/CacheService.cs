@@ -77,13 +77,22 @@ namespace Mix.Services
         }
         public static Task<T> GetAsync<T>(string key, string folder = null)
         {
-            var data = FileRepository.Instance.GetFile(key, ".json", $"{cacheFolder}/{folder}", false, "{}");
-            if (data != null && !string.IsNullOrEmpty(data.Content))
+            try
             {
-                var jobj = JObject.Parse(data.Content);
-                return Task.FromResult(jobj.ToObject<T>());
+                var data = FileRepository.Instance.GetFile(key, ".json", $"{cacheFolder}/{folder}", false, "{}");
+                if (data != null && !string.IsNullOrEmpty(data.Content))
+                {
+                    var jobj = JObject.Parse(data.Content);
+                    return Task.FromResult(jobj.ToObject<T>());
+                }
+                return Task.FromResult(default(T));
             }
-            return Task.FromResult(default(T));
+            catch(Exception ex)
+            {
+                //TODO Handle Exception
+                return Task.FromResult(default(T));
+            }
+            
         }
 
         public static Task<RepositoryResponse<bool>> SetAsync<T>(string key, T value, string folder = null)

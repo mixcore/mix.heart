@@ -1246,10 +1246,10 @@ namespace Mix.Domain.Data.Repository
         public virtual RepositoryResponse<TModel> RemoveModel(Expression<Func<TModel, bool>> predicate, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            TModel model = context.Set<TModel>().FirstOrDefault(predicate);
+            bool result = true;
             try
             {
-                TModel model = context.Set<TModel>().FirstOrDefault(predicate);
-                bool result = true;
                 if (model != null && CheckIsExists(model, context, transaction))
                 {
                     context.Entry(model).State = EntityState.Deleted;
@@ -1274,6 +1274,10 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     context.Dispose();
+                }
+                if (result)
+                {
+                    _ = RemoveCache(model);
                 }
             }
         }
@@ -1289,9 +1293,10 @@ namespace Mix.Domain.Data.Repository
         public virtual RepositoryResponse<TModel> RemoveModel(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            bool result = true;
             try
             {
-                bool result = true;
+                
                 if (model != null && CheckIsExists(model, context, transaction))
                 {
                     context.Entry(model).State = EntityState.Deleted;
@@ -1317,6 +1322,10 @@ namespace Mix.Domain.Data.Repository
                     //if current Context is Root
                     context.Dispose();
                 }
+                if (result)
+                {
+                    RemoveCache(model);
+                }
             }
         }
 
@@ -1331,10 +1340,10 @@ namespace Mix.Domain.Data.Repository
         public virtual async Task<RepositoryResponse<TModel>> RemoveModelAsync(Expression<Func<TModel, bool>> predicate, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            TModel model = await context.Set<TModel>().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
+            bool result = true;
             try
             {
-                TModel model = await context.Set<TModel>().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
-                bool result = true;
                 if (model != null && CheckIsExists(model, context, transaction))
                 {
                     context.Entry(model).State = EntityState.Deleted;
@@ -1364,6 +1373,10 @@ namespace Mix.Domain.Data.Repository
                     //if current Context is Root
                     context.Dispose();
                 }
+                if (result)
+                {
+                    _ = RemoveCache(model);
+                }
             }
         }
 
@@ -1378,9 +1391,9 @@ namespace Mix.Domain.Data.Repository
         public virtual async Task<RepositoryResponse<TModel>> RemoveModelAsync(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            var result = new RepositoryResponse<TModel>() { IsSucceed = true };
             try
             {
-                var result = new RepositoryResponse<TModel>() { IsSucceed = true };
                 if (model != null && CheckIsExists(model, context, transaction))
                 {
                     context.Entry(model).State = EntityState.Deleted;
@@ -1405,6 +1418,10 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     context.Dispose();
+                }
+                if (result.IsSucceed)
+                {
+                    _ = RemoveCache(model);
                 }
             }
         }
@@ -1997,18 +2014,25 @@ namespace Mix.Domain.Data.Repository
         #region Cached       
         public virtual TView GetCachedData(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            string key = GetCachedKey(model);
-            string folder = $"{CachedFolder}/{key}";
-            var data = CacheService.Get<TView>(CachedFileName, folder);
-            if (data != null)
+            if (model != null)
             {
-                return data;
+                string key = GetCachedKey(model);
+                string folder = $"{CachedFolder}/{key}";
+                var data = CacheService.Get<TView>(CachedFileName, folder);
+                if (data != null)
+                {
+                    return data;
+                }
+                else
+                {
+                    data = ParseView(model, _context, _transaction);
+                    _ = CacheService.SetAsync(CachedFileName, data, folder);
+                    return data;
+                }
             }
             else
             {
-                data = ParseView(model, _context, _transaction);
-                _ = CacheService.SetAsync(CachedFileName, data, folder);
-                return data;
+                return null;
             }
         }
         public virtual List<TView> GetCachedData(List<TModel> models, TDbContext _context = null, IDbContextTransaction _transaction = null)
@@ -2037,27 +2061,33 @@ namespace Mix.Domain.Data.Repository
         }
         public object GetPropValue(object src, string propName)
         {
-            return src.GetType().GetProperty(propName)?.GetValue(src, null);
+            return src?.GetType().GetProperty(propName)?.GetValue(src, null);
         }
         public string GetCachedKey(TModel model)
         {            
             return $"{GetPropValue(model, "Specificulture")}_{GetPropValue(model, model.GetType().GetProperties()[0].Name)}";
         }
-        private Task AddToCache(TView view)
-        {            
-            string key = GetCachedKey(view.Model);
-            string folder = $"{CachedFolder}/{key}";
-            CacheService.Set(CachedFileName, view, folder);
-            return Task.CompletedTask;
-        }
-        private Task RemoveCache(TModel model)
+        public virtual Task AddToCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            string key = GetCachedKey(model);
-            string folder = $"{CachedFolder}/{key}";
-            CacheService.RemoveCacheAsync(folder);
+            if (model!=null)
+            {
+                string key = GetCachedKey(model);
+                string folder = $"{CachedFolder}/{key}";
+                var view = ParseView(model, _context, _transaction);
+                CacheService.Set(CachedFileName, view, folder);             
+            }
             return Task.CompletedTask;
         }
-
+        public virtual Task RemoveCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            if (model != null)
+            {
+                string key = GetCachedKey(model);
+                string folder = $"{CachedFolder}/{key}";
+                CacheService.RemoveCacheAsync(folder);
+            }
+            return Task.CompletedTask;
+        }
         #endregion
     }
 }

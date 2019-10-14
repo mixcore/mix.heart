@@ -787,7 +787,7 @@ namespace Mix.Domain.Data.Repository
 
         public object GetPropValue(object src, string propName)
         {
-            return src.GetType().GetProperty(propName)?.GetValue(src, null);
+            return src?.GetType().GetProperty(propName)?.GetValue(src, null);
         }
         /// <summary>
         /// Registers the automatic mapper.
@@ -1985,57 +1985,104 @@ namespace Mix.Domain.Data.Repository
         #region Cached       
         public virtual TView GetCachedData(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
+            if (model!=null)
+            {
+
             string key = GetCachedKey(model);
             string folder = $"{CachedFolder}/{key}";
-            var data = CacheService.Get<TView>(CachedFileName, folder);
-            if (data != null)
-            {
-                return data;
+            TView data = CacheService.Get<TView>(CachedFileName, folder);
+                if (data != null)
+                {
+                    return data;
+                }
+                else
+                {
+                    data = ParseView(model, _context, _transaction);
+                    _ = CacheService.SetAsync(CachedFileName, data, folder);
+                    return data;
+                }
             }
             else
             {
-                data = ParseView(model, _context, _transaction);
-                _ = CacheService.SetAsync(CachedFileName, data, folder);
-                return data;
+                return null;
             }
         }
         public virtual List<TView> GetCachedData(List<TModel> models, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             List<TView> result = new List<TView>();
-            foreach (var model in models)
+            foreach (var model in 
+                models)
+            {
+                TView data = GetCachedData(model, _context, _transaction);
+                if (data!=null)
+                {
+                    result.Add(data);
+                }                
+            }
+
+            return result;
+        }
+        public virtual Task GenerateCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            try
+            {
+                var task = RemoveCache(model, context, transaction).ContinueWith(resp =>
+                {
+                    var tasks = new List<Task>();
+
+                    var viewTypes = Assembly.GetAssembly(typeof(TView)).GetTypes()
+                                          .Where(t => t.Namespace == typeof(TView).Namespace)
+                                          .ToList();
+                    foreach (var classType in viewTypes)
+                    {
+                        ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { model.GetType(), typeof(TDbContext), typeof(IDbContextTransaction) });
+                        if (classConstructor != null)
+                        {
+                            tasks.Add(Task.Run(() =>
+                            {
+                                AddToCache(model, context, transaction);
+                            }));
+                        }
+                    }
+                    return Task.WhenAll(tasks);
+                });
+                task.Wait();
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(true, isRoot, transaction);
+                return task;
+            }
+            catch (Exception ex)
+            {
+                UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return Task.FromException(ex);
+            }
+            finally
+            {
+                if (isRoot)
+                {
+                    //if current Context is Root
+                    context.Dispose();
+                }
+            }
+        }
+        public virtual Task AddToCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            if (model != null)
             {
                 string key = GetCachedKey(model);
                 string folder = $"{CachedFolder}/{key}";
-                TView data = CacheService.Get<TView>(CachedFileName, folder);
-                if (data != null)
-                {
-                    result.Add(data);
-                }
-                else
-                {
-                    data = ParseView(model, _context, _transaction);
-                    if (data != null)
-                    {
-                        _ = CacheService.SetAsync(CachedFileName, data, folder);
-                        result.Add(data);
-                    }
-                }
+                var view = ParseView(model, _context, _transaction);
+                CacheService.Set(CachedFileName, view, folder);
+            }   return Task.CompletedTask;
+        }
+        public virtual Task RemoveCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            if (model != null)
+            {
+                string key = GetCachedKey(model);
+                string folder = $"{CachedFolder}/{key}";
+                CacheService.RemoveCacheAsync(folder);
             }
-            return result;
-        }
-
-        private Task AddToCache(TView view)
-        {
-            string key = GetCachedKey(view.Model);
-            string folder = $"{CachedFolder}/{key}";
-            CacheService.Set(CachedFileName, view, folder);
-            return Task.CompletedTask;
-        }
-        private Task RemoveCache(TModel model)
-        {
-            string key = GetCachedKey(model);
-            string folder = $"{CachedFolder}/{key}";
-            CacheService.RemoveCacheAsync(folder);
             return Task.CompletedTask;
         }
         #endregion
