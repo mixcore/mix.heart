@@ -510,5 +510,86 @@ namespace Mix.Common.Helper
 
             
         }
+
+        public static RepositoryResponse<string> ExportAttributeToExcel(List<JObject> lstData, string sheetName
+           , string folderPath, string fileName
+           , List<string> headers = null)
+        {
+            var result = new RepositoryResponse<string>();
+            try
+            {
+                if (lstData.Count > 0)
+                {
+                    var filenameE = fileName + "-" + DateTime.Now.ToString("yyyyMMdd") + ".xlsx";
+
+                    // create new data table
+                    var dtable = new DataTable();
+
+                    if (headers == null)
+                    {
+
+                        // get first item
+                        var listColumn = lstData[0].Properties();
+
+                        // add column name to table
+                        foreach (var item in listColumn)
+                        {
+                            dtable.Columns.Add(item.Name, typeof(string));
+                        }
+                    }
+                    else
+                    {
+                        foreach (var item in headers)
+                        {
+                            dtable.Columns.Add(item, typeof(string));
+                        }
+                    }
+
+                    // Row value
+                    foreach (var a in lstData)
+                    {
+                        var r = dtable.NewRow();
+                        foreach (var prop in a.Properties())
+                        {
+                            r[prop.Name] = a[prop.Name].Value<string>();
+                        }
+                        dtable.Rows.Add(r);
+                    }
+
+                    // Save Excel file
+                    using (var pck = new ExcelPackage())
+                    {
+                        string SheetName = sheetName != string.Empty ? sheetName : "Report";
+                        var wsDt = pck.Workbook.Worksheets.Add(SheetName);
+                        wsDt.Cells["A1"].LoadFromDataTable(dtable, true, TableStyles.None);
+                        wsDt.Cells[wsDt.Dimension.Address].AutoFitColumns();
+
+                        SaveFileBytes(folderPath, filenameE, pck.GetAsByteArray());
+                        result.IsSucceed = true;
+                        result.Data = GetFullPath(new string[]
+                        {
+                            folderPath,
+                            filenameE
+                        });
+
+                        return result;
+                    }
+
+                }
+                else
+                {
+                    result.Errors.Add("Can not export data of empty list");
+                    return result;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add(ex.Message);
+                return result;
+            }
+
+
+        }
     }
 }

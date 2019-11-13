@@ -41,6 +41,8 @@ namespace Mix.Domain.Data.ViewModels
         public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
         [JsonIgnore]
         public string CachedFileName { get { return typeof(TView).Name; } }
+        [JsonIgnore]
+        public string CacheConnectionString { get; set; }
 
         /// <summary>
         /// Returns true if ... is valid.
@@ -527,11 +529,11 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot)
                     {
                         //if current Context is Root
+                        if (result.IsSucceed)
+                        {
+                            _ = GenerateCache(Model, this as TView);
+                        }
                         context.Dispose();
-                    }
-                    if (result.IsSucceed)
-                    {
-                        _ = GenerateCache(Model, this as TView);
                     }
                 }
             }
@@ -849,12 +851,13 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot)
                     {
                         //if current Context is Root
+                        if (result.IsSucceed)
+                        {
+                            _ = GenerateCache(Model, this as TView);
+                        }
                         context.Dispose();
                     }
-                    if (result.IsSucceed)
-                    {
-                        _ = GenerateCache(Model, this as TView);
-                    }
+                   
                 }
             }
             else
@@ -889,7 +892,18 @@ namespace Mix.Domain.Data.ViewModels
         {
             
         }
+        /// <summary>
+        /// Initializes the context.
+        /// </summary>
+        /// <returns></returns>
+        public virtual TDbContext InitContext()
+        {
+            Type classType = typeof(TDbContext);
+            ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { });
+            TDbContext context = (TDbContext)classConstructor.Invoke(new object[] { });
 
+            return context;
+        }
 
         #endregion Sync
 
@@ -921,9 +935,16 @@ namespace Mix.Domain.Data.ViewModels
         }
         #endregion Contructor
         #region Cached      
-        public string GetCachedKey(TModel model)
+        public string GetCachedKey(TModel model, TDbContext _context, IDbContextTransaction _transaction)
         {
-            return $"{GetPropValue(model, "Specificulture")}_{GetPropValue(model, model.GetType().GetProperties()[0].Name)}";
+            var result = string.Empty;
+            _context = _context ?? InitContext();
+            var keys = _context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties.Select(x => x.Name);
+            foreach (var key in keys)
+            {
+                result += $"_{GetPropValue(model, key)}";
+            }
+            return result;
         }
 
         public object GetPropValue(object src, string propName)
@@ -960,14 +981,14 @@ namespace Mix.Domain.Data.ViewModels
                 Model = model;
                 data = ParseView(true, _context, _transaction);
             }
-            string key = GetCachedKey(model);
+            string key = GetCachedKey(model, _context, _transaction);
             string folder = $"{CachedFolder}/{key}";
             CacheService.Set(CachedFileName, data, folder);
             return Task.CompletedTask;
         }
         public virtual Task RemoveCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            string key = GetCachedKey(model);
+            string key = GetCachedKey(model, _context, _transaction);
             string folder = $"{CachedFolder}/{key}";
             CacheService.RemoveCacheAsync(folder);
             return Task.CompletedTask;

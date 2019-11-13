@@ -1,5 +1,6 @@
 ﻿using Mix.Domain.Core.ViewModels;
 using Mix.Domain.Data.Repository;
+using Mix.Heart.Helpers;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace Mix.Services
         /// </summary>
         private static volatile CacheService instance;
         private const string cacheFolder = "cache";
+        private const string ext = ".json";
         public CacheService()
         {
         }
@@ -41,11 +43,43 @@ namespace Mix.Services
         }
         public static T Get<T>(string key, string folder = null)
         {
-            var data = FileRepository.Instance.GetFile(key, ".json", $"{cacheFolder}/{folder}", false, "{}");
-            if (data != null && !string.IsNullOrEmpty(data.Content))
+            try
             {
-                var jobj = JObject.Parse(data.Content);
-                return jobj.ToObject<T>();
+                var cachedFile = FileRepository.Instance.GetFile(key, ext, $"{cacheFolder}/{folder}", false, "");
+                if (!string.IsNullOrEmpty(cachedFile.Content))
+                {
+                    //return GetFromBase64<T>(cachedFile);
+                    return GetFromJson<T>(cachedFile);
+                }
+                else
+                {
+                    return default(T);
+                }
+            }
+            catch (Exception ex)
+            {
+                //TODO Handle Exception
+                return default(T);
+            }
+        }
+
+        private static T GetFromJson<T>(FileViewModel cachedFile)
+        {
+            var jobj = JObject.Parse(cachedFile.Content);
+            return jobj.ToObject<T>();
+        }
+
+        private static T GetFromBase64<T>(FileViewModel cachedFile)
+        {
+            //var encryptKey = System.Text.Encoding.UTF8.GetBytes("sw-cms-secret-key");
+            if (!string.IsNullOrEmpty(cachedFile.Content))
+            {
+                var data = Convert.FromBase64String(cachedFile.Content);
+                if (data != null)
+                {
+                    var jobj = JObject.Parse(System.Text.Encoding.UTF8.GetString(data));
+                    return jobj.ToObject<T>();
+                }
             }
             return default(T);
         }
@@ -55,16 +89,8 @@ namespace Mix.Services
 
             if (value != null)
             {
-                var jobj = JObject.FromObject(value);
-                var cacheFile = new FileViewModel()
-                {
-                    Filename = key.ToLower(),
-                    Extension = ".json",
-                    FileFolder = $"{cacheFolder}/{folder}",
-                    Content = jobj.ToString(Newtonsoft.Json.Formatting.None)
-                };
-
-                var result = FileRepository.Instance.SaveFile(cacheFile);
+                //var result = SaveBase64(key, value, folder);
+                var result = SaveJson(key, value, folder);
                 return new RepositoryResponse<bool>()
                 {
                     IsSucceed = result
@@ -75,17 +101,50 @@ namespace Mix.Services
                 return new RepositoryResponse<bool>();
             }
         }
+        private static bool SaveJson<T>(string key, T value, string folder)
+        {
+            var jobj = JObject.FromObject(value);
+
+            var cacheFile = new FileViewModel()
+            {
+                Filename = key.ToLower(),
+                Extension = ext,
+                FileFolder = $"{cacheFolder}/{folder}",
+                Content = jobj.ToString(Newtonsoft.Json.Formatting.None)
+            };
+            return FileRepository.Instance.SaveFile(cacheFile);
+        }
+        private static bool SaveBase64<T>(string key, T value, string folder)
+        {
+            var jobj = JObject.FromObject(value);
+            var data = System.Text.Encoding.UTF8.GetBytes(jobj.ToString(Newtonsoft.Json.Formatting.None));
+
+            var cacheFile = new FileViewModel()
+            {
+                Filename = key.ToLower(),
+                Extension = ext,
+                FileFolder = $"{cacheFolder}/{folder}",
+                Content = Convert.ToBase64String(data)
+            };
+
+
+            return FileRepository.Instance.SaveFile(cacheFile);
+        }
+
         public static Task<T> GetAsync<T>(string key, string folder = null)
         {
             try
             {
-                var data = FileRepository.Instance.GetFile(key, ".json", $"{cacheFolder}/{folder}", false, "{}");
-                if (data != null && !string.IsNullOrEmpty(data.Content))
+                var cachedFile = FileRepository.Instance.GetFile(key, ext, $"{cacheFolder}/{folder}", false, "");
+                if (!string.IsNullOrEmpty(cachedFile.Content))
                 {
-                    var jobj = JObject.Parse(data.Content);
-                    return Task.FromResult(jobj.ToObject<T>());
+                    //return GetFromBase64<T>(cachedFile);
+                    return Task.FromResult(GetFromJson<T>(cachedFile));
                 }
-                return Task.FromResult(default(T));
+                else
+                {
+                    return Task.FromResult(default(T));
+                }
             }
             catch(Exception ex)
             {
@@ -100,16 +159,8 @@ namespace Mix.Services
 
             if (value != null)
             {
-                var jobj = JObject.FromObject(value);
-                var cacheFile = new FileViewModel()
-                {
-                    Filename = key.ToLower(),
-                    Extension = ".json",
-                    FileFolder = $"{cacheFolder}/{folder}",
-                    Content = jobj.ToString(Newtonsoft.Json.Formatting.None)
-                };
-
-                var result = FileRepository.Instance.SaveFile(cacheFile);
+                //var result = SaveBase64(key, value, folder);
+                var result = SaveJson(key, value, folder);
                 return Task.FromResult(new RepositoryResponse<bool>()
                 {
                     IsSucceed = result

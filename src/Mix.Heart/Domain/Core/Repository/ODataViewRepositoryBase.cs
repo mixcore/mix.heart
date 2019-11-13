@@ -316,7 +316,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     context.Entry(model).State = EntityState.Detached;
 
-                    var viewResult = ParseView(model, context, transaction);
+                    var viewResult = GetCachedData(model, context, transaction);
                     return new RepositoryResponse<TView>()
                     {
                         IsSucceed = true,
@@ -604,7 +604,7 @@ namespace Mix.Domain.Data.Repository
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
-                    var viewResult = ParseView(model, context, transaction);
+                    var viewResult = GetCachedData(model, context, transaction);
                     return new RepositoryResponse<TView>()
                     {
                         IsSucceed = true,
@@ -780,11 +780,18 @@ namespace Mix.Domain.Data.Repository
             }
         }
 
-        public string GetCachedKey(TModel model)
+        public string GetCachedKey(TModel model, TDbContext _context, IDbContextTransaction _transaction)
         {
-            return $"{GetPropValue(model, "Specificulture")}_{GetPropValue(model, model.GetType().GetProperties()[0].Name)}";
+            var result = string.Empty;
+            _context = _context ?? InitContext();
+            var keys = _context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties
+        .Select(x => x.Name);
+            foreach (var key in keys)
+            {
+                result += $"_{GetPropValue(model, key)}";
+            }
+            return result;
         }
-
         public object GetPropValue(object src, string propName)
         {
             return src?.GetType().GetProperty(propName)?.GetValue(src, null);
@@ -820,7 +827,7 @@ namespace Mix.Domain.Data.Repository
                 var lstModel = context.Set<TModel>().ToList();
 
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                result = ParseView(lstModel, context, transaction);
+                result = GetCachedData(lstModel, context, transaction);
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
@@ -903,7 +910,7 @@ namespace Mix.Domain.Data.Repository
                 var lstModel = await context.Set<TModel>().ToListAsync().ConfigureAwait(false);
 
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                result = ParseView(lstModel, _context, _transaction);
+                result = GetCachedData(lstModel, context, transaction);
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
@@ -986,7 +993,7 @@ namespace Mix.Domain.Data.Repository
             {
                 var lstModel = context.Set<TModel>().Where(predicate).ToList();
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                var lstViewResult = ParseView(lstModel, _context, _transaction);
+                var lstViewResult = GetCachedData(lstModel, context, transaction);
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
@@ -1066,7 +1073,7 @@ namespace Mix.Domain.Data.Repository
                 var query = context.Set<TModel>().Where(predicate);
                 var lstModel = await query.ToListAsync().ConfigureAwait(false);
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                var result = ParseView(lstModel, _context, _transaction);
+                var result = GetCachedData(lstModel, context, transaction);
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
@@ -1988,9 +1995,9 @@ namespace Mix.Domain.Data.Repository
             if (model!=null)
             {
 
-            string key = GetCachedKey(model);
-            string folder = $"{CachedFolder}/{key}";
-            TView data = CacheService.Get<TView>(CachedFileName, folder);
+                string key = GetCachedKey(model, _context, _transaction);
+                string folder = $"{CachedFolder}/{key}";
+                TView data = CacheService.Get<TView>(CachedFileName, folder);
                 if (data != null)
                 {
                     return data;
@@ -2069,7 +2076,7 @@ namespace Mix.Domain.Data.Repository
         {
             if (model != null)
             {
-                string key = GetCachedKey(model);
+                string key = GetCachedKey(model, _context, _transaction);
                 string folder = $"{CachedFolder}/{key}";
                 var view = ParseView(model, _context, _transaction);
                 CacheService.Set(CachedFileName, view, folder);
@@ -2079,7 +2086,7 @@ namespace Mix.Domain.Data.Repository
         {
             if (model != null)
             {
-                string key = GetCachedKey(model);
+                string key = GetCachedKey(model, _context, _transaction);
                 string folder = $"{CachedFolder}/{key}";
                 CacheService.RemoveCacheAsync(folder);
             }

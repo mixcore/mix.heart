@@ -35,8 +35,11 @@ namespace Mix.Domain.Data.ViewModels
         where TView : ViewModelBase<TDbContext, TModel, TView> // instance of inherited
     {
         #region Properties
-        public string ModelName { get { return typeof(TView).FullName; } }        
+        [JsonIgnore]
+        public string ModelName { get { return typeof(TView).FullName; } }
+        [JsonIgnore]
         public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
+        [JsonIgnore]
         public string CachedFileName { get { return typeof(TView).Name; } }
 
         /// <summary>
@@ -466,7 +469,7 @@ namespace Mix.Domain.Data.ViewModels
                     if (removeRelatedResult.IsSucceed)
                     {
                         result = await Repository.RemoveModelAsync(Model, context, transaction).ConfigureAwait(false);
-                    }   
+                    }
                     else
                     {
                         result.IsSucceed = result.IsSucceed && removeRelatedResult.IsSucceed;
@@ -568,12 +571,13 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot)
                     {
                         //if current Context is Root
+                        if (result.IsSucceed)
+                        {
+                            _ = GenerateCache(Model, this as TView);
+                        }
                         context.Dispose();
                     }
-                    if (result.IsSucceed)
-                    {
-                        _ = GenerateCache(Model, this as TView);
-                    }
+
                 }
             }
             else
@@ -814,7 +818,7 @@ namespace Mix.Domain.Data.ViewModels
                 {
                     result = Repository.RemoveModel(Model, context, transaction);
                 }
-                
+
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
@@ -903,12 +907,13 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot)
                     {
                         //if current Context is Root
+                        if (result.IsSucceed)
+                        {
+                            _ = GenerateCache(Model, this as TView);
+                        }
                         context.Dispose();
                     }
-                    if (result.IsSucceed)
-                    {
-                        _ = GenerateCache(Model, this as TView);
-                    }
+
                 }
             }
             else
@@ -941,9 +946,20 @@ namespace Mix.Domain.Data.ViewModels
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            
-        }
 
+        }
+        /// <summary>
+        /// Initializes the context.
+        /// </summary>
+        /// <returns></returns>
+        public virtual TDbContext InitContext()
+        {
+            Type classType = typeof(TDbContext);
+            ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { });
+            TDbContext context = (TDbContext)classConstructor.Invoke(new object[] { });
+
+            return context;
+        }
 
         #endregion Sync
 
@@ -976,9 +992,17 @@ namespace Mix.Domain.Data.ViewModels
         #endregion Contructor
 
         #region Cached      
-        public string GetCachedKey(TModel model)
+        public string GetCachedKey(TModel model, TDbContext _context, IDbContextTransaction _transaction)
         {
-            return $"{GetPropValue(model, "Specificulture")}_{GetPropValue(model, model.GetType().GetProperties()[0].Name)}";
+            var result = string.Empty;
+            _context = _context ?? InitContext();
+            var keys = _context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties
+        .Select(x => x.Name);
+            foreach (var key in keys)
+            {
+                result += $"_{GetPropValue(model, key)}";
+            }
+            return result;
         }
 
         public object GetPropValue(object src, string propName)
@@ -987,26 +1011,48 @@ namespace Mix.Domain.Data.ViewModels
         }
         public virtual Task GenerateCache(TModel model, TView view, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            return RemoveCache(model, _context, _transaction).ContinueWith(resp => {
-                var tasks = new List<Task>();
-                tasks.Add(AddToCache(model, view, _context, _transaction));
-                var viewTypes = Assembly.GetAssembly(typeof(TView)).GetTypes()
-                                      .Where(t => t.Name != typeof(TView).Name && t.Namespace == typeof(TView).Namespace && t.MemberType == MemberTypes.TypeInfo)
-                                      .ToList();
-                foreach (var classType in viewTypes)
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            Task result = null;
+            try
+            {
+                result = RemoveCache(model, _context, _transaction).ContinueWith(resp =>
                 {
-                    ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { model.GetType(), typeof(TDbContext), typeof(IDbContextTransaction) });
-                    MethodInfo magicMethod = classType.GetMethod("AddToCache", new Type[] { model.GetType(), typeof(object), typeof(TDbContext), typeof(IDbContextTransaction) });
-                    if (classConstructor != null && magicMethod != null)
+                    var tasks = new List<Task>();
+                    tasks.Add(AddToCache(model, view, _context, _transaction));
+                    var viewTypes = Assembly.GetAssembly(typeof(TView)).GetTypes()
+                                          .Where(t => t.Name != typeof(TView).Name && t.Namespace == typeof(TView).Namespace && t.MemberType == MemberTypes.TypeInfo)
+                                          .ToList();
+                    foreach (var classType in viewTypes)
                     {
-                        tasks.Add(Task.Run(() =>
+                        ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { model.GetType(), typeof(TDbContext), typeof(IDbContextTransaction) });
+                        MethodInfo magicMethod = classType.GetMethod("AddToCache", new Type[] { model.GetType(), typeof(object), typeof(TDbContext), typeof(IDbContextTransaction) });
+                        if (classConstructor != null && magicMethod != null)
                         {
-                            var otherview = classConstructor.Invoke(new object[] { model, _context, _transaction });
-                            magicMethod.Invoke(otherview, new object[] { model, otherview, _context, _transaction });
-                        }));
+                            tasks.Add(Task.Run(() =>
+                            {
+                                var otherview = classConstructor.Invoke(new object[] { model, _context, _transaction });
+                                magicMethod.Invoke(otherview, new object[] { model, otherview, _context, _transaction });
+                            }));
+                        }
                     }
+
+                });
+                
+                return result;
+            }
+            catch (Exception ex)
+            {
+                UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return Task.FromException(ex);
+            }
+            finally
+            {
+                if (isRoot && (result.Status == TaskStatus.RanToCompletion || result.Status == TaskStatus.Canceled || result.Status == TaskStatus.Faulted))
+                {
+                    //if current Context is Root
+                    context.Dispose();
                 }
-            });
+            }
         }
         public virtual Task AddToCache(TModel model, object data, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
@@ -1015,14 +1061,14 @@ namespace Mix.Domain.Data.ViewModels
                 Model = model;
                 data = ParseView(true, _context, _transaction);
             }
-            string key = GetCachedKey(model);
+            string key = GetCachedKey(model, _context, _transaction);
             string folder = $"{CachedFolder}/{key}";
             CacheService.Set(CachedFileName, data, folder);
             return Task.CompletedTask;
         }
         public virtual Task RemoveCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            string key = GetCachedKey(model);
+            string key = GetCachedKey(model, _context, _transaction);
             string folder = $"{CachedFolder}/{key}";
             CacheService.RemoveCacheAsync(folder);
             return Task.CompletedTask;
