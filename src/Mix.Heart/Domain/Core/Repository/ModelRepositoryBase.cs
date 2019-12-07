@@ -629,11 +629,11 @@ namespace Mix.Domain.Data.Repository
         /// </summary>
         public virtual void RegisterAutoMapper()
         {
-            Mapper.Initialize(cfg =>
-            {
-                cfg.CreateMap<TModel, TModel>();
-                cfg.CreateMap<TModel, TModel>();
-            });
+            //Mapper.Initialize(cfg =>
+            //{
+            //    cfg.CreateMap<TModel, TModel>();
+            //    cfg.CreateMap<TModel, TModel>();
+            //});
         }
 
         #region GetModelList

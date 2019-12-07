@@ -801,11 +801,12 @@ namespace Mix.Domain.Data.Repository
         /// </summary>
         public virtual void RegisterAutoMapper()
         {
-            Mapper.Initialize(cfg =>
-            {
-                cfg.CreateMap<TModel, TView>();
-                cfg.CreateMap<TView, TModel>();
-            });
+            // TODO: Create mapper
+            //Mapper.Initialize(cfg =>
+            //{
+            //    cfg.CreateMap<TModel, TView>();
+            //    cfg.CreateMap<TView, TModel>();
+            //});
         }
 
         #region GetModelList
@@ -2005,7 +2006,6 @@ namespace Mix.Domain.Data.Repository
                 else
                 {
                     data = ParseView(model, _context, _transaction);
-                    _ = CacheService.SetAsync(CachedFileName, data, folder);
                     return data;
                 }
             }

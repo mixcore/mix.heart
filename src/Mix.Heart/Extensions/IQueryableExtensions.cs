@@ -1,11 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Query.Internal;
+﻿using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace Mix.Heart.Extensions
 {
@@ -18,19 +14,19 @@ namespace Mix.Heart.Extensions
         private static readonly FieldInfo DataBaseField = QueryCompilerTypeInfo.DeclaredFields.Single(x => x.Name == "_database");
         private static readonly PropertyInfo DatabaseDependenciesField = typeof(Database).GetTypeInfo().DeclaredProperties.Single(x => x.Name == "Dependencies");
 
-        public static string ToSql<TEntity>(this IQueryable<TEntity> query)
-        {
-            var queryCompiler = (QueryCompiler)QueryCompilerField.GetValue(query.Provider);
-            var queryModelGenerator = (QueryModelGenerator)QueryModelGeneratorField.GetValue(queryCompiler);
-            var queryModel = queryModelGenerator.ParseQuery(query.Expression);
-            var database = DataBaseField.GetValue(queryCompiler);
-            var databaseDependencies = (DatabaseDependencies)DatabaseDependenciesField.GetValue(database);
-            var queryCompilationContext = databaseDependencies.QueryCompilationContextFactory.Create(false);
-            var modelVisitor = (RelationalQueryModelVisitor)queryCompilationContext.CreateQueryModelVisitor();
-            modelVisitor.CreateQueryExecutor<TEntity>(queryModel);
-            var sql = modelVisitor.Queries.First().ToString();
+        //public static string ToSql<TEntity>(this IQueryable<TEntity> query)
+        //{
+        //    var queryCompiler = (QueryCompiler)QueryCompilerField.GetValue(query.Provider);
+        //    var queryModelGenerator = (QueryModelGenerator)QueryModelGeneratorField.GetValue(queryCompiler);
+        //    var queryModel = queryModelGenerator.ParseQuery(query.Expression);
+        //    var database = DataBaseField.GetValue(queryCompiler);
+        //    var databaseDependencies = (DatabaseDependencies)DatabaseDependenciesField.GetValue(database);
+        //    var queryCompilationContext = databaseDependencies.QueryCompilationContextFactory.Create(false);
+        //    var modelVisitor = (RelationalQueryModelVisitor)queryCompilationContext.CreateQueryModelVisitor();
+        //    modelVisitor.CreateQueryExecutor<TEntity>(queryModel);
+        //    var sql = modelVisitor.Queries.First().ToString();
 
-            return sql;
-        }
+        //    return sql;
+        //}
     }
 }

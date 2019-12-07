@@ -83,12 +83,12 @@ namespace Mix.Common.Helper
 
         public static void LogException(Exception ex)
         {
-            string fullPath = string.Format($"{Environment.CurrentDirectory}/logs");
+            string fullPath = $"{Environment.CurrentDirectory}/logs/{DateTime.Now.Ticks}";
             if (!string.IsNullOrEmpty(fullPath) && !Directory.Exists(fullPath))
             {
                 Directory.CreateDirectory(fullPath);
             }
-            string filePath = $"{fullPath}/{DateTime.Now.ToString("YYYYMMDD")}/log_exceptions.json";
+            string filePath = $"{fullPath}/log_exceptions.json";
 
             try
             {
@@ -119,6 +119,7 @@ namespace Mix.Common.Helper
             }
             catch
             {
+                Console.Write($"Cannot write log file {filePath}");
                 // File invalid
             }
         }
