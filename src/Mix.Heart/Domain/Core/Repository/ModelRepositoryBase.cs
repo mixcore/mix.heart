@@ -302,7 +302,7 @@ namespace Mix.Domain.Data.Repository
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets the single model asynchronous.
         /// </summary>
@@ -421,7 +421,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     context.Entry(model).State = EntityState.Detached;
 
-                    
+
                     return new RepositoryResponse<TModel>()
                     {
                         IsSucceed = true,

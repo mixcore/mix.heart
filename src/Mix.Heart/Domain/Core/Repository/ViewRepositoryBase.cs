@@ -208,7 +208,7 @@ namespace Mix.Domain.Data.Repository
                 context.Set<TModel>().Update(view.Model);
                 result.IsSucceed = context.SaveChanges() > 0;
                 result.Data = view;
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);                
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
             catch (Exception ex)
@@ -243,7 +243,7 @@ namespace Mix.Domain.Data.Repository
                 context.Set<TModel>().Update(view.Model);
                 result.IsSucceed = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
                 result.Data = view;
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);                
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
             catch (Exception ex)
@@ -281,7 +281,7 @@ namespace Mix.Domain.Data.Repository
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
-                    
+
                     return new RepositoryResponse<TView>()
                     {
                         IsSucceed = true,
@@ -310,7 +310,7 @@ namespace Mix.Domain.Data.Repository
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets the single model asynchronous.
         /// </summary>
@@ -640,7 +640,7 @@ namespace Mix.Domain.Data.Repository
                             {
                                 lstModel = await sorted.ToListAsync().ConfigureAwait(false);
                             }
-                            
+
                         }
                         break;
                 }
@@ -842,7 +842,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
         public virtual async Task<RepositoryResponse<PaginationModel<TView>>> GetModelListAsync(
-        string orderByPropertyName, int direction, int? pageSize, int? pageIndex, int? skip= null, int? top = null
+        string orderByPropertyName, int direction, int? pageSize, int? pageIndex, int? skip = null, int? top = null
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             bool isRoot = _context == null;
@@ -1010,7 +1010,7 @@ namespace Mix.Domain.Data.Repository
         Expression<Func<TModel, bool>> predicate, string orderByPropertyName
         , int direction, int? pageSize, int? pageIndex, int? skip = null, int? top = null
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
-         {
+        {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
@@ -1050,7 +1050,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual  RepositoryResponse<List<TModel>> RemoveListModel(bool isRemoveRelatedModels, Expression<Func<TModel, bool>> predicate
+        public virtual RepositoryResponse<List<TModel>> RemoveListModel(bool isRemoveRelatedModels, Expression<Func<TModel, bool>> predicate
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
@@ -1068,7 +1068,7 @@ namespace Mix.Domain.Data.Repository
                             var removeRelatedResult = item.RemoveRelatedModels(item, context, transaction);
                             if (removeRelatedResult.IsSucceed)
                             {
-                                var temp =  RemoveModel(item.Model, context, transaction);
+                                var temp = RemoveModel(item.Model, context, transaction);
                                 if (!temp.IsSucceed)
                                 {
                                     result.IsSucceed = false;
@@ -1087,7 +1087,7 @@ namespace Mix.Domain.Data.Repository
                         }
                         else
                         {
-                            var temp =  RemoveModel(item.Model, context, transaction);
+                            var temp = RemoveModel(item.Model, context, transaction);
                             if (!temp.IsSucceed)
                             {
                                 result.IsSucceed = false;
@@ -1174,9 +1174,9 @@ namespace Mix.Domain.Data.Repository
                                 result.Errors = temp.Errors;
                                 break;
                             }
-                        }                       
+                        }
                     }
-                    
+
                     UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
 
                     return result;
@@ -1261,7 +1261,7 @@ namespace Mix.Domain.Data.Repository
             bool result = true;
             try
             {
-                
+
                 if (model != null && CheckIsExists(model, context, transaction))
                 {
                     context.Entry(model).State = EntityState.Deleted;
@@ -1409,7 +1409,7 @@ namespace Mix.Domain.Data.Repository
             else
             {
                 return CreateModel(view, _context, _transaction);
-            }            
+            }
         }
 
         /// <summary>
@@ -1420,7 +1420,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
-        public virtual  RepositoryResponse<List<TView>> SaveListModel(List<TView> data, bool isSaveSubModels = false
+        public virtual RepositoryResponse<List<TView>> SaveListModel(List<TView> data, bool isSaveSubModels = false
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
@@ -1429,7 +1429,7 @@ namespace Mix.Domain.Data.Repository
             {
                 foreach (var item in data)
                 {
-                    var saveResult =  item.SaveModel(isSaveSubModels, context, transaction);
+                    var saveResult = item.SaveModel(isSaveSubModels, context, transaction);
                     if (!saveResult.IsSucceed)
                     {
                         result.IsSucceed = false;
@@ -1476,7 +1476,7 @@ namespace Mix.Domain.Data.Repository
                 return CreateModelAsync(view, _context, _transaction);
             }
         }
-        
+
         /// <summary>
         /// Saves the model asynchronous.
         /// </summary>
@@ -2043,12 +2043,12 @@ namespace Mix.Domain.Data.Repository
         }
         public virtual Task AddToCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            if (model!=null)
+            if (model != null)
             {
                 string key = GetCachedKey(model, _context, _transaction);
                 string folder = $"{CachedFolder}/{key}";
                 var view = GetCachedData(model, _context, _transaction);
-                CacheService.Set(CachedFileName, view, folder);             
+                CacheService.Set(CachedFileName, view, folder);
             }
             return Task.CompletedTask;
         }
