@@ -31,6 +31,7 @@ namespace Mix.Domain.Data.Repository
         #region Properties
         public string KeyName { get; set; } = "Id";
         public string ModelName { get { return typeof(TView).FullName; } }
+        public bool IsCache { get; set; } = true;
         public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
         public string CachedFileName { get { return typeof(TView).Name; } }
         #endregion
@@ -479,7 +480,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="ex">The ex.</param>
         public virtual void LogErrorMessage(Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            Console.WriteLine(ex);
         }
 
         /// <summary>
@@ -1992,7 +1993,10 @@ namespace Mix.Domain.Data.Repository
                 else
                 {
                     data = ParseView(model, _context, _transaction);
-                    _ = CacheService.SetAsync(CachedFileName, data, folder);
+                    if (data !=null && IsCache)
+                    {
+                        _ = CacheService.SetAsync(CachedFileName, data, folder);
+                    }                    
                     return data;
                 }
             }
@@ -2006,22 +2010,11 @@ namespace Mix.Domain.Data.Repository
             List<TView> result = new List<TView>();
             foreach (var model in models)
             {
-                string key = GetCachedKey(model, _context, _transaction);
-                string folder = $"{CachedFolder}/{key}";
-                TView data = CacheService.Get<TView>(CachedFileName, folder);
+                TView data = GetCachedData(model, _context, _transaction);
                 if (data != null)
                 {
                     result.Add(data);
-                }
-                else
-                {
-                    data = GetCachedData(model, _context, _transaction);
-                    if (data != null)
-                    {
-                        _ = CacheService.SetAsync(CachedFileName, data, folder);
-                        result.Add(data);
-                    }
-                }
+                }                
             }
             return result;
         }

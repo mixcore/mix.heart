@@ -30,6 +30,7 @@ namespace Mix.Domain.Data.Repository
     {
         #region Properties
         public string ModelName { get { return typeof(TView).FullName; } }
+        public bool IsCache { get; set; } = true;
         public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
         public string CachedFileName { get { return typeof(TView).Name; } }
         #endregion
@@ -2005,7 +2006,10 @@ namespace Mix.Domain.Data.Repository
                 else
                 {
                     data = ParseView(model, _context, _transaction);
-                    _ = CacheService.SetAsync(CachedFileName, data, folder);
+                    if (data != null && IsCache)
+                    {
+                        _ = CacheService.SetAsync(CachedFileName, data, folder);
+                    }
                     return data;
                 }
             }
@@ -2017,9 +2021,8 @@ namespace Mix.Domain.Data.Repository
         public virtual List<TView> GetCachedData(List<TModel> models, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             List<TView> result = new List<TView>();
-            foreach (var model in
-                models)
-            {
+            foreach (var model in models)
+            {                
                 TView data = GetCachedData(model, _context, _transaction);
                 if (data != null)
                 {
