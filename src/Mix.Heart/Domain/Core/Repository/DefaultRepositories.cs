@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.EntityFrameworkCore;
+using Mix.Common.Helper;
 using System;
 
 namespace Mix.Domain.Data.Repository
