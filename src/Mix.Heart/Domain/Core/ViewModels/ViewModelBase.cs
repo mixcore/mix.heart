@@ -36,7 +36,7 @@ namespace Mix.Domain.Data.ViewModels
     {
         #region Properties
         [JsonIgnore]
-        public bool IsCache { get; set; } = true;
+        public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>("IsCache");
         [JsonIgnore]
         public string ModelName { get { return typeof(TView).FullName; } }
         [JsonIgnore]
@@ -71,7 +71,7 @@ namespace Mix.Domain.Data.ViewModels
         public static readonly DefaultModelRepository<TDbContext, TModel> ModelRepository;
 
         static ViewModelBase()
-        {
+        {            
             Repository = DefaultRepository<TDbContext, TModel, TView>.Instance;
             ModelRepository = DefaultModelRepository<TDbContext, TModel>.Instance;
         }
@@ -1003,7 +1003,6 @@ namespace Mix.Domain.Data.ViewModels
         }
         protected ViewModelBase(SerializationInfo info, StreamingContext context)
         {
-
         }
         #endregion Contructor
 

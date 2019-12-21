@@ -6,6 +6,7 @@ namespace Mix.Common.Helper
 {
     using Microsoft.AspNetCore.Http;
     using Mix.Domain.Core.ViewModels;
+    using Mix.Services;
     using Newtonsoft.Json.Linq;
     using OfficeOpenXml;
     using OfficeOpenXml.Table;
@@ -23,6 +24,9 @@ namespace Mix.Common.Helper
     /// </summary>
     public static class CommonHelper
     {
+        private static volatile JObject webConfigInstance;
+        private static readonly object syncRoot = new Object();
+
         /// <summary>
         /// The base62chars
         /// </summary>
@@ -45,6 +49,40 @@ namespace Mix.Common.Helper
             {
                 return key.ExportParameters(true);
             }
+        }
+
+        public static JObject WebConfigInstance
+        {
+            get
+            {
+                if (webConfigInstance == null)
+                {
+                    lock (syncRoot)
+                    {
+                        if (webConfigInstance == null)
+                            webConfigInstance = LoadWebConfig();
+                    }
+                }
+                return webConfigInstance;
+            }
+            set
+            {
+                webConfigInstance = value;
+            }
+        }
+
+        private static JObject LoadWebConfig()
+        {
+            // Load configurations from appSettings.json
+            JObject jsonSettings = new JObject();
+            var settings = FileRepository.Instance.GetFile("appSettings.json", string.Empty, true);
+
+            if (string.IsNullOrEmpty(settings.Content))
+            {
+                settings = FileRepository.Instance.GetFile("appSettings.json", string.Empty, true, "{}");
+            }
+            string content = string.IsNullOrWhiteSpace(settings.Content) ? "{}" : settings.Content;
+            return JObject.Parse(content);
         }
 
         /// <summary>
@@ -590,6 +628,12 @@ namespace Mix.Common.Helper
             }
 
 
+        }
+
+        public static T GetWebConfig<T>(string name)
+        {
+            var result = WebConfigInstance["GlobalSettings"][name];            
+            return result != null ? result.Value<T>() : default(T);
         }
     }
 }

@@ -59,6 +59,7 @@ namespace Mix.Services
             catch (Exception ex)
             {
                 //TODO Handle Exception
+                Console.WriteLine(ex);
                 return default(T);
             }
         }
@@ -149,6 +150,7 @@ namespace Mix.Services
             catch(Exception ex)
             {
                 //TODO Handle Exception
+                Console.WriteLine(ex);
                 return Task.FromResult(default(T));
             }
             

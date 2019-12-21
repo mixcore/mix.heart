@@ -268,11 +268,10 @@ namespace Mix.Domain.Data.Repository
                 {
                     context.Entry(model).State = EntityState.Detached;
 
-                    //var viewResult = ParseView(model, context, transaction);
                     return new RepositoryResponse<TView>()
                     {
                         IsSucceed = true,
-                        Data = GetCachedData(model, context, transaction)
+                        Data = IsCache ? GetCachedData(model, context, transaction) : ParseView(model, context, transaction)
                     };
                 }
                 else
@@ -316,11 +315,10 @@ namespace Mix.Domain.Data.Repository
                 {
                     context.Entry(model).State = EntityState.Detached;
 
-                    var viewResult = GetCachedData(model, context, transaction);
                     return new RepositoryResponse<TView>()
                     {
                         IsSucceed = true,
-                        Data = viewResult
+                        Data = IsCache ? GetCachedData(model, context, transaction) : ParseView(model, context, transaction)
                     };
                 }
                 else
@@ -435,8 +433,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     context.Entry(model).State = EntityState.Detached;
                 });
-                var lstView = GetCachedData(lstModel, context, transaction);
-                result.Items = lstView;
+                result.Items = IsCache ? GetCachedData(lstModel, context, transaction) : ParseView(lstModel, context, transaction);
                 return result;
             }
             catch (Exception ex)
@@ -552,13 +549,11 @@ namespace Mix.Domain.Data.Repository
                 TModel model = context.Set<TModel>().SingleOrDefault(predicate);
                 if (model != null)
                 {
-                    //context.Entry(model).State = EntityState.Detached;
-                    //var viewResult = ParseView(model, context, transaction);
-
+                    
                     return new RepositoryResponse<TView>()
                     {
                         IsSucceed = true,
-                        Data = GetCachedData(model, context, transaction)
+                        Data = IsCache ? GetCachedData(model, context, transaction) : ParseView(model, context, transaction)
                     };
                 }
                 else
@@ -604,11 +599,10 @@ namespace Mix.Domain.Data.Repository
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
-                    var viewResult = GetCachedData(model, context, transaction);
                     return new RepositoryResponse<TView>()
                     {
                         IsSucceed = true,
-                        Data = viewResult
+                        Data = IsCache ? GetCachedData(model, context, transaction) : ParseView(model, context, transaction)
                     };
                 }
                 else
@@ -768,9 +762,8 @@ namespace Mix.Domain.Data.Repository
                         }
                         break;
                 }
-                lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                var lstView = GetCachedData(lstModel, context, transaction);
-                result.Items = lstView;
+                lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);                
+                result.Items = IsCache ? GetCachedData(lstModel, context, transaction) : ParseView(lstModel, context, transaction);
                 return result;
             }
             catch (Exception ex)
@@ -780,11 +773,11 @@ namespace Mix.Domain.Data.Repository
             }
         }
 
-        public string GetCachedKey(TModel model, TDbContext _context, IDbContextTransaction _transaction)
+        public string GetCachedKey(TModel model, TDbContext context, IDbContextTransaction transaction)
         {
             var result = string.Empty;
-            _context = _context ?? InitContext();
-            var keys = _context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties
+            context = context ?? InitContext();
+            var keys = context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties
         .Select(x => x.Name);
             foreach (var key in keys)
             {
@@ -828,11 +821,10 @@ namespace Mix.Domain.Data.Repository
                 var lstModel = context.Set<TModel>().ToList();
 
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                result = GetCachedData(lstModel, context, transaction);
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
-                    Data = result
+                    Data = IsCache ? GetCachedData(lstModel, context, transaction) : ParseView(lstModel, context, transaction)
                 };
             }
             catch (Exception ex)
@@ -911,11 +903,10 @@ namespace Mix.Domain.Data.Repository
                 var lstModel = await context.Set<TModel>().ToListAsync().ConfigureAwait(false);
 
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                result = GetCachedData(lstModel, context, transaction);
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
-                    Data = result
+                    Data = IsCache ? GetCachedData(lstModel, context, transaction) : ParseView(lstModel, context, transaction)
                 };
             }
             catch (Exception ex)
@@ -994,11 +985,10 @@ namespace Mix.Domain.Data.Repository
             {
                 var lstModel = context.Set<TModel>().Where(predicate).ToList();
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                var lstViewResult = GetCachedData(lstModel, context, transaction);
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
-                    Data = lstViewResult
+                    Data = IsCache ? GetCachedData(lstModel, context, transaction) : ParseView(lstModel, context, transaction)
                 };
             }
             catch (Exception ex)
@@ -1074,11 +1064,10 @@ namespace Mix.Domain.Data.Repository
                 var query = context.Set<TModel>().Where(predicate);
                 var lstModel = await query.ToListAsync().ConfigureAwait(false);
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
-                var result = GetCachedData(lstModel, context, transaction);
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
-                    Data = result
+                    Data = IsCache ? GetCachedData(lstModel, context, transaction) : ParseView(lstModel, context, transaction)
                 };
             }
             catch (Exception ex)
