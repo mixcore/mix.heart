@@ -718,11 +718,12 @@ namespace Mix.Domain.Data.Repository
         /// </summary>
         public virtual void RegisterAutoMapper()
         {
-            Mapper.Initialize(cfg =>
-            {
-                cfg.CreateMap<TModel, TView>();
-                cfg.CreateMap<TView, TModel>();
-            });
+            // TODO: Create mapper
+            //Mapper.Initialize(cfg =>
+            //{
+            //    cfg.CreateMap<TModel, TView>();
+            //    cfg.CreateMap<TView, TModel>();
+            //});
         }
 
         #region GetModelList

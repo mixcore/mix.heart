@@ -1033,7 +1033,7 @@ namespace Mix.Domain.Data.ViewModels
                 var removeTask = Task.Factory.StartNew(() => {
                     RemoveCache(model, context, transaction);
                 });
-
+                
                 var tasks = new List<Task>();
                 tasks.Add(AddToCache(model, view, context, transaction));
                 tasks.AddRange(GenerateRelatedData(context, transaction));
