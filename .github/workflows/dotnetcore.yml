@@ -15,6 +15,7 @@ jobs:
         dotnet-version: 2.2.108
     - name: Build with dotnet
       run: |
+        cd src/Mix.Heart
         dotnet build --configuration Release
         dotnet pack --configuration Release
         dotnet nuget push "bin/Release/Mix.Heart.1.0.0-${GITHUB_SHA::8}.nupkg" --source "github"
