@@ -14,7 +14,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Mix.Heart.Extensions;
 namespace Mix.Domain.Data.Repository
 {
     /// <summary>
@@ -181,7 +180,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(view, ex, isRoot, transaction);
             }
             finally
             {
@@ -217,7 +216,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(view, ex, isRoot, transaction);
             }
             finally
             {
@@ -252,7 +251,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(view, ex, isRoot, transaction);
             }
             finally
             {
@@ -284,7 +283,7 @@ namespace Mix.Domain.Data.Repository
                 TModel model = context.Set<TModel>().SingleOrDefault(predicate);
                 if (model != null)
                 {
-                    context.Entry(model).State = EntityState.Detached;
+                    //context.Entry(model).State = EntityState.Detached;
 
                     return new RepositoryResponse<TView>()
                     {
@@ -303,7 +302,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -351,7 +350,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -401,7 +400,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -450,7 +449,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TView>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -753,7 +752,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -798,7 +797,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -835,7 +834,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -878,7 +877,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -917,7 +916,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -960,7 +959,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -997,7 +996,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -1042,7 +1041,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<PaginationModel<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -1123,7 +1122,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -1202,7 +1201,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -1245,7 +1244,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(model, ex, isRoot, transaction);
             }
             finally
             {
@@ -1292,7 +1291,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(model, ex, isRoot, transaction);
             }
             finally
             {
@@ -1343,7 +1342,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(model, ex, isRoot, transaction);
             }
             finally
             {
@@ -1389,7 +1388,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(model, ex, isRoot, transaction);
             }
             finally
             {
@@ -1458,7 +1457,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -1523,7 +1522,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(default, ex, isRoot, transaction);
             }
             finally
             {
@@ -1760,7 +1759,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(ex, isRoot, transaction);
+                UnitOfWorkHelper<TDbContext>.HandleException<List<TModel>>(default, ex, isRoot, transaction);
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,
@@ -1864,10 +1863,10 @@ namespace Mix.Domain.Data.Repository
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            bool result = false;
+            TModel model = context.Set<TModel>().FirstOrDefault(predicate);
             try
             {
-                bool result = false;
-                TModel model = context.Set<TModel>().FirstOrDefault(predicate);
                 if (model != null)
                 {
                     foreach (var field in fields)
@@ -1899,7 +1898,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(model, ex, isRoot, transaction);
             }
             finally
             {
@@ -1924,10 +1923,10 @@ namespace Mix.Domain.Data.Repository
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
+            bool result = false;
+            TModel model = await context.Set<TModel>().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
             try
             {
-                bool result = false;
-                TModel model = await context.Set<TModel>().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
                 if (model != null)
                 {
                     foreach (var field in fields)
@@ -1958,7 +1957,7 @@ namespace Mix.Domain.Data.Repository
             }
             catch (Exception ex)
             {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
+                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(model, ex, isRoot, transaction);
             }
             finally
             {
@@ -2001,6 +2000,7 @@ namespace Mix.Domain.Data.Repository
                 var data = CacheService.Get<TView>(CachedFileName, folder);
                 if (data != null)
                 {
+                    data.ExpandView(_context, _transaction);
                     return data;
                 }
                 else

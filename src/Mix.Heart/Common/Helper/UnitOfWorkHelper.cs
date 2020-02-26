@@ -43,7 +43,7 @@ namespace Mix.Common.Helper
             }
         }
 
-        public static RepositoryResponse<TResult> HandleException<TResult>(Exception ex, bool isRoot, IDbContextTransaction transaction)
+        public static RepositoryResponse<TResult> HandleException<TResult>(TResult data, Exception ex, bool isRoot, IDbContextTransaction transaction)
             
         {
             if (isRoot)
@@ -57,6 +57,26 @@ namespace Mix.Common.Helper
             return new RepositoryResponse<TResult>()
             {
                 IsSucceed = false,                
+                Exception = (ex.InnerException ?? ex),
+                Data = data,
+                Errors = errors
+            };
+        }
+
+        public static RepositoryResponse<TResult> HandleException<TResult>(Exception ex, bool isRoot, IDbContextTransaction transaction)
+
+        {
+            if (isRoot)
+            {
+                //if current transaction is root transaction
+                transaction.Rollback();
+            }
+            List<string> errors = new List<string>();
+            LogException(ex);
+            errors.Add(ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+            return new RepositoryResponse<TResult>()
+            {
+                IsSucceed = false,
                 Exception = (ex.InnerException ?? ex),
                 Errors = errors
             };
@@ -83,7 +103,7 @@ namespace Mix.Common.Helper
 
         public static void LogException(Exception ex)
         {
-            string fullPath = $"{Environment.CurrentDirectory}/logs/{DateTime.Now.Ticks}";
+            string fullPath = $"{Environment.CurrentDirectory}/logs/{DateTime.Now.ToString("dd-MM-yyyy")}";
             if (!string.IsNullOrEmpty(fullPath) && !Directory.Exists(fullPath))
             {
                 Directory.CreateDirectory(fullPath);
