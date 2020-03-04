@@ -1,0 +1,22 @@
+name: .NET Core
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.2.207
+    - name: Build with dotnet
+      run: |
+        cd src/Mix.Heart
+        dotnet build --configuration Release
+        dotnet pack --configuration Release
+        dotnet nuget push "bin/Release/Mix.Heart.1.0.0-${GITHUB_SHA::8}.nupkg" --source "github"
+        
