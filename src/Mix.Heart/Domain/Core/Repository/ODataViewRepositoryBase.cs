@@ -30,6 +30,7 @@ namespace Mix.Domain.Data.Repository
     {
         #region Properties
         public string ModelName { get { return typeof(TView).FullName; } }
+        public bool IsCache { get; set; } = true;
         public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
         public string CachedFileName { get { return typeof(TView).Name; } }
         #endregion
@@ -228,11 +229,11 @@ namespace Mix.Domain.Data.Repository
             try
             {
                 //context.Entry(view.Model).State = EntityState.Modified;
-                
+
                 context.Set<TModel>().Update(view.Model);
                 result.IsSucceed = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
                 result.Data = view;
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);                
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
             catch (Exception ex)
@@ -510,7 +511,7 @@ namespace Mix.Domain.Data.Repository
                 context.Set<TModel>().Update(view.Model);
                 result.IsSucceed = context.SaveChanges() > 0;
                 result.Data = view;
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);              
+                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
             catch (Exception ex)
@@ -815,7 +816,6 @@ namespace Mix.Domain.Data.Repository
             bool isRoot = _context == null;
             var context = _context ?? InitContext();
             var transaction = _transaction ?? context.Database.BeginTransaction();
-            List<TView> result;
             try
             {
                 var lstModel = context.Set<TModel>().ToList();
@@ -1455,7 +1455,7 @@ namespace Mix.Domain.Data.Repository
             }
         }
 
-        
+
         /// <summary>
         /// Saves the model asynchronous.
         /// </summary>
@@ -1876,7 +1876,10 @@ namespace Mix.Domain.Data.Repository
                         }
                     }
                 }
-
+                if (result)
+                {
+                    RemoveCache(model, _context, _transaction);
+                }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
 
                 return new RepositoryResponse<TModel>()
@@ -1935,7 +1938,10 @@ namespace Mix.Domain.Data.Repository
                         }
                     }
                 }
-
+                if (result)
+                {
+                    await RemoveCache(model, _context, _transaction);
+                }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
 
                 return new RepositoryResponse<TModel>
@@ -1982,7 +1988,7 @@ namespace Mix.Domain.Data.Repository
         #region Cached       
         public virtual TView GetCachedData(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            if (model!=null)
+            if (model != null)
             {
 
                 string key = GetCachedKey(model, _context, _transaction);
@@ -1990,11 +1996,16 @@ namespace Mix.Domain.Data.Repository
                 TView data = CacheService.Get<TView>(CachedFileName, folder);
                 if (data != null)
                 {
+                    data.ExpandView(_context, _transaction);
                     return data;
                 }
                 else
                 {
                     data = ParseView(model, _context, _transaction);
+                    if (data != null && IsCache)
+                    {
+                        _ = CacheService.SetAsync(CachedFileName, data, folder);
+                    }
                     return data;
                 }
             }
@@ -2006,14 +2017,13 @@ namespace Mix.Domain.Data.Repository
         public virtual List<TView> GetCachedData(List<TModel> models, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             List<TView> result = new List<TView>();
-            foreach (var model in 
-                models)
-            {
+            foreach (var model in models)
+            {                
                 TView data = GetCachedData(model, _context, _transaction);
-                if (data!=null)
+                if (data != null)
                 {
                     result.Add(data);
-                }                
+                }
             }
 
             return result;
@@ -2069,7 +2079,8 @@ namespace Mix.Domain.Data.Repository
                 string folder = $"{CachedFolder}/{key}";
                 var view = ParseView(model, _context, _transaction);
                 CacheService.Set(CachedFileName, view, folder);
-            }   return Task.CompletedTask;
+            }
+            return Task.CompletedTask;
         }
         public virtual Task RemoveCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {

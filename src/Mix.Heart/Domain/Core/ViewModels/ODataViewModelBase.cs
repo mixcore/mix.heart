@@ -980,7 +980,7 @@ namespace Mix.Domain.Data.ViewModels
                 var tasks = new List<Task>();
                 tasks.Add(AddToCache(model, view, context, transaction).ContinueWith(resp =>
                 {
-                    GenerateRelatedData(context, transaction);
+                    //GenerateRelatedData(context, transaction);
                     var viewTypes = Assembly.GetAssembly(typeof(TView)).GetTypes()
                                       .Where(t => t.Name != typeof(TView).Name && t.Namespace == typeof(TView).Namespace && t.MemberType == MemberTypes.TypeInfo)
                                       .ToList();
@@ -1016,11 +1016,11 @@ namespace Mix.Domain.Data.ViewModels
                 }
             }
         }
-        public virtual List<Task> GenerateRelatedData(TDbContext context, IDbContextTransaction transaction)
-        {
-            var tasks = new List<Task>();
-            return tasks;
-        }
+        //public virtual List<Task> GenerateRelatedData(TDbContext context, IDbContextTransaction transaction)
+        //{
+        //    var tasks = new List<Task>();
+        //    return tasks;
+        //}
         public virtual Task AddToCache(TModel model, object data, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             if (data == null)
