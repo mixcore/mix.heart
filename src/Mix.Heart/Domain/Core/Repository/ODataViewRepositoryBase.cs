@@ -816,7 +816,6 @@ namespace Mix.Domain.Data.Repository
             bool isRoot = _context == null;
             var context = _context ?? InitContext();
             var transaction = _transaction ?? context.Database.BeginTransaction();
-            List<TView> result;
             try
             {
                 var lstModel = context.Set<TModel>().ToList();
@@ -1877,7 +1876,10 @@ namespace Mix.Domain.Data.Repository
                         }
                     }
                 }
-
+                if (result)
+                {
+                    RemoveCache(model, _context, _transaction);
+                }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
 
                 return new RepositoryResponse<TModel>()
@@ -1936,7 +1938,10 @@ namespace Mix.Domain.Data.Repository
                         }
                     }
                 }
-
+                if (result)
+                {
+                    await RemoveCache(model, _context, _transaction);
+                }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
 
                 return new RepositoryResponse<TModel>
@@ -1991,6 +1996,7 @@ namespace Mix.Domain.Data.Repository
                 TView data = CacheService.Get<TView>(CachedFileName, folder);
                 if (data != null)
                 {
+                    data.ExpandView(_context, _transaction);
                     return data;
                 }
                 else

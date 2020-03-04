@@ -211,6 +211,10 @@ namespace Mix.Domain.Data.Repository
                 context.Set<TModel>().Update(view.Model);
                 result.IsSucceed = context.SaveChanges() > 0;
                 result.Data = view;
+                if (result.IsSucceed)
+                {
+                    RemoveCache(view.Model, context, transaction);
+                }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
@@ -246,6 +250,10 @@ namespace Mix.Domain.Data.Repository
                 context.Set<TModel>().Update(view.Model);
                 result.IsSucceed = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
                 result.Data = view;
+                if (result.IsSucceed)
+                {
+                    _ = RemoveCache(view.Model, context, transaction);
+                }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
@@ -738,7 +746,6 @@ namespace Mix.Domain.Data.Repository
             bool isRoot = _context == null;
             var context = _context ?? InitContext();
             var transaction = _transaction ?? context.Database.BeginTransaction();
-            List<TView> result;
             try
             {
                 var lstModel = context.Set<TModel>().ToList();
@@ -1887,9 +1894,12 @@ namespace Mix.Domain.Data.Repository
                         }
                     }
                 }
-
+                if (result)
+                {
+                    RemoveCache(model, context, transaction);
+                }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
-
+                
                 return new RepositoryResponse<TModel>()
                 {
                     IsSucceed = result,
@@ -1946,7 +1956,10 @@ namespace Mix.Domain.Data.Repository
                         }
                     }
                 }
-
+                if (result)
+                {
+                    _ = RemoveCache(model, context, transaction);
+                }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
 
                 return new RepositoryResponse<TModel>
