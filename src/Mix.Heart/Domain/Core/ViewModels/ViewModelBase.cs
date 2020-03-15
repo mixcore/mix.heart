@@ -76,24 +76,7 @@ namespace Mix.Domain.Data.ViewModels
             ModelRepository = DefaultModelRepository<TDbContext, TModel>.Instance;
         }
 
-        /// <summary>
-        /// Gets or sets the exception.
-        /// </summary>
-        /// <value>
-        /// The exception.
-        /// </value>
-        [JsonIgnore]
-        public Exception Exception { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is clone.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is clone; otherwise, <c>false</c>.
-        /// </value>
-        [JsonProperty("isClone")]
-        public bool IsClone { get; set; }
-
+        
         /// <summary>
         /// Gets or sets a value indicating whether this instance is lazy load.
         /// </summary>
@@ -102,15 +85,6 @@ namespace Mix.Domain.Data.ViewModels
         /// </value>
         [JsonIgnore]
         public bool IsLazyLoad { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets the list supported culture.
-        /// </summary>
-        /// <value>
-        /// The list supported culture.
-        /// </value>
-        [JsonProperty("cultures")]
-        public List<SupportedCulture> Cultures { get; set; }
 
         /// <summary>
         /// Gets or sets the mapper.
@@ -159,25 +133,7 @@ namespace Mix.Domain.Data.ViewModels
             get { return _modelMapper ?? (_modelMapper = this.CreateModelMapper()); }
             set => _modelMapper = value;
         }
-
-        /// <summary>
-        /// Gets or sets the priority.
-        /// </summary>
-        /// <value>
-        /// The priority.
-        /// </value>
-        [JsonProperty("priority")]
-        public int Priority { get; set; } = 0;
-
-        /// <summary>
-        /// Gets or sets the specificulture.
-        /// </summary>
-        /// <value>
-        /// The specificulture.
-        /// </value>
-        [JsonProperty("specificulture")]
-        public string Specificulture { get; set; }
-
+        
         /// <summary>
         /// Creates the mapper.
         /// </summary>
@@ -549,18 +505,6 @@ namespace Mix.Domain.Data.ViewModels
                         result.IsSucceed = result.IsSucceed && saveResult.IsSucceed;
                     }
 
-                    // Clone Models
-                    if (result.IsSucceed && IsClone)// && isRoot)
-                    {
-                        var cloneCultures = Cultures.Where(c => c.Specificulture != Specificulture && c.IsSupported).ToList();
-                        var cloneResult = await CloneAsync(Model, cloneCultures, _context: context, _transaction: transaction).ConfigureAwait(false);
-                        if (!cloneResult.IsSucceed)
-                        {
-                            result.Errors.AddRange(cloneResult.Errors);
-                            result.Exception = cloneResult.Exception;
-                        }
-                        result.IsSucceed = result.IsSucceed && cloneResult.IsSucceed;
-                    }
                     UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     return result;
                 }
@@ -583,7 +527,7 @@ namespace Mix.Domain.Data.ViewModels
                     {
                         if (result.IsSucceed && IsCache)
                         {
-                            _ = RemoveCache(Model, context, transaction);
+                            _ = RemoveCache(Model);
                         }
                     }
 
@@ -891,19 +835,7 @@ namespace Mix.Domain.Data.ViewModels
                         }
                         result.IsSucceed = result.IsSucceed && saveResult.IsSucceed;
                     }
-
-                    // Clone Models
-                    if (result.IsSucceed && IsClone && isRoot)
-                    {
-                        var cloneCultures = Cultures.Where(c => c.Specificulture != Specificulture && c.IsSupported).ToList();
-                        var cloneResult = Clone(Model, cloneCultures, _context: context, _transaction: transaction);
-                        if (!cloneResult.IsSucceed)
-                        {
-                            result.Errors.AddRange(cloneResult.Errors);
-                            result.Exception = cloneResult.Exception;
-                        }
-                        result.IsSucceed = result.IsSucceed && cloneResult.IsSucceed;
-                    }
+                    
                     UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     return result;
                 }
@@ -926,7 +858,7 @@ namespace Mix.Domain.Data.ViewModels
                     {
                         if (result.IsSucceed && IsCache)
                         {
-                            _ = RemoveCache(Model, context, transaction);
+                            _ = RemoveCache(Model);
                         }
                     }
 
@@ -1031,7 +963,7 @@ namespace Mix.Domain.Data.ViewModels
             try
             {
                 var removeTask = Task.Factory.StartNew(() => {
-                    RemoveCache(model, context, transaction);
+                    RemoveCache(model);
                 });
                 
                 var tasks = new List<Task>();

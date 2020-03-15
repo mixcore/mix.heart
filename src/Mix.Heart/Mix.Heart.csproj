@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.6.1</Version>
+    <Version>0.0.6.2</Version>
     <Company>Mixcore</Company>
     <Authors>Mixcore Team, Smileway Team</Authors>
     <Product>Mixcore Heart</Product>
@@ -13,8 +13,8 @@
     <PackageIconUrl>https://avatars1.githubusercontent.com/u/41290098</PackageIconUrl>
     <RepositoryUrl>https://github.com/mixcore/mix.heart</RepositoryUrl>
     <PackageTags>dotnet core, asp.net core, framework base</PackageTags>
-    <AssemblyVersion>0.0.6.1</AssemblyVersion>
-    <FileVersion>0.0.6.1</FileVersion>
+    <AssemblyVersion>0.0.6.2</AssemblyVersion>
+    <FileVersion>0.0.6.2</FileVersion>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
