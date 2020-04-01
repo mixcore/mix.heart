@@ -317,7 +317,7 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot)
                     {
                         //if current Context is Root
-                        context.Dispose();
+                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                     }
                 }
             }
@@ -400,7 +400,7 @@ namespace Mix.Domain.Data.ViewModels
             {
                 if (isRoot)
                 {
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -465,7 +465,7 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
                 if (result.IsSucceed)
                 {
@@ -535,7 +535,7 @@ namespace Mix.Domain.Data.ViewModels
                         {
                             GenerateCache(Model, this as TView);
                         }
-                        context.Dispose();
+                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                     }
                     else
                     {
@@ -551,7 +551,7 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
                 return new RepositoryResponse<TView>()
                 {
@@ -645,7 +645,7 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot)
                     {
                         //if current Context is Root
-                        context.Dispose();
+                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                     }
                 }
             }
@@ -734,7 +734,7 @@ namespace Mix.Domain.Data.ViewModels
             {
                 if (isRoot)
                 {
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -796,7 +796,7 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
                 if (result.IsSucceed)
                 {
@@ -864,7 +864,7 @@ namespace Mix.Domain.Data.ViewModels
                         {
                             GenerateCache(Model, this as TView);
                         }
-                        context.Dispose();
+                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                     }
                     else
                     {
@@ -880,7 +880,7 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
                 return new RepositoryResponse<TView>()
                 {
@@ -1003,7 +1003,7 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot && (result.Status == TaskStatus.RanToCompletion || result.Status == TaskStatus.Canceled || result.Status == TaskStatus.Faulted))
                     {
                         //if current Context is Root
-                        context.Dispose();
+                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                     }
                 });
             }
@@ -1012,7 +1012,7 @@ namespace Mix.Domain.Data.ViewModels
                 UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
                 if (isRoot)
                 {
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }

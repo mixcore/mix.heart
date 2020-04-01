@@ -63,7 +63,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -98,7 +98,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -142,7 +142,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -177,7 +177,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -214,7 +214,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -248,7 +248,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -346,7 +346,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -446,7 +446,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -669,7 +669,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -714,7 +714,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -751,7 +751,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -794,7 +794,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -833,7 +833,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -876,7 +876,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -913,7 +913,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -958,7 +958,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1022,7 +1022,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1084,7 +1084,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1127,7 +1127,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1169,7 +1169,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1212,7 +1212,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1254,7 +1254,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1348,7 +1348,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1383,7 +1383,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1424,7 +1424,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1460,7 +1460,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1498,7 +1498,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1538,7 +1538,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1575,7 +1575,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1608,7 +1608,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1672,7 +1672,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1732,7 +1732,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }

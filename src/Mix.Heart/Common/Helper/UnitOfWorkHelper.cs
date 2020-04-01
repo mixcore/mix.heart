@@ -148,6 +148,7 @@ namespace Mix.Common.Helper
         {
             isRoot = _context == null;
             context = _context ?? InitContext();
+            context.Database.AutoTransactionsEnabled = false;
             transaction = _transaction ?? context.Database.BeginTransaction();
         }
     }

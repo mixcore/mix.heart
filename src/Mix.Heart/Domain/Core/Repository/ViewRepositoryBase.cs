@@ -74,7 +74,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -109,7 +109,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -124,9 +124,7 @@ namespace Mix.Domain.Data.Repository
         public virtual RepositoryResponse<TView> CreateModel(TView view
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            bool isRoot = _context == null;
-            TDbContext context = _context ?? InitContext();
-            var transaction = _transaction ?? context.Database.BeginTransaction();
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             RepositoryResponse<TView> result = new RepositoryResponse<TView>() { IsSucceed = true };
             try
             {
@@ -153,7 +151,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -188,7 +186,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -228,7 +226,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -266,7 +264,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -284,14 +282,11 @@ namespace Mix.Domain.Data.Repository
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
-            {
-                context = _context ?? InitContext();
-                transaction = _transaction ?? context.Database.BeginTransaction();
-
+            {                
                 TModel model = context.Set<TModel>().SingleOrDefault(predicate);
                 if (model != null)
                 {
-                    //context.Entry(model).State = EntityState.Detached;
+                    context.Entry(model).State = EntityState.Detached;
 
                     return new RepositoryResponse<TView>()
                     {
@@ -317,7 +312,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context?.Dispose();
+                    context.Dispose();
                 }
             }
         }
@@ -365,7 +360,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -384,9 +379,6 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                context = _context ?? InitContext();
-                transaction = _transaction ?? context.Database.BeginTransaction();
-
                 TModel model = context.Set<TModel>().FirstOrDefault(predicate);
                 if (model != null)
                 {
@@ -464,7 +456,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -743,9 +735,7 @@ namespace Mix.Domain.Data.Repository
         /// <returns></returns>
         public virtual RepositoryResponse<List<TView>> GetModelList(TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            bool isRoot = _context == null;
-            var context = _context ?? InitContext();
-            var transaction = _transaction ?? context.Database.BeginTransaction();
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
                 var lstModel = context.Set<TModel>().ToList();
@@ -765,8 +755,8 @@ namespace Mix.Domain.Data.Repository
             {
                 if (isRoot)
                 {
-                    //if current Context is Root
-                    context.Dispose();
+                    //if current Context is Root                    
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -785,9 +775,7 @@ namespace Mix.Domain.Data.Repository
         string orderByPropertyName, int direction, int? pageSize, int? pageIndex
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            bool isRoot = _context == null;
-            var context = _context ?? InitContext();
-            var transaction = _transaction ?? context.Database.BeginTransaction();
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
 
             try
             {
@@ -811,7 +799,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -824,9 +812,7 @@ namespace Mix.Domain.Data.Repository
         /// <returns></returns>
         public virtual async Task<RepositoryResponse<List<TView>>> GetModelListAsync(TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            bool isRoot = _context == null;
-            var context = _context ?? InitContext();
-            var transaction = _transaction ?? context.Database.BeginTransaction();
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             List<TView> result = new List<TView>();
             try
             {
@@ -848,7 +834,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -867,10 +853,7 @@ namespace Mix.Domain.Data.Repository
         string orderByPropertyName, int direction, int? pageSize, int? pageIndex, int? skip = null, int? top = null
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            bool isRoot = _context == null;
-            var context = _context ?? InitContext();
-            var transaction = _transaction ?? context.Database.BeginTransaction();
-
+            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
                 var query = context.Set<TModel>();
@@ -891,7 +874,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -930,7 +913,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -973,7 +956,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1010,7 +993,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1055,7 +1038,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1136,7 +1119,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1215,7 +1198,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1258,7 +1241,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
                 if (result)
                 {
@@ -1305,7 +1288,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
                 if (result)
                 {
@@ -1356,7 +1339,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
                 if (result)
                 {
@@ -1402,7 +1385,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
                 if (result.IsSucceed)
                 {
@@ -1471,7 +1454,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1536,7 +1519,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1588,7 +1571,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1623,7 +1606,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1664,7 +1647,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1700,7 +1683,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1738,7 +1721,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1778,7 +1761,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1815,7 +1798,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1848,7 +1831,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1915,7 +1898,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -1977,7 +1960,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Dispose();
+                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
                 }
             }
         }
@@ -2008,7 +1991,7 @@ namespace Mix.Domain.Data.Repository
         {
             if (model != null)
             {
-                string key = GetCachedKey(model, _context, _transaction);
+                string key = GetCachedKey(model, _context);
                 string folder = $"{CachedFolder}/{key}";
                 var data = CacheService.Get<TView>(CachedFileName, folder);
                 if (data != null)
@@ -2048,7 +2031,7 @@ namespace Mix.Domain.Data.Repository
         {
             return src?.GetType().GetProperty(propName)?.GetValue(src, null);
         }
-        public string GetCachedKey(TModel model, TDbContext _context, IDbContextTransaction _transaction)
+        public string GetCachedKey(TModel model, TDbContext _context)
         {
             var result = string.Empty;
             _context = _context ?? InitContext();
@@ -2064,7 +2047,7 @@ namespace Mix.Domain.Data.Repository
         {
             if (model != null)
             {
-                string key = GetCachedKey(model, _context, _transaction);
+                string key = GetCachedKey(model, _context);
                 string folder = $"{CachedFolder}/{key}";
                 var view = GetCachedData(model, _context, _transaction);
                 CacheService.Set(CachedFileName, view, folder);
@@ -2075,7 +2058,7 @@ namespace Mix.Domain.Data.Repository
         {
             if (model != null)
             {
-                string key = GetCachedKey(model, _context, _transaction);
+                string key = GetCachedKey(model, _context);
                 string folder = $"{CachedFolder}/{key}";
                 CacheService.RemoveCacheAsync(folder);
             }
