@@ -74,7 +74,6 @@ namespace Mix.Common.Helper
         private static JObject LoadWebConfig()
         {
             // Load configurations from appSettings.json
-            JObject jsonSettings = new JObject();
             var settings = FileRepository.Instance.GetFile("appSettings.json", string.Empty, true);
 
             if (string.IsNullOrEmpty(settings.Content))

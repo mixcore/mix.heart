@@ -63,8 +63,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -98,8 +97,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -142,8 +140,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -177,8 +174,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -214,8 +210,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     //if current Context is Root
                     transaction.Dispose();
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -248,8 +243,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -346,8 +340,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -446,8 +439,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -669,8 +661,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -714,8 +705,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -751,8 +741,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -794,8 +783,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -833,8 +821,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -876,8 +863,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -913,8 +899,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -958,8 +943,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1022,8 +1006,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1084,8 +1067,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1127,8 +1109,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1169,8 +1150,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1212,8 +1192,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1254,8 +1233,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1348,8 +1326,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1383,8 +1360,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1424,8 +1400,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1460,8 +1435,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
         #endregion
@@ -1498,8 +1472,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1538,8 +1511,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1575,8 +1547,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1608,8 +1579,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1672,8 +1642,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -1732,8 +1701,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 

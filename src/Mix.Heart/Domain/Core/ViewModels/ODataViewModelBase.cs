@@ -317,8 +317,7 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot)
                     {
                         //if current Context is Root
-                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                    }
+                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                    }
                 }
             }
             return (TView)this;
@@ -400,8 +399,7 @@ namespace Mix.Domain.Data.ViewModels
             {
                 if (isRoot)
                 {
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -465,8 +463,7 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
                 if (result.IsSucceed)
                 {
                     _ = RemoveCache(Model);
@@ -535,8 +532,7 @@ namespace Mix.Domain.Data.ViewModels
                         {
                             GenerateCache(Model, this as TView);
                         }
-                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                    }
+                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                    }
                     else
                     {
                         if (result.IsSucceed && IsCache)
@@ -551,8 +547,7 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
                 return new RepositoryResponse<TView>()
                 {
                     IsSucceed = false,
@@ -645,8 +640,7 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot)
                     {
                         //if current Context is Root
-                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                    }
+                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                    }
                 }
             }
             return (TView)this;
@@ -734,8 +728,7 @@ namespace Mix.Domain.Data.ViewModels
             {
                 if (isRoot)
                 {
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
 
@@ -796,8 +789,7 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
                 if (result.IsSucceed)
                 {
                     _ = RemoveCache(Model);
@@ -864,8 +856,7 @@ namespace Mix.Domain.Data.ViewModels
                         {
                             GenerateCache(Model, this as TView);
                         }
-                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                    }
+                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                    }
                     else
                     {
                         if (result.IsSucceed && IsCache)
@@ -880,8 +871,7 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
                 return new RepositoryResponse<TView>()
                 {
                     IsSucceed = false,
@@ -1003,8 +993,7 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot && (result.Status == TaskStatus.RanToCompletion || result.Status == TaskStatus.Canceled || result.Status == TaskStatus.Faulted))
                     {
                         //if current Context is Root
-                        context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                    }
+                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                    }
                 });
             }
             catch (Exception ex)
@@ -1012,8 +1001,7 @@ namespace Mix.Domain.Data.ViewModels
                 UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
                 if (isRoot)
                 {
-                    context.Database.CloseConnection();transaction.Dispose();context.Dispose();
-                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
         }
         //public virtual List<Task> GenerateRelatedData(TDbContext context, IDbContextTransaction transaction)

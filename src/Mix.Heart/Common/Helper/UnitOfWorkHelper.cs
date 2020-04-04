@@ -52,7 +52,7 @@ namespace Mix.Common.Helper
                 transaction.Rollback();
             }
             List<string> errors = new List<string>();
-            LogException(ex);
+            LogException(ex, typeof(TResult));
             errors.Add(ex.InnerException != null ? ex.InnerException.Message : ex.Message);
             return new RepositoryResponse<TResult>()
             {
@@ -82,6 +82,20 @@ namespace Mix.Common.Helper
             };
         }
 
+        public static void CloseDbContext(ref TDbContext context, ref IDbContextTransaction transaction)            
+        {
+            try
+            {
+                transaction.Dispose(); 
+                context.Dispose();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, typeof(TDbContext));
+            }
+            
+        }
+
         public static RepositoryResponse<TResult> HandleObjectException<TResult>(Exception ex, bool isRoot, IDbContextTransaction transaction)
         {
             if (isRoot)
@@ -101,7 +115,7 @@ namespace Mix.Common.Helper
             };
         }
 
-        public static void LogException(Exception ex)
+        public static void LogException(Exception ex, Type type = null)
         {
             string fullPath = $"{Environment.CurrentDirectory}/logs/{DateTime.Now.ToString("dd-MM-yyyy")}";
             if (!string.IsNullOrEmpty(fullPath) && !Directory.Exists(fullPath))
@@ -127,6 +141,7 @@ namespace Mix.Common.Helper
                 JObject jex = new JObject
                 {
                     new JProperty("CreatedDateTime", DateTime.UtcNow),
+                    new JProperty("type", type.FullName),
                     new JProperty("Details", JObject.FromObject(ex))
                 };
                 arrExceptions.Add(jex);
