@@ -155,15 +155,6 @@ namespace Mix.Domain.Core.ViewModels
         public List<T> Items { get; set; }
 
         /// <summary>
-        /// Gets or sets the json items.
-        /// </summary>
-        /// <value>
-        /// The json items.
-        /// </value>
-        [JsonProperty("jsonItems")]
-        public List<JObject> JsonItems { get; set; } = new List<JObject>();
-
-        /// <summary>
         /// Gets or sets the index of the page.
         /// </summary>
         /// <value>

@@ -182,5 +182,14 @@ namespace Mix.Services
         {
             return Task.FromResult(FileRepository.Instance.DeleteFolder($"{cacheFolder}/{folder}"));
         }
+        public static Task RemoveCacheAsync(Type type, string key = null)
+        {
+            string path = $"{cacheFolder}/{type.FullName.Substring(0, type.FullName.LastIndexOf('.')).Replace(".", "/")}";
+            if (!string.IsNullOrEmpty(key))
+            {
+                path += $"/_{key}";
+            }
+            return Task.FromResult(FileRepository.Instance.EmptyFolder(path));
+        }
     }
 }

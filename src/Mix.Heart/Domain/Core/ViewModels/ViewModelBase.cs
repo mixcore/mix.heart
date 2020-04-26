@@ -73,7 +73,7 @@ namespace Mix.Domain.Data.ViewModels
         public static readonly DefaultModelRepository<TDbContext, TModel> ModelRepository;
 
         static ViewModelBase()
-        {            
+        {
             Repository = DefaultRepository<TDbContext, TModel, TView>.Instance;
             ModelRepository = DefaultModelRepository<TDbContext, TModel>.Instance;
         }
@@ -189,6 +189,7 @@ namespace Mix.Domain.Data.ViewModels
         public virtual TModel ParseModel(TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             //AutoMapper.Mapper.Map<TView, TModel>((TView)this, Model);
+
             this.Model = InitModel();
             Mapper.Map<TView, TModel>((TView)this, Model);
             return this.Model;

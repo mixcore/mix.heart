@@ -2,23 +2,23 @@
 // The Mixcore Foundation licenses this file to you under the GNU General Public License v3.0.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.AspNetCore.Http;
+using Mix.Domain.Core.ViewModels;
+using Mix.Services;
+using Newtonsoft.Json.Linq;
+using OfficeOpenXml;
+using OfficeOpenXml.Table;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+
 namespace Mix.Common.Helper
 {
-    using Microsoft.AspNetCore.Http;
-    using Mix.Domain.Core.ViewModels;
-    using Mix.Services;
-    using Newtonsoft.Json.Linq;
-    using OfficeOpenXml;
-    using OfficeOpenXml.Table;
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Security.Cryptography;
-    using System.Text;
-
     /// <summary>
     /// Common helper
     /// </summary>
@@ -631,8 +631,16 @@ namespace Mix.Common.Helper
 
         public static T GetWebConfig<T>(string name)
         {
-            var result = WebConfigInstance["GlobalSettings"][name];            
-            return result != null ? result.Value<T>() : default(T);
+            if (WebConfigInstance["GlobalSettings"]!=null)
+            {
+                var result = WebConfigInstance["GlobalSettings"][name];            
+                return result != null ? result.Value<T>() : default(T);
+            }
+            else
+            {
+                var result = WebConfigInstance[name];
+                return result != null ? result.Value<T>() : default(T);
+            }
         }
     }
 }

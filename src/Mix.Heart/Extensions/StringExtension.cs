@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Mix.Heart.Extensions
 {
     public static class StringExtension
     {
+        public static string ToHypenCase(this string source)
+        {
+            return Regex.Replace(source, @"[A-Z]", "-$1");
+        }
         public static string ToCamelCase(this string str)
         {
             if (!string.IsNullOrEmpty(str) && str.Length > 1)

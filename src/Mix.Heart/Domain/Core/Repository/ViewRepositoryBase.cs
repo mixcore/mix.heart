@@ -167,6 +167,11 @@ namespace Mix.Domain.Data.Repository
                 context.Entry(view.Model).State = EntityState.Added;
                 result.IsSucceed = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
                 result.Data = view;
+                if (result.IsSucceed)
+                {
+                    result.Data.ParseView(false, context, transaction);
+                }
+
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
             }
@@ -510,7 +515,7 @@ namespace Mix.Domain.Data.Repository
                         sorted = Queryable.OrderByDescending(query, orderBy);
                         if (pageSize.HasValue)
                         {
-                            lstModel = sorted.Skip(pageIndex.Value * pageSize.Value)
+                            lstModel = sorted.Skip(result.PageIndex * pageSize.Value)
                             .Take(pageSize.Value)
                             .ToList();
                         }
@@ -525,7 +530,7 @@ namespace Mix.Domain.Data.Repository
                         if (pageSize.HasValue)
                         {
                             lstModel = sorted
-                            .Skip(pageIndex.Value * pageSize.Value)
+                            .Skip(result.PageIndex * pageSize.Value)
                             .Take(pageSize.Value)
                             .ToList();
                         }
@@ -594,7 +599,7 @@ namespace Mix.Domain.Data.Repository
                         sorted = Queryable.OrderByDescending(query, orderBy);
                         if (pageSize.HasValue)
                         {
-                            lstModel = await sorted.Skip(pageIndex.Value * pageSize.Value)
+                            lstModel = await sorted.Skip(result.PageIndex * pageSize.Value)
                             .Take(pageSize.Value)
                             .ToListAsync().ConfigureAwait(false);
                         }
@@ -618,7 +623,7 @@ namespace Mix.Domain.Data.Repository
                         if (pageSize.HasValue)
                         {
                             lstModel = await sorted
-                                .Skip(pageIndex.Value * pageSize.Value)
+                                .Skip(result.PageIndex * pageSize.Value)
                                 .Take(pageSize.Value)
                                 .ToListAsync().ConfigureAwait(false);
                         }
@@ -695,7 +700,15 @@ namespace Mix.Domain.Data.Repository
             else
             {
                 classConstructor = classType.GetConstructor(new Type[] { model.GetType() });
-                return (TView)classConstructor.Invoke(new object[] { model });
+                if (classConstructor!=null)
+                {
+                    return (TView)classConstructor.Invoke(new object[] { model });
+                }
+                else
+                {
+                    classConstructor = classType.GetConstructor(new Type[] { model.GetType() });
+                    return (TView)classConstructor.Invoke(new object[] { });
+                }
             }
         }
 
