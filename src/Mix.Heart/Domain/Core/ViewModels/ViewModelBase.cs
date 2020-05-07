@@ -549,18 +549,11 @@ namespace Mix.Domain.Data.ViewModels
                 {
                     if (isRoot)
                     {
-                        //if current Context is Root
-                        if (result.IsSucceed && IsCache)
-                        {
-                            GenerateCache(Model, this as TView);
-                        }
-                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                    }
-                    else
+                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                    }
+                    if (result.IsSucceed && IsCache)
                     {
-                        if (result.IsSucceed && IsCache)
-                        {
-                            _ = RemoveCache(Model);
-                        }
+                        _ = RemoveCache(Model);
                     }
 
                 }

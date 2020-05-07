@@ -103,8 +103,9 @@ namespace Mix.Heart.Helpers
             var prop = data.GetType().GetProperty(fieldName.ToTitleCase());
             if (prop != null)
             {
-                System.ComponentModel.TypeConverter conv = System.ComponentModel.TypeDescriptor.GetConverter(prop.PropertyType);
-                return conv.ConvertFrom(prop.GetValue(data));
+                //System.ComponentModel.TypeConverter conv = System.ComponentModel.TypeDescriptor.GetConverter(prop.PropertyType);
+                //var obj = conv.ConvertFrom();
+                return prop.GetValue(data);
             }
             return default;
         }
@@ -191,6 +192,13 @@ namespace Mix.Heart.Helpers
             return Expression.Lambda<Func<T, bool>>(eq, par);
         }
 
+        public static T InitModel<T>()
+        {
+            Type classType = typeof(T);
+            ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { });
+            T context = (T)classConstructor.Invoke(new object[] { });
+            return context;
+        }
 
         private class ReplaceExpressionVisitor : ExpressionVisitor
         {

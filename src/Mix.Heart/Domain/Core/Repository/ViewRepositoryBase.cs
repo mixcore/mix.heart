@@ -897,7 +897,7 @@ namespace Mix.Domain.Data.Repository
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
-                    Data = IsCache ? GetCachedData(lstModel, _context, _transaction) : ParseView(lstModel, context, transaction)
+                    Data = IsCache ? GetCachedData(lstModel, context, transaction) : ParseView(lstModel, context, transaction)
                 };
             }
             catch (Exception ex)
@@ -2037,6 +2037,13 @@ namespace Mix.Domain.Data.Repository
                 string folder = $"{CachedFolder}/{key}";
                 CacheService.RemoveCacheAsync(folder);
             }
+            return Task.CompletedTask;
+        }
+
+        public virtual Task RemoveCache(string key, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        {
+            string folder = $"{CachedFolder}/{key}";
+            CacheService.RemoveCacheAsync(folder);
             return Task.CompletedTask;
         }
         #endregion

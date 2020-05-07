@@ -187,7 +187,7 @@ namespace Mix.Services
             string path = $"{cacheFolder}/{type.FullName.Substring(0, type.FullName.LastIndexOf('.')).Replace(".", "/")}";
             if (!string.IsNullOrEmpty(key))
             {
-                path += $"/_{key}";
+                path += $"/{key}";
             }
             return Task.FromResult(FileRepository.Instance.EmptyFolder(path));
         }
