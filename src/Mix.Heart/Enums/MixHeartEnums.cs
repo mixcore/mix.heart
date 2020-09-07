@@ -3,10 +3,14 @@ using System.Collections.Generic;
 
 namespace Mix.Heart.Enums
 {
-    public class MixEnums
+    public class MixHeartEnums
     {
         #region Common
-
+        public enum DisplayDirection
+        {
+            Asc,
+            Desc
+        }
         public enum ExpressionMethod
         {
             Eq = 1,

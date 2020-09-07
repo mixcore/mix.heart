@@ -141,7 +141,7 @@ namespace Mix.Common.Helper
                 JObject jex = new JObject
                 {
                     new JProperty("CreatedDateTime", DateTime.UtcNow),
-                    new JProperty("type", type.FullName),
+                    new JProperty("type", type?.FullName),
                     new JProperty("Details", JObject.FromObject(ex))
                 };
                 arrExceptions.Add(jex);

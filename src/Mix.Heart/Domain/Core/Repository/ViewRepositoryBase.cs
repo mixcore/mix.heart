@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Mix.Common.Helper;
 using Mix.Domain.Core.ViewModels;
+using Mix.Heart.Enums;
 using Mix.Services;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Mix.Heart.Extensions;
+
 namespace Mix.Domain.Data.Repository
 {
     /// <summary>
@@ -487,7 +490,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="transaction">The transaction.</param>
         /// <returns></returns>
         public virtual PaginationModel<TView> ParsePagingQuery(IQueryable<TModel> query
-        , string orderByPropertyName, int direction
+        , string orderByPropertyName, MixHeartEnums.DisplayDirection direction
         , int? pageSize, int? pageIndex
         , TDbContext context, IDbContextTransaction transaction)
         {
@@ -511,7 +514,7 @@ namespace Mix.Domain.Data.Repository
 
                 switch (direction)
                 {
-                    case 1:
+                    case MixHeartEnums.DisplayDirection.Desc:
                         sorted = Queryable.OrderByDescending(query, orderBy);
                         if (pageSize.HasValue)
                         {
@@ -571,7 +574,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="transaction">The transaction.</param>
         /// <returns></returns>
         public virtual async Task<PaginationModel<TView>> ParsePagingQueryAsync(IQueryable<TModel> query
-        , string orderByPropertyName, int direction
+        , string orderByPropertyName, MixHeartEnums.DisplayDirection direction
         , int? pageSize, int? pageIndex, int? skip, int? top
         , TDbContext context, IDbContextTransaction transaction)
         {
@@ -588,14 +591,14 @@ namespace Mix.Domain.Data.Repository
             {
                 result.PageSize = pageSize ?? result.TotalItems;
 
-                if (pageSize.HasValue)
+                if (pageSize.HasValue && pageSize.Value > 0)
                 {
                     result.TotalPage = (result.TotalItems / pageSize.Value) + (result.TotalItems % pageSize.Value > 0 ? 1 : 0);
                 }
 
                 switch (direction)
                 {
-                    case 1:
+                    case MixHeartEnums.DisplayDirection.Desc:
                         sorted = Queryable.OrderByDescending(query, orderBy);
                         if (pageSize.HasValue)
                         {
@@ -771,7 +774,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
         public virtual RepositoryResponse<PaginationModel<TView>> GetModelList(
-        string orderByPropertyName, int direction, int? pageSize, int? pageIndex
+        string orderByPropertyName, MixHeartEnums.DisplayDirection direction, int? pageSize, int? pageIndex
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
@@ -847,7 +850,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
         public virtual async Task<RepositoryResponse<PaginationModel<TView>>> GetModelListAsync(
-        string orderByPropertyName, int direction, int? pageSize, int? pageIndex, int? skip = null, int? top = null
+        string orderByPropertyName, MixHeartEnums.DisplayDirection direction, int? pageSize, int? pageIndex, int? skip = null, int? top = null
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
@@ -925,7 +928,7 @@ namespace Mix.Domain.Data.Repository
         /// <param name="_transaction">The transaction.</param>
         /// <returns></returns>
         public virtual RepositoryResponse<PaginationModel<TView>> GetModelListBy(
-        Expression<Func<TModel, bool>> predicate, string orderByPropertyName, int direction, int? pageSize, int? pageIndex
+        Expression<Func<TModel, bool>> predicate, string orderByPropertyName, MixHeartEnums.DisplayDirection direction, int? pageSize, int? pageIndex
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
@@ -1004,14 +1007,13 @@ namespace Mix.Domain.Data.Repository
         /// <returns></returns>
         public virtual async Task<RepositoryResponse<PaginationModel<TView>>> GetModelListByAsync(
         Expression<Func<TModel, bool>> predicate, string orderByPropertyName
-        , int direction, int? pageSize, int? pageIndex, int? skip = null, int? top = null
+        , MixHeartEnums.DisplayDirection direction, int? pageSize, int? pageIndex, int? skip = null, int? top = null
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
                 var query = context.Set<TModel>().Where(predicate);
-
                 var result = await ParsePagingQueryAsync(query
                 , orderByPropertyName, direction
                 , pageSize, pageIndex, skip, top

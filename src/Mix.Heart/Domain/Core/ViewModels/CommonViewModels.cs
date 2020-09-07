@@ -2,6 +2,7 @@
 // The Mixcore Foundation licenses this file to you under the GNU General Public License v3.0.
 // See the LICENSE file in the project root for more information.
 
+using Mix.Heart.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -357,7 +358,7 @@ namespace Mix.Domain.Core.ViewModels
         /// The direction.
         /// </value>
         [JsonProperty("direction")]
-        public int Direction { get; set; } = 0;
+        public MixHeartEnums.DisplayDirection Direction { get; set; } = MixHeartEnums.DisplayDirection.Asc;
 
         /// <summary>
         /// Gets or sets the key.
@@ -393,7 +394,7 @@ namespace Mix.Domain.Core.ViewModels
         /// The status.
         /// </value>
         [JsonProperty("status")]
-        public int? Status { get; set; }
+        public string Status { get; set; }
 
         /// <summary>
         /// Gets or sets the order by.

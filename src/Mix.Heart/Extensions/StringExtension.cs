@@ -5,6 +5,10 @@ namespace Mix.Heart.Extensions
 {
     public static class StringExtension
     {
+        public static T ToEnum<T>(this string str)
+        {
+            return (T)Enum.Parse(typeof(T), str);
+        }
         public static string ToHypenCase(this string source)
         {
             return Regex.Replace(source, @"[A-Z]", "-$1");
@@ -29,7 +33,7 @@ namespace Mix.Heart.Extensions
 
         public static bool IsBase64(this string base64String)
         {
-            base64String = base64String.IndexOf(',') >= 0 ? base64String.Split(',')[1] : base64String;
+            base64String = base64String?.IndexOf(',') >= 0 ? base64String.Split(',')[1] : base64String;
             if (string.IsNullOrEmpty(base64String) || base64String.Length % 4 != 0
                || base64String.Contains(" ") || base64String.Contains("\t") || base64String.Contains("\r") || base64String.Contains("\n"))
                 return false;

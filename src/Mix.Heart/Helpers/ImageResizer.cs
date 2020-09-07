@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mix.Common.Helper;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -84,19 +85,22 @@ public class ImageResizer
     {
         try
         {
-            int imageSize = 2000;//MixService.GetConfig<int>("ImageSize");
+            int imageSize = CommonHelper.WebConfigInstance["GlobalSettings"].Value<int>("ImageSize");
             int thumbnailSize = imageSize;
-            int newWidth, newHeight;
+            int newWidth =  image.Width, newHeight = image.Height;
 
-            if (image.Width > image.Height)
+            if (imageSize>  0 && image.Width > imageSize)
             {
-                newWidth = thumbnailSize;
-                newHeight = image.Height * thumbnailSize / image.Width;
-            }
-            else
-            {
-                newWidth = image.Width * thumbnailSize / image.Height;
-                newHeight = thumbnailSize;
+                if (image.Width > image.Height)
+                {
+                    newWidth = thumbnailSize;
+                    newHeight = image.Height * thumbnailSize / image.Width;
+                }
+                else
+                {
+                    newWidth = image.Width * thumbnailSize / image.Height;
+                    newHeight = thumbnailSize;
+                }
             }
 
             var thumbnailBitmap = new Bitmap(newWidth, newHeight);
