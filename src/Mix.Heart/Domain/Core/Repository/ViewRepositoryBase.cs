@@ -16,6 +16,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Mix.Heart.Extensions;
+using AutoMapper.Internal;
 
 namespace Mix.Domain.Data.Repository
 {
@@ -39,6 +40,8 @@ namespace Mix.Domain.Data.Repository
         }
         public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
         public string CachedFileName { get { return typeof(TView).Name; } }
+
+        public string[] SelectdFields { get { return FilterSelectedFields(); } }
         #endregion
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewRepositoryBase{TDbContext, TModel, TView}"/> class.
@@ -1012,8 +1015,8 @@ namespace Mix.Domain.Data.Repository
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
-            {
-                var query = context.Set<TModel>().Where(predicate);
+            {                
+                var query = context.Set<TModel>().Where(predicate).SelectMembers(SelectdFields);                
                 var result = await ParsePagingQueryAsync(query
                 , orderByPropertyName, direction
                 , pageSize, pageIndex, skip, top
@@ -1035,6 +1038,13 @@ namespace Mix.Domain.Data.Repository
                     //if current Context is Root
                     UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
             }
+        }
+
+        string[] FilterSelectedFields()
+        {
+            var viewProperties = typeof(TView).GetProperties();
+            var modelProperties = typeof(TModel).GetProperties();
+            return viewProperties.Where(p => modelProperties.Any(m => m.Name == p.Name)).Select(p=>p.Name).ToArray();
         }
 
         #endregion GetModelListBy

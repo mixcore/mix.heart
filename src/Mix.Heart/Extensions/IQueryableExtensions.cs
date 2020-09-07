@@ -3,11 +3,24 @@ using System.Reflection;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Query;
+using System.Linq.Expressions;
+using System;
 
 namespace Mix.Heart.Extensions
 {
     public static class IQueryableExtensions
     {
+        public static IQueryable<TEntity> SelectMembers<TEntity>(this IQueryable<TEntity> source, params string[] memberNames)
+        {
+            var parameter = Expression.Parameter(typeof(TEntity), "model");
+            var bindings = memberNames
+                .Select(name => Expression.PropertyOrField(parameter, name))
+                .Select(member => Expression.Bind(member.Member, member));
+            var body = Expression.MemberInit(Expression.New(typeof(TEntity)), bindings);
+            var selector = Expression.Lambda<Func<TEntity, TEntity>>(body, parameter);
+            return source.Select(selector);
+        }
+
         public static string ToSql<TEntity>(this IQueryable<TEntity> query) where TEntity : class
         {
             var enumerator = query.Provider.Execute<IEnumerable<TEntity>>(query.Expression).GetEnumerator();
