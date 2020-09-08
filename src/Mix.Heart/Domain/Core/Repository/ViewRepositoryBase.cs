@@ -41,7 +41,7 @@ namespace Mix.Domain.Data.Repository
         public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
         public string CachedFileName { get { return typeof(TView).Name; } }
 
-        public string[] SelectdFields { get { return FilterSelectedFields(); } }
+        public string[] SelectedMembers { get { return FilterSelectedFields(); } }
         #endregion
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewRepositoryBase{TDbContext, TModel, TView}"/> class.
@@ -283,7 +283,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {                
-                TModel model = context.Set<TModel>().SingleOrDefault(predicate);
+                TModel model = context.Set<TModel>().SelectMembers(SelectedMembers).SingleOrDefault(predicate);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
@@ -331,7 +331,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                TModel model = await context.Set<TModel>().SingleOrDefaultAsync(predicate).ConfigureAwait(false);
+                TModel model = await context.Set<TModel>().SelectMembers(SelectedMembers).SingleOrDefaultAsync(predicate).ConfigureAwait(false);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
@@ -378,7 +378,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                TModel model = context.Set<TModel>().FirstOrDefault(predicate);
+                TModel model = context.Set<TModel>().SelectMembers(SelectedMembers).FirstOrDefault(predicate);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
@@ -426,7 +426,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                TModel model = await context.Set<TModel>().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
+                TModel model = await context.Set<TModel>().SelectMembers(SelectedMembers).FirstOrDefaultAsync(predicate).ConfigureAwait(false);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
@@ -606,6 +606,7 @@ namespace Mix.Domain.Data.Repository
                         if (pageSize.HasValue)
                         {
                             lstModel = await sorted.Skip(result.PageIndex * pageSize.Value)
+                            .SelectMembers(SelectedMembers)
                             .Take(pageSize.Value)
                             .ToListAsync().ConfigureAwait(false);
                         }
@@ -614,6 +615,7 @@ namespace Mix.Domain.Data.Repository
                             if (top.HasValue)
                             {
                                 lstModel = await sorted.Skip(skip.HasValue ? skip.Value : 0)
+                                    .SelectMembers(SelectedMembers)
                             .Take(top.Value)
                             .ToListAsync().ConfigureAwait(false);
                             }
@@ -630,6 +632,7 @@ namespace Mix.Domain.Data.Repository
                         {
                             lstModel = await sorted
                                 .Skip(result.PageIndex * pageSize.Value)
+                                .SelectMembers(SelectedMembers)
                                 .Take(pageSize.Value)
                                 .ToListAsync().ConfigureAwait(false);
                         }
@@ -639,12 +642,13 @@ namespace Mix.Domain.Data.Repository
                             {
                                 lstModel = await sorted
                                     .Skip(skip.HasValue ? skip.Value : 0)
+                                    .SelectMembers(SelectedMembers)
                                     .Take(top.Value)
                                     .ToListAsync().ConfigureAwait(false);
                             }
                             else
                             {
-                                lstModel = await sorted.ToListAsync().ConfigureAwait(false);
+                                lstModel = await sorted.SelectMembers(SelectedMembers).ToListAsync().ConfigureAwait(false);
                             }
 
                         }
@@ -1016,7 +1020,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {                
-                var query = context.Set<TModel>().Where(predicate).SelectMembers(SelectdFields);                
+                var query = context.Set<TModel>().Where(predicate);                
                 var result = await ParsePagingQueryAsync(query
                 , orderByPropertyName, direction
                 , pageSize, pageIndex, skip, top
@@ -1040,13 +1044,7 @@ namespace Mix.Domain.Data.Repository
             }
         }
 
-        string[] FilterSelectedFields()
-        {
-            var viewProperties = typeof(TView).GetProperties();
-            var modelProperties = typeof(TModel).GetProperties();
-            return viewProperties.Where(p => modelProperties.Any(m => m.Name == p.Name)).Select(p=>p.Name).ToArray();
-        }
-
+        
         #endregion GetModelListBy
 
         // TODO: Should return return enum status code instead
@@ -1972,6 +1970,14 @@ namespace Mix.Domain.Data.Repository
             var memberExpression = Expression.Property(parameter, propName);
             return Expression.Lambda(memberExpression, parameter);
         }
+
+        string[] FilterSelectedFields()
+        {
+            var viewProperties = typeof(TView).GetProperties();
+            var modelProperties = typeof(TModel).GetProperties();
+            return viewProperties.Where(p => modelProperties.Any(m => m.Name == p.Name)).Select(p => p.Name).ToArray();
+        }
+
 
         #region Cached       
         public virtual TView GetCachedData(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
