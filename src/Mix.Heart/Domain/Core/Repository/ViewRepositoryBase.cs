@@ -603,7 +603,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     case MixHeartEnums.DisplayDirection.Desc:
                         sorted = Queryable.OrderByDescending(query, orderBy);
-                        if (pageSize.HasValue)
+                        if (pageSize.HasValue && pageSize.Value > 0)
                         {
                             lstModel = await sorted.Skip(result.PageIndex * pageSize.Value)
                             .SelectMembers(SelectedMembers)
@@ -628,7 +628,7 @@ namespace Mix.Domain.Data.Repository
 
                     default:
                         sorted = Queryable.OrderBy(query, orderBy);
-                        if (pageSize.HasValue)
+                        if (pageSize.HasValue && pageSize.Value > 0)
                         {
                             lstModel = await sorted
                                 .Skip(result.PageIndex * pageSize.Value)

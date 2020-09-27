@@ -36,9 +36,9 @@ namespace Mix.Heart.Helpers
                 case MixHeartEnums.ExpressionMethod.Gte:
                     break;
                 case MixHeartEnums.ExpressionMethod.And:
-                    return Expression.Lambda<Func<T, bool>>(Expression.And(left, right), parameter);
+                    return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(left, right), parameter);
                 case MixHeartEnums.ExpressionMethod.Or:
-                    return Expression.Lambda<Func<T, bool>>(Expression.Or(left, right), parameter);
+                    return Expression.Lambda<Func<T, bool>>(Expression.OrElse(left, right), parameter);
                 default:
                     break;
             }
