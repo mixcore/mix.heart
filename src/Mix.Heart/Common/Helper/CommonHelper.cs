@@ -375,16 +375,24 @@ namespace Mix.Common.Helper
             }
         }
 
-        public static RepositoryResponse<string> ExportToExcel<T>(List<T> lstData, string sheetName
+        public static RepositoryResponse<FileViewModel> ExportToExcel<T>(List<T> lstData, string sheetName
             , string folderPath, string fileName
             , List<string> headers = null)
         {
-            var result = new RepositoryResponse<string>();
+            var result = new RepositoryResponse<FileViewModel>()
+            {
+                Data = new FileViewModel()
+                {
+                    FileFolder = folderPath,
+                    Filename = fileName + "-" + DateTime.Now.ToString("yyyyMMdd"),
+                    Extension = ".xlsx"
+                }
+            };
             try
             {
                 if (lstData.Count > 0)
                 {
-                    var filenameE = fileName + "-" + DateTime.Now.ToString("yyyyMMdd") + ".xlsx";
+                    var filenameE = $"{result.Data.Filename}{result.Data.Extension}";
 
                     // create new data table
                     var dtable = new DataTable();
@@ -442,11 +450,6 @@ namespace Mix.Common.Helper
 
                         SaveFileBytes(folderPath, filenameE, pck.GetAsByteArray());
                         result.IsSucceed = true;
-                        result.Data = GetFullPath(new string[]
-                        {
-                            folderPath,
-                            filenameE
-                        });
 
                         return result;
                     }
@@ -467,16 +470,25 @@ namespace Mix.Common.Helper
 
             
         }
-        public static RepositoryResponse<string> ExportJObjectToExcel(List<JObject> lstData, string sheetName
+
+        public static RepositoryResponse<FileViewModel> ExportJObjectToExcel(List<JObject> lstData, string sheetName
             , string folderPath, string fileName
             , List<string> headers = null)
         {
-            var result = new RepositoryResponse<string>();
+            var result = new RepositoryResponse<FileViewModel>()
+            {
+                Data = new FileViewModel()
+                {
+                    FileFolder = folderPath,
+                    Filename = fileName + "-" + DateTime.Now.ToString("yyyyMMdd"),
+                    Extension = ".xlsx"
+                }
+            };
             try
             {
                 if (lstData.Count > 0)
                 {
-                    var filenameE = fileName + "-" + DateTime.Now.ToString("yyyyMMdd") + ".xlsx";
+                    var filenameE = $"{result.Data.Filename}{result.Data.Extension}";
 
                     // create new data table
                     var dtable = new DataTable();
@@ -522,11 +534,6 @@ namespace Mix.Common.Helper
 
                         SaveFileBytes(folderPath, filenameE, pck.GetAsByteArray());
                         result.IsSucceed = true;
-                        result.Data = GetFullPath(new string[]
-                        {
-                            folderPath,
-                            filenameE
-                        });
 
                         return result;
                     }
@@ -548,16 +555,24 @@ namespace Mix.Common.Helper
             
         }
 
-        public static RepositoryResponse<string> ExportAttributeToExcel(List<JObject> lstData, string sheetName
+        public static RepositoryResponse<FileViewModel> ExportAttributeToExcel(List<JObject> lstData, string sheetName
            , string folderPath, string fileName
            , List<string> headers = null)
         {
-            var result = new RepositoryResponse<string>();
+            var result = new RepositoryResponse<FileViewModel>()
+            {
+                Data = new FileViewModel()
+                {
+                    FileFolder = folderPath,
+                    Filename = fileName + "-" + DateTime.Now.ToString("yyyyMMdd"),
+                    Extension = ".xlsx"
+                }
+            };
             try
             {
                 if (lstData.Count > 0)
                 {
-                    var filenameE = fileName + "-" + DateTime.Now.ToString("yyyyMMdd") + ".xlsx";
+                    var filenameE = $"{result.Data.Filename}{result.Data.Extension}";
 
                     // create new data table
                     var dtable = new DataTable();
@@ -603,12 +618,6 @@ namespace Mix.Common.Helper
 
                         SaveFileBytes(folderPath, filenameE, pck.GetAsByteArray());
                         result.IsSucceed = true;
-                        result.Data = GetFullPath(new string[]
-                        {
-                            folderPath,
-                            filenameE
-                        });
-
                         return result;
                     }
 

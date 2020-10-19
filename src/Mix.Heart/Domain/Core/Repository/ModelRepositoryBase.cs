@@ -1313,7 +1313,9 @@ namespace Mix.Domain.Data.Repository
             };
             try
             {
-                total = context.Set<TModel>().Max(predicate);
+                total = context.Set<TModel>().Any() 
+                    ? context.Set<TModel>().Max(predicate)
+                    : 0;
                 result.Data = total;
                 return result;
             }
@@ -1341,10 +1343,12 @@ namespace Mix.Domain.Data.Repository
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            int total = 0;
+            
             try
             {
-                total = await context.Set<TModel>().MaxAsync(predicate).ConfigureAwait(false);
+                var total = context.Set<TModel>().Any()
+                    ? await context.Set<TModel>().MaxAsync(predicate)
+                    : 0;
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,

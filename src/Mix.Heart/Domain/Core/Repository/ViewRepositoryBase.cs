@@ -1545,17 +1545,16 @@ namespace Mix.Domain.Data.Repository
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            int total = 0;
-            var result = new RepositoryResponse<int>()
-            {
-                IsSucceed = true,
-                Data = total
-            };
             try
             {
-                total = context.Set<TModel>().Max(predicate);
-                result.Data = total;
-                return result;
+                int total = context.Set<TModel>().Any()
+                   ? context.Set<TModel>().Max(predicate)
+                   : 0;
+                return new RepositoryResponse<int>()
+                {
+                    IsSucceed = true,
+                    Data = total
+                };
             }
             catch (Exception ex)
             {
@@ -1581,10 +1580,11 @@ namespace Mix.Domain.Data.Repository
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            int total = 0;
             try
             {
-                total = await context.Set<TModel>().MaxAsync(predicate).ConfigureAwait(false);
+                int total = context.Set<TModel>().Any()
+                    ? await context.Set<TModel>().MaxAsync(predicate)
+                    : 0;
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,
