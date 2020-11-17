@@ -43,6 +43,7 @@ namespace Mix.Domain.Data.Repository
 
         public string[] SelectedMembers { get { return FilterSelectedFields(); } }
         #endregion
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewRepositoryBase{TDbContext, TModel, TView}"/> class.
         /// </summary>
