@@ -74,8 +74,8 @@ namespace Mix.Domain.Data.ViewModels
 
         static ViewModelBase()
         {
-            Repository = DefaultRepository<TDbContext, TModel, TView>.Instance;
-            ModelRepository = DefaultModelRepository<TDbContext, TModel>.Instance;
+            Repository = new DefaultRepository<TDbContext, TModel, TView>();
+            ModelRepository = new DefaultModelRepository<TDbContext, TModel>();
         }
 
         
@@ -554,6 +554,7 @@ namespace Mix.Domain.Data.ViewModels
                     if (result.IsSucceed && IsCache)
                     {
                         _ = RemoveCache(Model);
+                        _ = GenerateCache(Model, this as TView);
                     }
 
                 }
@@ -879,6 +880,7 @@ namespace Mix.Domain.Data.ViewModels
                         if (result.IsSucceed && IsCache)
                         {
                             _ = RemoveCache(Model);
+                            _ = GenerateCache(Model, this as TView);
                         }
                     }
 
@@ -975,7 +977,7 @@ namespace Mix.Domain.Data.ViewModels
         {
             return src.GetType().GetProperty(propName)?.GetValue(src, null);
         }
-        public virtual void GenerateCache(TModel model, TView view, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual Task GenerateCache(TModel model, TView view, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             Task result = null;
@@ -1005,13 +1007,14 @@ namespace Mix.Domain.Data.ViewModels
                     }
                 }
                 result = Task.WhenAll(tasks);
-                removeTask.ContinueWith(resp => {
+                return removeTask.ContinueWith(resp => {
                     result.Wait();
                 });
             }
             catch (Exception ex)
             {
                 UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
+                return Task.CompletedTask;
             }
             finally
             {
