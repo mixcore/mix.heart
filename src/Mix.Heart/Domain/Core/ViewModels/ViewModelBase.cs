@@ -554,7 +554,6 @@ namespace Mix.Domain.Data.ViewModels
                     if (result.IsSucceed && IsCache)
                     {
                         _ = RemoveCache(Model);
-                        _ = GenerateCache(Model, this as TView);
                     }
 
                 }
@@ -880,7 +879,6 @@ namespace Mix.Domain.Data.ViewModels
                         if (result.IsSucceed && IsCache)
                         {
                             _ = RemoveCache(Model);
-                            _ = GenerateCache(Model, this as TView);
                         }
                     }
 
