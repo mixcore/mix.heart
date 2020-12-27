@@ -406,7 +406,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection(); transaction.Dispose(); context.Dispose();
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
                 }
             }
         }
