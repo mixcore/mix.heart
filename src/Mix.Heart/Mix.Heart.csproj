@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.7.0</Version>
+    <Version>0.0.8.0</Version>
     <Company>Mixcore</Company>
     <Authors>Mixcore Team, Smileway Team</Authors>
     <Product>Mixcore Heart</Product>
@@ -13,8 +13,8 @@
     <PackageIconUrl>https://avatars1.githubusercontent.com/u/41290098</PackageIconUrl>
     <RepositoryUrl>https://github.com/mixcore/mix.heart</RepositoryUrl>
     <PackageTags>dotnet core, asp.net core, framework base</PackageTags>
-    <AssemblyVersion>0.0.7.0</AssemblyVersion>
-    <FileVersion>0.0.7.0</FileVersion>
+    <AssemblyVersion>0.0.8.0</AssemblyVersion>
+    <FileVersion>0.0.8.0</FileVersion>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
@@ -28,15 +28,15 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
-    <PackageReference Include="EPPlus" Version="5.4.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.0">
+    <PackageReference Include="EPPlus" Version="5.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Net.Requests" Version="4.3.0" />

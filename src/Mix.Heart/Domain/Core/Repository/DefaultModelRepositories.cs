@@ -20,10 +20,43 @@ namespace Mix.Domain.Data.Repository
         where TModel : class
     {
         /// <summary>
+        /// The instance
+        /// </summary>
+        private static volatile DefaultModelRepository<TDbContext, TModel> instance;
+
+        /// <summary>
+        /// The synchronize root
+        /// </summary>
+        private static readonly object syncRoot = new Object();
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="DefaultRepository{TDbContext, TModel, TView}"/> class from being created.
         /// </summary>
         public DefaultModelRepository()
         {
+        }
+
+        /// <summary>
+        /// Gets the instance.
+        /// </summary>
+        /// <value>
+        /// The instance.
+        /// </value>
+        public static DefaultModelRepository<TDbContext, TModel> Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (syncRoot)
+                    {
+                        if (instance == null)
+                            instance = new DefaultModelRepository<TDbContext, TModel>();
+                    }
+                }
+
+                return instance;
+            }
         }
     }
 }

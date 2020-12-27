@@ -67,7 +67,7 @@ namespace Mix.Domain.Data.ViewModels
         private IMapper _modelMapper;
 
         [JsonIgnore]
-        public static DefaultRepository<TDbContext, TModel, TView> Repository = new DefaultRepository<TDbContext, TModel, TView>();
+        public static DefaultRepository<TDbContext, TModel, TView> Repository;
 
         [JsonIgnore]
         public static DefaultModelRepository<TDbContext, TModel> ModelRepository = new DefaultModelRepository<TDbContext, TModel>();
