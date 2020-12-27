@@ -407,7 +407,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    context.Database.CloseConnection(); transaction.Dispose(); context.Dispose();
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
                 }
             }
         }
@@ -1996,7 +1996,7 @@ namespace Mix.Domain.Data.Repository
                 else
                 {
                     data = ParseView(model, _context, _transaction);
-                    if (data != null && IsCache)
+                    if (data != null && data.IsCache)
                     {
                         _ = CacheService.SetAsync(CachedFileName, data, folder);
                     }
