@@ -265,48 +265,6 @@ namespace Mix.Domain.Core.ViewModels
         public DateTime? LastUpdateConfiguration { get; set; }
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    public class RequestObject
-    {
-        /// <summary>
-        /// Gets or sets the view type.
-        /// </summary>
-        /// <value>
-        /// The view Type.
-        /// </value>
-        [JsonProperty("viewType")]
-        public string ViewType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the key.
-        /// </summary>
-        /// <value>
-        /// The key.
-        /// </value>
-        [JsonProperty("key")]
-        public string Key { get; set; }
-
-        /// <summary>
-        /// Gets or sets the keyword.
-        /// </summary>
-        /// <value>
-        /// The keyword.
-        /// </value>
-        [JsonProperty("keyword")]
-        public string Keyword { get; set; }
-
-        /// <summary>
-        /// Gets or sets the status.
-        /// </summary>
-        /// <value>
-        /// The status.
-        /// </value>
-        [JsonProperty("status")]
-        public Common.Utility.Enums.SWStatus? Status { get; set; }
-    }
-
     public class RequestEncrypted
     {
         [JsonProperty("encrypted")]

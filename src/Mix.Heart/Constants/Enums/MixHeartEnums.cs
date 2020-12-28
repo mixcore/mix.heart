@@ -13,13 +13,13 @@ namespace Mix.Heart.Enums
         }
         public enum ExpressionMethod
         {
-            Eq = 1,
-            Lt = 2,
-            Gt = 3,
-            Lte = 4,
-            Gte = 5,
-            And = 6,
-            Or = 7
+            Eq,
+            Lt,
+            Gt,
+            Lte,
+            Gte,
+            And,
+            Or
         }
 
         #endregion Common

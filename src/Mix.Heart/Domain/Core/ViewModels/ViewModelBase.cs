@@ -31,7 +31,7 @@ namespace Mix.Domain.Data.ViewModels
     /// <typeparam name="TView">The type of the view.</typeparam>
     /// 
     [Serializable]
-    public abstract class ViewModelBase<TDbContext, TModel, TView> : IViewModel, ISerializable
+    public abstract class ViewModelBase<TDbContext, TModel, TView> : ISerializable
         where TDbContext : DbContext
         where TModel : class
         where TView : ViewModelBase<TDbContext, TModel, TView> // instance of inherited

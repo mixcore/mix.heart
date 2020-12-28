@@ -23,10 +23,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="UI\Core\SignalR\BaseSignalRHub.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="EPPlus" Version="5.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.1" />
@@ -44,13 +40,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Common\Helper\CommonHelper.cs">
+    <Compile Update="Helpers\CommonHelper.cs">
       <ExcludeFromSourceAnalysis>False</ExcludeFromSourceAnalysis>
       <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="UI\Core\SignalR\" />
   </ItemGroup>
 </Project>
