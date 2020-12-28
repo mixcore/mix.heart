@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.EntityFrameworkCore;
-using Mix.Common.Helper;
 using System;
 
 namespace Mix.Domain.Data.Repository
@@ -15,16 +14,15 @@ namespace Mix.Domain.Data.Repository
     /// <typeparam name="TModel">The type of the model.</typeparam>
     /// <typeparam name="TView">The type of the view.</typeparam>
     /// <seealso cref="Mix.Domain.Data.Repository.ModelRepositoryBase{TContext, TModel}" />
-    public class DefaultRepository<TDbContext, TModel, TView> :
-        Mix.Domain.Data.Repository.ViewRepositoryBase<TDbContext, TModel, TView>
+    public class DefaultModelRepository<TDbContext, TModel> :
+        Mix.Domain.Data.Repository.ModelRepositoryBase<TDbContext, TModel>
         where TDbContext : DbContext
         where TModel : class
-        where TView : Mix.Domain.Data.ViewModels.ViewModelBase<TDbContext, TModel, TView>
     {
         /// <summary>
         /// The instance
         /// </summary>
-        private static volatile DefaultRepository<TDbContext, TModel, TView> instance;
+        private static volatile DefaultModelRepository<TDbContext, TModel> instance;
 
         /// <summary>
         /// The synchronize root
@@ -34,7 +32,7 @@ namespace Mix.Domain.Data.Repository
         /// <summary>
         /// Prevents a default instance of the <see cref="DefaultRepository{TDbContext, TModel, TView}"/> class from being created.
         /// </summary>
-        public DefaultRepository()
+        public DefaultModelRepository()
         {
         }
 
@@ -44,14 +42,16 @@ namespace Mix.Domain.Data.Repository
         /// <value>
         /// The instance.
         /// </value>
-        public static DefaultRepository<TDbContext, TModel, TView> Instance {
-            get {
+        public static DefaultModelRepository<TDbContext, TModel> Instance
+        {
+            get
+            {
                 if (instance == null)
                 {
                     lock (syncRoot)
                     {
                         if (instance == null)
-                            instance = new DefaultRepository<TDbContext, TModel, TView>();
+                            instance = new DefaultModelRepository<TDbContext, TModel>();
                     }
                 }
 

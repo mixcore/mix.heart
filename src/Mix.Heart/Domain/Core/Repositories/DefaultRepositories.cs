@@ -14,15 +14,16 @@ namespace Mix.Domain.Data.Repository
     /// <typeparam name="TModel">The type of the model.</typeparam>
     /// <typeparam name="TView">The type of the view.</typeparam>
     /// <seealso cref="Mix.Domain.Data.Repository.ModelRepositoryBase{TContext, TModel}" />
-    public class DefaultModelRepository<TDbContext, TModel> :
-        Mix.Domain.Data.Repository.ModelRepositoryBase<TDbContext, TModel>
+    public class DefaultRepository<TDbContext, TModel, TView> :
+        Mix.Domain.Data.Repository.ViewRepositoryBase<TDbContext, TModel, TView>
         where TDbContext : DbContext
         where TModel : class
+        where TView : Mix.Domain.Data.ViewModels.ViewModelBase<TDbContext, TModel, TView>
     {
         /// <summary>
         /// The instance
         /// </summary>
-        private static volatile DefaultModelRepository<TDbContext, TModel> instance;
+        private static volatile DefaultRepository<TDbContext, TModel, TView> instance;
 
         /// <summary>
         /// The synchronize root
@@ -32,7 +33,7 @@ namespace Mix.Domain.Data.Repository
         /// <summary>
         /// Prevents a default instance of the <see cref="DefaultRepository{TDbContext, TModel, TView}"/> class from being created.
         /// </summary>
-        public DefaultModelRepository()
+        public DefaultRepository()
         {
         }
 
@@ -42,14 +43,16 @@ namespace Mix.Domain.Data.Repository
         /// <value>
         /// The instance.
         /// </value>
-        public static DefaultModelRepository<TDbContext, TModel> Instance {
-            get {
+        public static DefaultRepository<TDbContext, TModel, TView> Instance
+        {
+            get
+            {
                 if (instance == null)
                 {
                     lock (syncRoot)
                     {
                         if (instance == null)
-                            instance = new DefaultModelRepository<TDbContext, TModel>();
+                            instance = new DefaultRepository<TDbContext, TModel, TView>();
                     }
                 }
 

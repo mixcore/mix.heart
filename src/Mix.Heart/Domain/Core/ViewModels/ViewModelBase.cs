@@ -31,7 +31,7 @@ namespace Mix.Domain.Data.ViewModels
     /// <typeparam name="TView">The type of the view.</typeparam>
     /// 
     [Serializable]
-    public abstract class ViewModelBase<TDbContext, TModel, TView> : IViewModel, ISerializable
+    public abstract class ViewModelBase<TDbContext, TModel, TView> : ISerializable
         where TDbContext : DbContext
         where TModel : class
         where TView : ViewModelBase<TDbContext, TModel, TView> // instance of inherited
@@ -67,10 +67,10 @@ namespace Mix.Domain.Data.ViewModels
         private IMapper _modelMapper;
 
         [JsonIgnore]
-        public static readonly DefaultRepository<TDbContext, TModel, TView> Repository;
+        public static DefaultRepository<TDbContext, TModel, TView> Repository;
 
         [JsonIgnore]
-        public static readonly DefaultModelRepository<TDbContext, TModel> ModelRepository;
+        public static DefaultModelRepository<TDbContext, TModel> ModelRepository = new DefaultModelRepository<TDbContext, TModel>();
 
         static ViewModelBase()
         {
@@ -79,15 +79,6 @@ namespace Mix.Domain.Data.ViewModels
         }
 
         
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is lazy load.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is lazy load; otherwise, <c>false</c>.
-        /// </value>
-        [JsonIgnore]
-        public bool IsLazyLoad { get; set; } = true;
-
         /// <summary>
         /// Gets or sets the mapper.
         /// </summary>
@@ -135,7 +126,7 @@ namespace Mix.Domain.Data.ViewModels
             get { return _modelMapper ?? (_modelMapper = this.CreateModelMapper()); }
             set => _modelMapper = value;
         }
-        
+
         /// <summary>
         /// Creates the mapper.
         /// </summary>
@@ -188,10 +179,8 @@ namespace Mix.Domain.Data.ViewModels
         /// <returns></returns>
         public virtual TModel ParseModel(TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
-            //AutoMapper.Mapper.Map<TView, TModel>((TView)this, Model);
-
             this.Model = InitModel();
-            Mapper.Map<TView, TModel>((TView)this, Model);
+            Mapper.Map((TView)this, Model);
             return this.Model;
         }
 
@@ -250,102 +239,6 @@ namespace Mix.Domain.Data.ViewModels
         }
 
         /// <summary>
-        /// Expands the view.
-        /// </summary>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        public virtual Task<bool> ExpandViewAsync(TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            var taskSource = new TaskCompletionSource<bool>();
-            taskSource.SetResult(true);
-            return taskSource.Task;
-        }
-
-        /// <summary>
-        /// Initializes the view.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="isLazyLoad">if set to <c>true</c> [is lazy load].</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public static async Task<TView> InitViewAsync(TModel model = null, bool isLazyLoad = true, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            Type classType = typeof(TView);
-
-            ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { });
-            if (model == null && classConstructor != null)
-            {
-                var view = (TView)classConstructor.Invoke(new object[] { });
-                await view.ParseViewAsync(true, _context, _transaction);
-                return view;
-            }
-            else
-            {
-                classConstructor = classType.GetConstructor(new Type[] { typeof(TModel), typeof(bool), typeof(TDbContext), typeof(IDbContextTransaction) });
-                if (classConstructor != null)
-                {
-                    var view = (TView)classConstructor.Invoke(new object[] { model, isLazyLoad, _context, _transaction });
-                    await view.ParseViewAsync(isLazyLoad, _context, _transaction);
-                    return view;
-                }
-                else
-                {
-                    classConstructor = classType.GetConstructor(new Type[] { typeof(TModel), typeof(TDbContext), typeof(IDbContextTransaction) });
-                    var view = (TView)classConstructor.Invoke(new object[] { model, _context, _transaction });
-                    await view.ParseViewAsync(isLazyLoad, _context, _transaction);
-                    return view;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Parses the view.
-        /// </summary>
-        /// <param name="isExpand">if set to <c>true</c> [is expand].</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual async Task<TView> ParseViewAsync(bool isExpand = true, TDbContext _context = null, IDbContextTransaction _transaction = null
-                                                    )
-        {
-            Mapper.Map<TModel, TView>(Model, (TView)this);
-            if (isExpand)
-            {
-                UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-                try
-                {
-                    var expandResult = await ExpandViewAsync(context, transaction);
-                    if (expandResult)
-                    {
-                        return this as TView;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Repository.LogErrorMessage(ex);
-                    if (isRoot)
-                    {
-                        //if current transaction is root transaction
-                        transaction.Rollback();
-                    }
-                }
-                finally
-                {
-                    if (isRoot)
-                    {
-                        //if current Context is Root
-                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                    }
-                }
-            }
-            return (TView)this;
-        }
-
-        /// <summary>
         /// Clones the asynchronous.
         /// </summary>
         /// <param name="model"></param>
@@ -371,24 +264,15 @@ namespace Mix.Domain.Data.ViewModels
                     {
                         string desSpecificulture = culture.Specificulture;
 
-                        //TView view = InitView();
-                        //view.Model = model;
-                        //view.ParseView(isExpand: false, _context: context, _transaction: transaction);
-                        //view.Specificulture = desSpecificulture;
-
-                        //TView view = InitView();
                         TModel m = (TModel)context.Entry(model).CurrentValues.ToObject();
                         Type myType = typeof(TModel);
                         var myFieldInfo = myType.GetProperty("Specificulture");
                         myFieldInfo.SetValue(m, desSpecificulture);
-                        //view.Model = m;
-                        //view.ParseView(isExpand: false, _context: context, _transaction: transaction);
                         bool isExist = Repository.CheckIsExists(m, _context: context, _transaction: transaction);
 
                         if (isExist)
                         {
                             result.IsSucceed = true;
-                            //result.Data.Add(view);
                         }
                         else
                         {
@@ -421,7 +305,8 @@ namespace Mix.Domain.Data.ViewModels
             {
                 if (isRoot)
                 {
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -485,7 +370,8 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
                 if (result.IsSucceed)
                 {
                     _ = RemoveCache(Model);
@@ -563,7 +449,8 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
                 return new RepositoryResponse<TView>()
                 {
                     IsSucceed = false,
@@ -656,7 +543,8 @@ namespace Mix.Domain.Data.ViewModels
                     if (isRoot)
                     {
                         //if current Context is Root
-                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                    }
+                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                    }
                 }
             }
             return (TView)this;
@@ -744,7 +632,8 @@ namespace Mix.Domain.Data.ViewModels
             {
                 if (isRoot)
                 {
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -806,7 +695,8 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
                 if (result.IsSucceed)
                 {
                     _ = RemoveCache(Model);
@@ -856,7 +746,7 @@ namespace Mix.Domain.Data.ViewModels
                         }
                         result.IsSucceed = result.IsSucceed && saveResult.IsSucceed;
                     }
-                    
+
                     UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     return result;
                 }
@@ -873,7 +763,8 @@ namespace Mix.Domain.Data.ViewModels
                         {
                             GenerateCache(Model, this as TView);
                         }
-                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                    }
+                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                    }
                     else
                     {
                         if (result.IsSucceed && IsCache)
@@ -889,7 +780,8 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
                 return new RepositoryResponse<TView>()
                 {
                     IsSucceed = false,
@@ -981,10 +873,11 @@ namespace Mix.Domain.Data.ViewModels
             Task result = null;
             try
             {
-                var removeTask = Task.Factory.StartNew(() => {
+                var removeTask = Task.Factory.StartNew(() =>
+                {
                     RemoveCache(model);
                 });
-                
+
                 var tasks = new List<Task>();
                 tasks.Add(AddToCache(model, view, context, transaction));
                 //tasks.AddRange(GenerateRelatedData(context, transaction));
@@ -1019,7 +912,8 @@ namespace Mix.Domain.Data.ViewModels
                 if (isRoot && (result.Status == TaskStatus.RanToCompletion || result.Status == TaskStatus.Canceled || result.Status == TaskStatus.Faulted))
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
         //public virtual List<Task> GenerateRelatedData(TDbContext context, IDbContextTransaction transaction)
