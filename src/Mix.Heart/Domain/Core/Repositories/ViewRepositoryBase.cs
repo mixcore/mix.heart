@@ -16,7 +16,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Mix.Heart.Extensions;
-using AutoMapper.Internal;
+using Mix.Heart.Helpers;
 
 namespace Mix.Domain.Data.Repository
 {
@@ -80,7 +80,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -113,7 +114,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -153,7 +155,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -191,7 +194,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -229,7 +233,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -266,7 +271,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -283,7 +289,7 @@ namespace Mix.Domain.Data.Repository
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
-            {                
+            {
                 TModel model = context.Set<TModel>().SelectMembers(SelectedMembers).SingleOrDefault(predicate);
                 if (model != null)
                 {
@@ -361,7 +367,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -456,7 +463,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -483,7 +491,7 @@ namespace Mix.Domain.Data.Repository
         }
 
         /// <summary>
-        /// Parses the paging query.
+        /// Parses the paging query hronous.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="orderByPropertyName">Name of the order by property.</param>
@@ -495,7 +503,7 @@ namespace Mix.Domain.Data.Repository
         /// <returns></returns>
         public virtual PaginationModel<TView> ParsePagingQuery(IQueryable<TModel> query
         , string orderByPropertyName, MixHeartEnums.DisplayDirection direction
-        , int? pageSize, int? pageIndex
+        , int? pageSize, int? pageIndex, int? skip, int? top
         , TDbContext context, IDbContextTransaction transaction)
         {
             List<TModel> lstModel = new List<TModel>();
@@ -505,13 +513,14 @@ namespace Mix.Domain.Data.Repository
                 TotalItems = query.Count(),
                 PageIndex = pageIndex ?? 0
             };
-            dynamic orderBy = GetLambda(orderByPropertyName);
+            dynamic orderBy = ReflectionHelper.GetLambda<TModel>(orderByPropertyName);
             IQueryable<TModel> sorted = null;
             try
             {
-                result.PageSize = pageSize > 0 ? pageSize : result.TotalItems;
-
-                if (pageSize > 0)
+                result.PageSize = pageSize ?? result.TotalItems;
+                var members = IsCache ? context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties.Select(x => x.Name).ToArray()
+                                        : SelectedMembers;
+                if (pageSize.HasValue && pageSize.Value > 0)
                 {
                     result.TotalPage = (result.TotalItems / pageSize.Value) + (result.TotalItems % pageSize.Value > 0 ? 1 : 0);
                 }
@@ -520,30 +529,54 @@ namespace Mix.Domain.Data.Repository
                 {
                     case MixHeartEnums.DisplayDirection.Desc:
                         sorted = Queryable.OrderByDescending(query, orderBy);
-                        if (pageSize.HasValue)
+                        if (pageSize.HasValue && pageSize.Value > 0)
                         {
                             lstModel = sorted.Skip(result.PageIndex * pageSize.Value)
+                            .SelectMembers(members)
                             .Take(pageSize.Value)
                             .ToList();
                         }
                         else
                         {
-                            lstModel = sorted.ToList();
+                            if (top.HasValue)
+                            {
+                                lstModel = sorted.Skip(skip.HasValue ? skip.Value : 0)
+                                    .SelectMembers(members)
+                            .Take(top.Value)
+                            .ToList();
+                            }
+                            else
+                            {
+                                lstModel = sorted.ToList();
+                            }
                         }
                         break;
 
                     default:
                         sorted = Queryable.OrderBy(query, orderBy);
-                        if (pageSize.HasValue)
+                        if (pageSize.HasValue && pageSize.Value > 0)
                         {
                             lstModel = sorted
-                            .Skip(result.PageIndex * pageSize.Value)
-                            .Take(pageSize.Value)
-                            .ToList();
+                                .Skip(result.PageIndex * pageSize.Value)
+                                .SelectMembers(members)
+                                .Take(pageSize.Value)
+                                .ToList();
                         }
                         else
                         {
-                            lstModel = sorted.ToList();
+                            if (top.HasValue)
+                            {
+                                lstModel = sorted
+                                    .Skip(skip.HasValue ? skip.Value : 0)
+                                    .SelectMembers(members)
+                                    .Take(top.Value)
+                                    .ToList();
+                            }
+                            else
+                            {
+                                lstModel = sorted.SelectMembers(members).ToList();
+                            }
+
                         }
                         break;
                 }
@@ -557,6 +590,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     result.Items = ParseView(lstModel, context, transaction);
                 }
+
                 return result;
             }
             catch (Exception ex)
@@ -589,12 +623,13 @@ namespace Mix.Domain.Data.Repository
                 TotalItems = query.Count(),
                 PageIndex = pageIndex ?? 0
             };
-            dynamic orderBy = GetLambda(orderByPropertyName);
+            dynamic orderBy = ReflectionHelper.GetLambda<TModel>(orderByPropertyName);
             IQueryable<TModel> sorted = null;
             try
             {
                 result.PageSize = pageSize ?? result.TotalItems;
-
+                var members = IsCache ? context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties.Select(x => x.Name).ToArray()
+                                        : SelectedMembers;
                 if (pageSize.HasValue && pageSize.Value > 0)
                 {
                     result.TotalPage = (result.TotalItems / pageSize.Value) + (result.TotalItems % pageSize.Value > 0 ? 1 : 0);
@@ -607,7 +642,7 @@ namespace Mix.Domain.Data.Repository
                         if (pageSize.HasValue && pageSize.Value > 0)
                         {
                             lstModel = await sorted.Skip(result.PageIndex * pageSize.Value)
-                            .SelectMembers(SelectedMembers)
+                            .SelectMembers(members)
                             .Take(pageSize.Value)
                             .ToListAsync().ConfigureAwait(false);
                         }
@@ -616,7 +651,7 @@ namespace Mix.Domain.Data.Repository
                             if (top.HasValue)
                             {
                                 lstModel = await sorted.Skip(skip.HasValue ? skip.Value : 0)
-                                    .SelectMembers(SelectedMembers)
+                                    .SelectMembers(members)
                             .Take(top.Value)
                             .ToListAsync().ConfigureAwait(false);
                             }
@@ -633,7 +668,7 @@ namespace Mix.Domain.Data.Repository
                         {
                             lstModel = await sorted
                                 .Skip(result.PageIndex * pageSize.Value)
-                                .SelectMembers(SelectedMembers)
+                                .SelectMembers(members)
                                 .Take(pageSize.Value)
                                 .ToListAsync().ConfigureAwait(false);
                         }
@@ -643,13 +678,13 @@ namespace Mix.Domain.Data.Repository
                             {
                                 lstModel = await sorted
                                     .Skip(skip.HasValue ? skip.Value : 0)
-                                    .SelectMembers(SelectedMembers)
+                                    .SelectMembers(members)
                                     .Take(top.Value)
                                     .ToListAsync().ConfigureAwait(false);
                             }
                             else
                             {
-                                lstModel = await sorted.SelectMembers(SelectedMembers).ToListAsync().ConfigureAwait(false);
+                                lstModel = await sorted.SelectMembers(members).ToListAsync().ConfigureAwait(false);
                             }
 
                         }
@@ -711,7 +746,7 @@ namespace Mix.Domain.Data.Repository
             else
             {
                 classConstructor = classType.GetConstructor(new Type[] { model.GetType() });
-                if (classConstructor!=null)
+                if (classConstructor != null)
                 {
                     return (TView)classConstructor.Invoke(new object[] { model });
                 }
@@ -767,7 +802,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root                    
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -792,7 +828,8 @@ namespace Mix.Domain.Data.Repository
                 var query = context.Set<TModel>();
 
                 var result = ParsePagingQuery(query, orderByPropertyName, direction, pageSize, pageIndex
-                , context, transaction);
+                    , null, null
+                    , context, transaction);
 
                 return new RepositoryResponse<PaginationModel<TView>>()
                 {
@@ -809,7 +846,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -843,7 +881,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -882,7 +921,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -903,7 +943,9 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                var lstModel = context.Set<TModel>().Where(predicate).ToList();
+                var members = IsCache ? context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties.Select(x => x.Name).ToArray()
+                                       : SelectedMembers;
+                var lstModel = context.Set<TModel>().Where(predicate).SelectMembers(members).ToList();
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
                 return new RepositoryResponse<List<TView>>()
                 {
@@ -920,7 +962,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -946,6 +989,7 @@ namespace Mix.Domain.Data.Repository
                 var result = ParsePagingQuery(query
                 , orderByPropertyName, direction
                 , pageSize, pageIndex
+                , null, null
                 , context, transaction);
                 return new RepositoryResponse<PaginationModel<TView>>()
                 {
@@ -962,7 +1006,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -980,8 +1025,9 @@ namespace Mix.Domain.Data.Repository
 
             try
             {
-                var query = context.Set<TModel>().Where(predicate);
-                var lstModel = await query.ToListAsync().ConfigureAwait(false);
+                var members = IsCache ? context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties.Select(x => x.Name).ToArray()
+                                      : SelectedMembers;
+                var lstModel = await context.Set<TModel>().Where(predicate).SelectMembers(members).ToListAsync();
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
                 return new RepositoryResponse<List<TView>>()
                 {
@@ -998,7 +1044,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1020,8 +1067,8 @@ namespace Mix.Domain.Data.Repository
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
-            {                
-                var query = context.Set<TModel>().Where(predicate);                
+            {
+                var query = context.Set<TModel>().Where(predicate);
                 var result = await ParsePagingQueryAsync(query
                 , orderByPropertyName, direction
                 , pageSize, pageIndex, skip, top
@@ -1041,11 +1088,12 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
-        
+
         #endregion GetModelListBy
 
         // TODO: Should return return enum status code instead
@@ -1122,7 +1170,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1200,7 +1249,7 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
                 }
             }
         }
@@ -1243,7 +1292,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
                 if (result)
                 {
                     _ = RemoveCache(model);
@@ -1289,7 +1339,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
                 if (result)
                 {
                     RemoveCache(model);
@@ -1339,7 +1390,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
                 if (result)
                 {
                     _ = RemoveCache(model);
@@ -1384,7 +1436,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
                 if (result.IsSucceed)
                 {
                     _ = RemoveCache(model);
@@ -1452,7 +1505,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1516,7 +1570,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1566,7 +1621,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1601,7 +1657,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1641,7 +1698,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1676,7 +1734,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
         #endregion
@@ -1713,7 +1772,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1752,7 +1812,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1788,7 +1849,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1820,7 +1882,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1849,7 +1912,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     foreach (var field in fields)
                     {
-                        var lamda = GetLambda(field.PropertyName, false);
+                        var lamda = ReflectionHelper.GetLambda<TModel>(field.PropertyName, false);
                         if (lamda != null)
                         {
                             var prop = context.Entry(model).Property(field.PropertyName);
@@ -1870,7 +1933,7 @@ namespace Mix.Domain.Data.Repository
                     RemoveCache(model, context, transaction);
                 }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
-                
+
                 return new RepositoryResponse<TModel>()
                 {
                     IsSucceed = result,
@@ -1886,7 +1949,8 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
@@ -1911,7 +1975,7 @@ namespace Mix.Domain.Data.Repository
                 {
                     foreach (var field in fields)
                     {
-                        var lamda = GetLambda(field.PropertyName, false);
+                        var lamda = ReflectionHelper.GetLambda<TModel>(field.PropertyName, false);
                         if (lamda != null)
                         {
                             var prop = context.Entry(model).Property(field.PropertyName);
@@ -1947,30 +2011,12 @@ namespace Mix.Domain.Data.Repository
                 if (isRoot)
                 {
                     //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);                }
+                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
+                }
             }
         }
 
         #endregion Update Fields
-
-        /// <summary>
-        /// Gets the lambda.
-        /// </summary>
-        /// <param name="propName">Name of the property.</param>
-        /// <param name="isGetDefault">if set to <c>true</c> [is get default].</param>
-        /// <returns></returns>
-        protected LambdaExpression GetLambda(string propName, bool isGetDefault = true)
-        {
-            var parameter = Expression.Parameter(typeof(TModel));
-            var type = typeof(TModel);
-            var prop = Array.Find(type.GetProperties(), p => p.Name == propName);
-            if (prop == null && isGetDefault)
-            {
-                propName = type.GetProperties().FirstOrDefault()?.Name;
-            }
-            var memberExpression = Expression.Property(parameter, propName);
-            return Expression.Lambda(memberExpression, parameter);
-        }
 
         string[] FilterSelectedFields()
         {
@@ -1995,6 +2041,9 @@ namespace Mix.Domain.Data.Repository
                 }
                 else
                 {
+                    var predicate = BuildExpressionByKeys(model, _context);
+                    model = _context.Set<TModel>().FirstOrDefault(predicate);
+
                     data = ParseView(model, _context, _transaction);
                     if (data != null && data.IsCache)
                     {
@@ -2008,6 +2057,22 @@ namespace Mix.Domain.Data.Repository
                 return null;
             }
         }
+
+        private Expression<Func<TModel, bool>> BuildExpressionByKeys(TModel model, TDbContext context)
+        {
+            Expression<Func<TModel, bool>> predicate = null;
+            foreach (var item in context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties)
+            {
+                var pre = ReflectionHelper.GetExpression<TModel>(
+                        item.Name,
+                        ReflectionHelper.GetPropertyValue(model, item.Name),
+                        MixHeartEnums.ExpressionMethod.Eq);
+                predicate = predicate == null ? pre
+                    : ReflectionHelper.CombineExpression(predicate, pre, MixHeartEnums.ExpressionMethod.And);
+            }
+            return predicate;
+        }
+
         public virtual List<TView> GetCachedData(List<TModel> models, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             List<TView> result = new List<TView>();
