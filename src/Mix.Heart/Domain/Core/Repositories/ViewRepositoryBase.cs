@@ -1032,7 +1032,7 @@ namespace Mix.Domain.Data.Repository
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
-                    Data = IsCache ? GetCachedData(lstModel, _context, _transaction) : ParseView(lstModel, context, transaction)
+                    Data = IsCache ? GetCachedData(lstModel, context, transaction) : ParseView(lstModel, context, transaction)
                 };
             }
             catch (Exception ex)
@@ -2047,7 +2047,10 @@ namespace Mix.Domain.Data.Repository
                     data = ParseView(model, _context, _transaction);
                     if (data != null && data.IsCache)
                     {
-                        _ = CacheService.SetAsync(CachedFileName, data, folder);
+                        Task.Run(() =>
+                        {
+                            CacheService.SetAsync(CachedFileName, data, folder);
+                        });
                     }
                     return data;
                 }
