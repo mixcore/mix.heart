@@ -1,4 +1,5 @@
-﻿using Mix.Domain.Core.ViewModels;
+﻿using Mix.Common.Helper;
+using Mix.Domain.Core.ViewModels;
 using Mix.Domain.Data.Repository;
 using Mix.Heart.Helpers;
 using Newtonsoft.Json.Linq;
@@ -7,6 +8,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
+using static Mix.Heart.Domain.Constants.Common;
 
 namespace Mix.Services
 {
@@ -20,7 +22,7 @@ namespace Mix.Services
         /// The instance
         /// </summary>
         private static volatile CacheService instance;
-        private const string cacheFolder = "cache";
+        private static string cacheFolder = CommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheFolder);
         private const string ext = ".json";
         public CacheService()
         {

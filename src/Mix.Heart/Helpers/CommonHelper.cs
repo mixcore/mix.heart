@@ -16,6 +16,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using static Mix.Heart.Domain.Constants.Common;
 
 namespace Mix.Common.Helper
 {
@@ -640,9 +641,9 @@ namespace Mix.Common.Helper
 
         public static T GetWebConfig<T>(string name)
         {
-            if (WebConfigInstance["GlobalSettings"]!=null)
+            if (WebConfigInstance[WebConfiguration.MixConfigurations] !=null)
             {
-                var result = WebConfigInstance["GlobalSettings"][name];            
+                var result = WebConfigInstance[WebConfiguration.MixConfigurations][name];            
                 return result != null ? result.Value<T>() : default(T);
             }
             else
@@ -650,6 +651,17 @@ namespace Mix.Common.Helper
                 var result = WebConfigInstance[name];
                 return result != null ? result.Value<T>() : default(T);
             }
+        }
+
+        public static List<object> ParseEnumToObject(Type enumType)
+        {
+            List<object> result = new List<object>();
+            var values = Enum.GetValues(enumType);
+            foreach (var item in values)
+            {
+                result.Add(new { name = Enum.GetName(enumType, item), value = Enum.ToObject(enumType, item) });
+            }
+            return result;
         }
     }
 }

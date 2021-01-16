@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using static Mix.Heart.Domain.Constants.Common;
 
 namespace Mix.Domain.Data.ViewModels
 {
@@ -38,7 +39,7 @@ namespace Mix.Domain.Data.ViewModels
     {
         #region Properties
         [JsonIgnore]
-        public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>("IsCache");
+        public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>(WebConfiguration.IsCache);
         [JsonIgnore]
         public string ModelName { get { return typeof(TView).FullName; } }
         [JsonIgnore]
