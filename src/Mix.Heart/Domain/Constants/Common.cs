@@ -11,6 +11,7 @@ namespace Mix.Heart.Domain.Constants
             public const string MixConfigurations = "MixConfigurations";
             public const string IsCache = "IsCache";
             public const string MixCacheFolder = "MixCacheFolder";
+            public const string MixLogsFolder = "MixLogsFolder";
         }
     }
 }
