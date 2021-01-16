@@ -540,7 +540,7 @@ namespace Mix.Domain.Data.Repository
                         {
                             if (top.HasValue)
                             {
-                                lstModel = sorted.Skip(skip.HasValue ? skip.Value : 0)
+                                lstModel = sorted.Skip(skip ?? 0)
                                     .SelectMembers(members)
                             .Take(top.Value)
                             .ToList();
@@ -567,7 +567,7 @@ namespace Mix.Domain.Data.Repository
                             if (top.HasValue)
                             {
                                 lstModel = sorted
-                                    .Skip(skip.HasValue ? skip.Value : 0)
+                                    .Skip(skip ?? 0)
                                     .SelectMembers(members)
                                     .Take(top.Value)
                                     .ToList();
@@ -650,7 +650,7 @@ namespace Mix.Domain.Data.Repository
                         {
                             if (top.HasValue)
                             {
-                                lstModel = await sorted.Skip(skip.HasValue ? skip.Value : 0)
+                                lstModel = await sorted.Skip(skip ?? 0)
                                     .SelectMembers(members)
                             .Take(top.Value)
                             .ToListAsync().ConfigureAwait(false);
@@ -677,7 +677,7 @@ namespace Mix.Domain.Data.Repository
                             if (top.HasValue)
                             {
                                 lstModel = await sorted
-                                    .Skip(skip.HasValue ? skip.Value : 0)
+                                    .Skip(skip ?? 0)
                                     .SelectMembers(members)
                                     .Take(top.Value)
                                     .ToListAsync().ConfigureAwait(false);
@@ -1677,7 +1677,7 @@ namespace Mix.Domain.Data.Repository
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            T total = default(T);
+            T total = default;
             var result = new RepositoryResponse<T>()
             {
                 IsSucceed = true,
@@ -1715,10 +1715,9 @@ namespace Mix.Domain.Data.Repository
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            T total = default(T);
             try
             {
-                total = await context.Set<TModel>().Where(predicate).MinAsync(min).ConfigureAwait(false);
+                T total = await context.Set<TModel>().Where(predicate).MinAsync(min).ConfigureAwait(false);
                 return new RepositoryResponse<T>()
                 {
                     IsSucceed = true,
@@ -1753,10 +1752,9 @@ namespace Mix.Domain.Data.Repository
         , TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            int total = 0;
             try
             {
-                total = context.Set<TModel>().Count(predicate);
+                int total = context.Set<TModel>().Count(predicate);
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,
@@ -1830,10 +1828,9 @@ namespace Mix.Domain.Data.Repository
         public virtual RepositoryResponse<int> Count(TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            int total = 0;
             try
             {
-                total = context.Set<TModel>().Count();
+                int total = context.Set<TModel>().Count();
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,
@@ -1863,10 +1860,9 @@ namespace Mix.Domain.Data.Repository
         public virtual async Task<RepositoryResponse<int>> CountAsync(TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            int total = 0;
             try
             {
-                total = await context.Set<TModel>().CountAsync().ConfigureAwait(false);
+                int total = await context.Set<TModel>().CountAsync().ConfigureAwait(false);
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,
@@ -2096,7 +2092,7 @@ namespace Mix.Domain.Data.Repository
         public string GetCachedKey(TModel model, TDbContext _context)
         {
             var result = string.Empty;
-            _context = _context ?? InitContext();
+            _context ??= InitContext();
             var keys = _context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties
         .Select(x => x.Name);
             foreach (var key in keys)
