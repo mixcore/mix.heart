@@ -64,7 +64,7 @@ namespace Mix.Domain.Data.Repository
             try
             {
                 //For the former case use:
-                return context.Set<TModel>().Any(e => e == entity);
+                return context.Set<TModel>().AsNoTracking().Any(e => e == entity);
             }
             catch (Exception ex)
             {
@@ -98,7 +98,7 @@ namespace Mix.Domain.Data.Repository
             try
             {
                 //For the former case use:
-                return context.Set<TModel>().Any(predicate);
+                return context.Set<TModel>().AsNoTracking().Any(predicate);
             }
             catch (Exception ex)
             {
@@ -213,8 +213,7 @@ namespace Mix.Domain.Data.Repository
             RepositoryResponse<TView> result = new RepositoryResponse<TView>() { IsSucceed = true };
             try
             {
-                //context.Entry(view.Model).State = EntityState.Modified;
-                context.Set<TModel>().Update(view.Model);
+                context.Entry(view.Model).State = EntityState.Modified;
                 result.IsSucceed = context.SaveChanges() > 0;
                 result.Data = view;
                 if (result.IsSucceed)
@@ -251,9 +250,8 @@ namespace Mix.Domain.Data.Repository
             RepositoryResponse<TView> result = new RepositoryResponse<TView>() { IsSucceed = true };
             try
             {
-                //context.Entry(view.Model).State = EntityState.Modified;
-                context.Set<TModel>().Update(view.Model);
-                result.IsSucceed = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
+                context.Entry(view.Model).State = EntityState.Modified;
+                result.IsSucceed = await context.SaveChangesAsync() > 0;
                 result.Data = view;
                 if (result.IsSucceed)
                 {
@@ -290,7 +288,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                TModel model = context.Set<TModel>().SelectMembers(SelectedMembers).SingleOrDefault(predicate);
+                TModel model = context.Set<TModel>().AsNoTracking().SelectMembers(SelectedMembers).SingleOrDefault(predicate);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
@@ -338,7 +336,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                TModel model = await context.Set<TModel>().SelectMembers(SelectedMembers).SingleOrDefaultAsync(predicate).ConfigureAwait(false);
+                TModel model = await context.Set<TModel>().AsNoTracking().SelectMembers(SelectedMembers).SingleOrDefaultAsync(predicate).ConfigureAwait(false);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
@@ -386,7 +384,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                TModel model = context.Set<TModel>().SelectMembers(SelectedMembers).FirstOrDefault(predicate);
+                TModel model = context.Set<TModel>().AsNoTracking().SelectMembers(SelectedMembers).FirstOrDefault(predicate);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
@@ -434,7 +432,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                TModel model = await context.Set<TModel>().SelectMembers(SelectedMembers).FirstOrDefaultAsync(predicate).ConfigureAwait(false);
+                TModel model = await context.Set<TModel>().AsNoTracking().SelectMembers(SelectedMembers).FirstOrDefaultAsync(predicate).ConfigureAwait(false);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;
@@ -784,7 +782,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                var lstModel = context.Set<TModel>().ToList();
+                var lstModel = context.Set<TModel>().AsNoTracking().ToList();
 
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
                 return new RepositoryResponse<List<TView>>()
@@ -825,7 +823,7 @@ namespace Mix.Domain.Data.Repository
 
             try
             {
-                var query = context.Set<TModel>();
+                var query = context.Set<TModel>().AsNoTracking();
 
                 var result = ParsePagingQuery(query, orderByPropertyName, direction, pageSize, pageIndex
                     , null, null
@@ -863,7 +861,7 @@ namespace Mix.Domain.Data.Repository
             List<TView> result = new List<TView>();
             try
             {
-                var lstModel = await context.Set<TModel>().ToListAsync().ConfigureAwait(false);
+                var lstModel = await context.Set<TModel>().AsNoTracking().ToListAsync().ConfigureAwait(false);
 
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
                 return new RepositoryResponse<List<TView>>()
@@ -903,7 +901,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                var query = context.Set<TModel>();
+                var query = context.Set<TModel>().AsNoTracking();
 
                 var result = await ParsePagingQueryAsync(query, orderByPropertyName, direction, pageSize, pageIndex, skip, top, context, transaction).ConfigureAwait(false);
                 return new RepositoryResponse<PaginationModel<TView>>()
@@ -945,8 +943,7 @@ namespace Mix.Domain.Data.Repository
             {
                 var members = IsCache ? context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties.Select(x => x.Name).ToArray()
                                        : SelectedMembers;
-                var lstModel = context.Set<TModel>().Where(predicate).SelectMembers(members).ToList();
-                lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
+                var lstModel = context.Set<TModel>().AsNoTracking().Where(predicate).SelectMembers(members).ToList();
                 return new RepositoryResponse<List<TView>>()
                 {
                     IsSucceed = true,
@@ -985,7 +982,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                var query = context.Set<TModel>().Where(predicate);
+                var query = context.Set<TModel>().AsNoTracking().Where(predicate);
                 var result = ParsePagingQuery(query
                 , orderByPropertyName, direction
                 , pageSize, pageIndex
@@ -1027,7 +1024,7 @@ namespace Mix.Domain.Data.Repository
             {
                 var members = IsCache ? context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties.Select(x => x.Name).ToArray()
                                       : SelectedMembers;
-                var lstModel = await context.Set<TModel>().Where(predicate).SelectMembers(members).ToListAsync();
+                var lstModel = await context.Set<TModel>().AsNoTracking().Where(predicate).SelectMembers(members).ToListAsync();
                 lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
                 return new RepositoryResponse<List<TView>>()
                 {
@@ -1068,7 +1065,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                var query = context.Set<TModel>().Where(predicate);
+                var query = context.Set<TModel>().AsNoTracking().Where(predicate);
                 var result = await ParsePagingQueryAsync(query
                 , orderByPropertyName, direction
                 , pageSize, pageIndex, skip, top
@@ -1111,7 +1108,7 @@ namespace Mix.Domain.Data.Repository
             try
             {
                 var getData = GetModelListBy(predicate, context, transaction);
-                //context.Set<TModel>().Where(predicate).ToList().Configure(false);
+                //context.Set<TModel>().AsNoTracking().Where(predicate).ToList().Configure(false);
                 var result = new RepositoryResponse<List<TModel>>() { IsSucceed = true };
                 if (getData.IsSucceed)
                 {
@@ -1190,7 +1187,7 @@ namespace Mix.Domain.Data.Repository
             try
             {
                 var getData = await GetModelListByAsync(predicate, context, transaction).ConfigureAwait(false);
-                //context.Set<TModel>().Where(predicate).ToListAsync().ConfigureAwait(false);
+                //context.Set<TModel>().AsNoTracking().Where(predicate).ToListAsync().ConfigureAwait(false);
                 var result = new RepositoryResponse<List<TModel>>() { IsSucceed = true };
                 if (getData.IsSucceed)
                 {
@@ -1265,7 +1262,7 @@ namespace Mix.Domain.Data.Repository
         public virtual RepositoryResponse<TModel> RemoveModel(Expression<Func<TModel, bool>> predicate, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            TModel model = context.Set<TModel>().FirstOrDefault(predicate);
+            TModel model = context.Set<TModel>().AsNoTracking().FirstOrDefault(predicate);
             bool result = true;
             try
             {
@@ -1359,7 +1356,7 @@ namespace Mix.Domain.Data.Repository
         public virtual async Task<RepositoryResponse<TModel>> RemoveModelAsync(Expression<Func<TModel, bool>> predicate, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            TModel model = await context.Set<TModel>().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
+            TModel model = await context.Set<TModel>().AsNoTracking().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
             bool result = true;
             try
             {
@@ -1603,8 +1600,8 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                int total = context.Set<TModel>().Any()
-                   ? context.Set<TModel>().Max(predicate)
+                int total = context.Set<TModel>().AsNoTracking().Any()
+                   ? context.Set<TModel>().AsNoTracking().Max(predicate)
                    : 0;
                 return new RepositoryResponse<int>()
                 {
@@ -1639,8 +1636,8 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                int total = context.Set<TModel>().Any()
-                    ? await context.Set<TModel>().MaxAsync(predicate)
+                int total = context.Set<TModel>().AsNoTracking().Any()
+                    ? await context.Set<TModel>().AsNoTracking().MaxAsync(predicate)
                     : 0;
                 return new RepositoryResponse<int>()
                 {
@@ -1685,7 +1682,7 @@ namespace Mix.Domain.Data.Repository
             };
             try
             {
-                total = context.Set<TModel>().Where(predicate).Min(min);
+                total = context.Set<TModel>().AsNoTracking().Where(predicate).Min(min);
                 result.Data = total;
                 return result;
             }
@@ -1717,7 +1714,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                T total = await context.Set<TModel>().Where(predicate).MinAsync(min).ConfigureAwait(false);
+                T total = await context.Set<TModel>().AsNoTracking().Where(predicate).MinAsync(min).ConfigureAwait(false);
                 return new RepositoryResponse<T>()
                 {
                     IsSucceed = true,
@@ -1754,7 +1751,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                int total = context.Set<TModel>().Count(predicate);
+                int total = context.Set<TModel>().AsNoTracking().Count(predicate);
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,
@@ -1789,7 +1786,7 @@ namespace Mix.Domain.Data.Repository
             int total = 0;
             try
             {
-                total = await context.Set<TModel>().CountAsync(predicate).ConfigureAwait(false);
+                total = await context.Set<TModel>().AsNoTracking().CountAsync(predicate).ConfigureAwait(false);
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,
@@ -1830,7 +1827,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                int total = context.Set<TModel>().Count();
+                int total = context.Set<TModel>().AsNoTracking().Count();
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,
@@ -1862,7 +1859,7 @@ namespace Mix.Domain.Data.Repository
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                int total = await context.Set<TModel>().CountAsync().ConfigureAwait(false);
+                int total = await context.Set<TModel>().AsNoTracking().CountAsync().ConfigureAwait(false);
                 return new RepositoryResponse<int>()
                 {
                     IsSucceed = true,
@@ -1901,7 +1898,7 @@ namespace Mix.Domain.Data.Repository
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             bool result = false;
-            TModel model = context.Set<TModel>().FirstOrDefault(predicate);
+            TModel model = context.Set<TModel>().AsNoTracking().FirstOrDefault(predicate);
             try
             {
                 if (model != null)
@@ -1964,7 +1961,7 @@ namespace Mix.Domain.Data.Repository
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             bool result = false;
-            TModel model = await context.Set<TModel>().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
+            TModel model = await context.Set<TModel>().AsNoTracking().FirstOrDefaultAsync(predicate).ConfigureAwait(false);
             try
             {
                 if (model != null)
@@ -2038,7 +2035,7 @@ namespace Mix.Domain.Data.Repository
                 else
                 {
                     var predicate = BuildExpressionByKeys(model, _context);
-                    model = _context.Set<TModel>().FirstOrDefault(predicate);
+                    model = _context.Set<TModel>().AsNoTracking().FirstOrDefault(predicate);
 
                     data = ParseView(model, _context, _transaction);
                     if (data != null && data.IsCache)

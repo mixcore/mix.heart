@@ -75,8 +75,8 @@ namespace Mix.Domain.Data.ViewModels
 
         static ViewModelBase()
         {
-            Repository = new DefaultRepository<TDbContext, TModel, TView>();
-            ModelRepository = new DefaultModelRepository<TDbContext, TModel>();
+            Repository = DefaultRepository<TDbContext, TModel, TView>.Instance;
+            ModelRepository = DefaultModelRepository<TDbContext, TModel>.Instance;
         }
 
         
@@ -410,13 +410,14 @@ namespace Mix.Domain.Data.ViewModels
             {
                 try
                 {
+                    Repository = new DefaultRepository<TDbContext, TModel, TView>();
                     ParseModel(context, transaction);
-                    result = await Repository.SaveModelAsync((TView)this, _context: context, _transaction: transaction).ConfigureAwait(false);
+                    result = await Repository.SaveModelAsync((TView)this, _context: context, _transaction: transaction);
 
                     // Save sub Models
                     if (result.IsSucceed && isSaveSubModels)
                     {
-                        var saveResult = await SaveSubModelsAsync(Model, context, transaction).ConfigureAwait(false);
+                        var saveResult = await SaveSubModelsAsync(Model, context, transaction);
                         if (!saveResult.IsSucceed)
                         {
                             result.Errors.AddRange(saveResult.Errors);
