@@ -41,11 +41,11 @@ namespace Mix.Domain.Data.ViewModels
         [JsonIgnore]
         public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>(WebConfiguration.IsCache);
         [JsonIgnore]
-        public string ModelName { get { return typeof(TView).FullName; } }
+        private string ModelName { get { return typeof(TView).FullName; } }
         [JsonIgnore]
-        public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
+        private string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
         [JsonIgnore]
-        public string CachedFileName { get { return typeof(TView).Name; } }
+        private string CachedFileName { get { return typeof(TView).Name; } }
 
         /// <summary>
         /// Returns true if ... is valid.
@@ -71,12 +71,12 @@ namespace Mix.Domain.Data.ViewModels
         public static DefaultRepository<TDbContext, TModel, TView> Repository;
 
         [JsonIgnore]
-        public static DefaultModelRepository<TDbContext, TModel> ModelRepository = new DefaultModelRepository<TDbContext, TModel>();
+        public static DefaultModelRepository<TDbContext, TModel> ModelRepository;
 
         static ViewModelBase()
         {
-            Repository = DefaultRepository<TDbContext, TModel, TView>.Instance;
-            ModelRepository = DefaultModelRepository<TDbContext, TModel>.Instance;
+            Repository = new DefaultRepository<TDbContext, TModel, TView>();
+            ModelRepository = new DefaultModelRepository<TDbContext, TModel>();
         }
 
         
@@ -87,7 +87,7 @@ namespace Mix.Domain.Data.ViewModels
         /// The mapper.
         /// </value>
         [JsonIgnore]
-        public IMapper Mapper
+        private IMapper Mapper
         {
             get { return _mapper ?? (_mapper = this.CreateMapper()); }
             set => _mapper = value;
@@ -122,7 +122,7 @@ namespace Mix.Domain.Data.ViewModels
         /// The model mapper.
         /// </value>
         [JsonIgnore]
-        public IMapper ModelMapper
+        private IMapper ModelMapper
         {
             get { return _modelMapper ?? (_modelMapper = this.CreateModelMapper()); }
             set => _modelMapper = value;
@@ -410,7 +410,6 @@ namespace Mix.Domain.Data.ViewModels
             {
                 try
                 {
-                    Repository = new DefaultRepository<TDbContext, TModel, TView>();
                     ParseModel(context, transaction);
                     result = await Repository.SaveModelAsync((TView)this, _context: context, _transaction: transaction);
 

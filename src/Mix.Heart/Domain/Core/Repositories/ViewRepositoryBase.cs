@@ -1660,6 +1660,7 @@ namespace Mix.Domain.Data.Repository
         }
 
         #endregion Max
+
         #region Min
 
         /// <summary>
@@ -2063,8 +2064,9 @@ namespace Mix.Domain.Data.Repository
                         item.Name,
                         ReflectionHelper.GetPropertyValue(model, item.Name),
                         MixHeartEnums.ExpressionMethod.Eq);
-                predicate = predicate == null ? pre
-                    : ReflectionHelper.CombineExpression(predicate, pre, MixHeartEnums.ExpressionMethod.And);
+                predicate =
+                    predicate == null ? pre
+                    : predicate.AndAlso(pre);
             }
             return predicate;
         }

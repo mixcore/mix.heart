@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.8.4</Version>
+    <Version>0.0.8.5</Version>
     <Company>Mixcore</Company>
     <Authors>Mixcore Team, Smileway Team</Authors>
     <Product>Mixcore Heart</Product>

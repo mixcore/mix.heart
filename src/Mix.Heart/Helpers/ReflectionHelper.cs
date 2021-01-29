@@ -1,50 +1,15 @@
-﻿using Mix.Domain.Core.ViewModels;
-using Mix.Heart.Enums;
+﻿using Mix.Heart.Enums;
 using Mix.Heart.Extensions;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
 namespace Mix.Heart.Helpers
 {
     public class ReflectionHelper
     {
-        public static Expression<Func<T, bool>> CombineExpression<T>(
-            Expression<Func<T, bool>> expr1, Expression<Func<T, bool>> expr2, MixHeartEnums.ExpressionMethod method, string name = "model")
-        {
-            var parameter = Expression.Parameter(typeof(T), name);
-
-            var leftVisitor = new ReplaceExpressionVisitor(expr1.Parameters[0], parameter);
-            var left = leftVisitor.Visit(expr1.Body);
-
-            var rightVisitor = new ReplaceExpressionVisitor(expr2.Parameters[0], parameter);
-            var right = rightVisitor.Visit(expr2.Body);
-            switch (method)
-            {
-                case MixHeartEnums.ExpressionMethod.Eq:
-                    break;
-                case MixHeartEnums.ExpressionMethod.Lt:
-                    break;
-                case MixHeartEnums.ExpressionMethod.Gt:
-                    break;
-                case MixHeartEnums.ExpressionMethod.Lte:
-                    break;
-                case MixHeartEnums.ExpressionMethod.Gte:
-                    break;
-                case MixHeartEnums.ExpressionMethod.And:
-                    return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(left, right), parameter);
-                case MixHeartEnums.ExpressionMethod.Or:
-                    return Expression.Lambda<Func<T, bool>>(Expression.OrElse(left, right), parameter);
-                default:
-                    break;
-            }
-            return null;
-        }
-
         public static Type GetPropertyType(Type type, string name)
         {
             Type fieldPropertyType;
