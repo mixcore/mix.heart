@@ -50,7 +50,7 @@ namespace Mix.Services
         {
             try
             {
-                var cachedFile = FileRepository.Instance.GetFile(key, ext, $"{cacheFolder}/{folder}", false, "");
+                var cachedFile = MixFileRepository.Instance.GetFile(key, ext, $"{cacheFolder}/{folder}", false, "");
                 if (!string.IsNullOrEmpty(cachedFile.Content))
                 {
                     //return GetFromBase64<T>(cachedFile);
@@ -135,7 +135,7 @@ namespace Mix.Services
                 FileFolder = $"{cacheFolder}/{folder}",
                 Content = jobj.ToString(Newtonsoft.Json.Formatting.None)
             };
-            return FileRepository.Instance.SaveFile(cacheFile);
+            return MixFileRepository.Instance.SaveFile(cacheFile);
         }
         private static bool SaveBase64<T>(string key, T value, string folder)
         {
@@ -149,13 +149,13 @@ namespace Mix.Services
                 FileFolder = $"{cacheFolder}/{folder}",
                 Content = Convert.ToBase64String(data)
             };
-            return FileRepository.Instance.SaveFile(cacheFile);
+            return MixFileRepository.Instance.SaveFile(cacheFile);
         }
 
         private static bool SaveByte<T>(string key, T value, string folder)
         {
             string saveFolder = $"{cacheFolder}/{folder}/";
-            FileRepository.Instance.CreateDirectoryIfNotExist(saveFolder);
+            MixFileRepository.Instance.CreateDirectoryIfNotExist(saveFolder);
 
             using (BinaryWriter binWriter =
                     new BinaryWriter(File.Open($"{saveFolder}/{key.ToLower()}.txt", FileMode.OpenOrCreate)))
@@ -181,7 +181,7 @@ namespace Mix.Services
         {
             try
             {
-                var cachedFile = FileRepository.Instance.GetFile(key, ".txt", $"{cacheFolder}/{folder}", false, "");
+                var cachedFile = MixFileRepository.Instance.GetFile(key, ".txt", $"{cacheFolder}/{folder}", false, "");
                 if (!string.IsNullOrEmpty(cachedFile.Content))
                 {
                     //return GetFromBase64<T>(cachedFile);
@@ -223,11 +223,11 @@ namespace Mix.Services
 
         public static Task RemoveCacheAsync()
         {
-            return Task.FromResult(FileRepository.Instance.EmptyFolder(cacheFolder));
+            return Task.FromResult(MixFileRepository.Instance.EmptyFolder(cacheFolder));
         }
         public static Task RemoveCacheAsync(string folder)
         {
-            return Task.FromResult(FileRepository.Instance.DeleteFolder($"{cacheFolder}/{folder}"));
+            return Task.FromResult(MixFileRepository.Instance.DeleteFolder($"{cacheFolder}/{folder}"));
         }
         public static Task RemoveCacheAsync(Type type, string key = null)
         {
@@ -236,7 +236,7 @@ namespace Mix.Services
             {
                 path += $"/{key}";
             }
-            return Task.FromResult(FileRepository.Instance.EmptyFolder(path));
+            return Task.FromResult(MixFileRepository.Instance.EmptyFolder(path));
         }
     }
 }

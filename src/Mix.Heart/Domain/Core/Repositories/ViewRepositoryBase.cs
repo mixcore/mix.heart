@@ -1899,7 +1899,7 @@ namespace Mix.Domain.Data.Repository
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             bool result = false;
-            TModel model = context.Set<TModel>().AsNoTracking().FirstOrDefault(predicate);
+            TModel model = context.Set<TModel>().AsNoTracking().SingleOrDefault(predicate);
             try
             {
                 if (model != null)

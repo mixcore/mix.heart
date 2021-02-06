@@ -18,14 +18,14 @@ using System.Linq;
 
 namespace Mix.Services
 {
-    public class FileRepository
+    public class MixFileRepository
     {
         public string CurrentDirectory { get; set; }
 
         /// <summary>
         /// The instance
         /// </summary>
-        private static volatile FileRepository instance;
+        private static volatile MixFileRepository instance;
 
         /// <summary>
         /// The synchronize root
@@ -36,7 +36,7 @@ namespace Mix.Services
         /// Gets the instance.
         /// </summary>
         /// <returns></returns>
-        public static FileRepository Instance
+        public static MixFileRepository Instance
         {
             get
             {
@@ -45,7 +45,7 @@ namespace Mix.Services
                     lock (syncRoot)
                     {
                         if (instance == null)
-                            instance = new FileRepository();
+                            instance = new MixFileRepository();
                     }
                 }
                 return instance;
@@ -57,9 +57,9 @@ namespace Mix.Services
         }
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="FileRepository"/> class from being created.
+        /// Prevents a default instance of the <see cref="MixFileRepository"/> class from being created.
         /// </summary>
-        private FileRepository()
+        private MixFileRepository()
         {
             CurrentDirectory = Environment.CurrentDirectory;
         }

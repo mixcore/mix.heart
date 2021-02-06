@@ -75,11 +75,11 @@ namespace Mix.Common.Helper
         private static JObject LoadWebConfig()
         {
             // Load configurations from appSettings.json
-            var settings = FileRepository.Instance.GetFile("appSettings.json", string.Empty, true);
+            var settings = MixFileRepository.Instance.GetFile("appSettings.json", string.Empty, true);
 
             if (string.IsNullOrEmpty(settings.Content))
             {
-                settings = FileRepository.Instance.GetFile("appSettings.json", string.Empty, true, "{}");
+                settings = MixFileRepository.Instance.GetFile("appSettings.json", string.Empty, true, "{}");
             }
             string content = string.IsNullOrWhiteSpace(settings.Content) ? "{}" : settings.Content;
             return JObject.Parse(content);

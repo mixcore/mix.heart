@@ -118,7 +118,7 @@ namespace Mix.Common.Helper
 
         public static void LogException(Exception ex, Type type = null)
         {
-            string fullPath = $"{Environment.CurrentDirectory}/{CommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheFolder)}/{DateTime.Now.ToString("dd-MM-yyyy")}";
+            string fullPath = $"{Environment.CurrentDirectory}/{CommonHelper.GetWebConfig<string>(WebConfiguration.MixLogsFolder)}/{DateTime.Now.ToString("dd-MM-yyyy")}";
             if (!string.IsNullOrEmpty(fullPath) && !Directory.Exists(fullPath))
             {
                 Directory.CreateDirectory(fullPath);
