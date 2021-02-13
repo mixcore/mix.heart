@@ -2,12 +2,13 @@
 // The Mixcore Foundation licenses this file to you under the GNU General Public License v3.0.
 // See the LICENSE file in the project root for more information.
 
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Mix.Common.Helper;
 using Mix.Domain.Core.ViewModels;
 using Mix.Heart.Enums;
+using Mix.Heart.Extensions;
+using Mix.Heart.Helpers;
 using Mix.Services;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Mix.Heart.Extensions;
-using Mix.Heart.Helpers;
 
 namespace Mix.Domain.Data.Repository
 {
@@ -32,17 +31,20 @@ namespace Mix.Domain.Data.Repository
         where TView : ViewModels.ViewModelBase<TDbContext, TModel, TView>
     {
         #region Properties
+
         public string KeyName { get; set; } = "Id";
         public string ModelName { get { return typeof(TView).FullName; } }
-        public bool IsCache
-        {
+
+        public bool IsCache {
             get { return CommonHelper.GetWebConfig<bool>("IsCache"); }
         }
+
         public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
         public string CachedFileName { get { return typeof(TView).Name; } }
 
         public string[] SelectedMembers { get { return FilterSelectedFields(); } }
-        #endregion
+
+        #endregion Properties
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewRepositoryBase{TDbContext, TModel, TView}"/> class.
@@ -417,7 +419,6 @@ namespace Mix.Domain.Data.Repository
             }
         }
 
-
         /// <summary>
         /// Gets the single model asynchronous.
         /// </summary>
@@ -574,7 +575,6 @@ namespace Mix.Domain.Data.Repository
                             {
                                 lstModel = sorted.SelectMembers(members).ToList();
                             }
-
                         }
                         break;
                 }
@@ -684,7 +684,6 @@ namespace Mix.Domain.Data.Repository
                             {
                                 lstModel = await sorted.SelectMembers(members).ToListAsync().ConfigureAwait(false);
                             }
-
                         }
                         break;
                 }
@@ -799,7 +798,7 @@ namespace Mix.Domain.Data.Repository
             {
                 if (isRoot)
                 {
-                    //if current Context is Root                    
+                    //if current Context is Root
                     UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
                 }
             }
@@ -1090,7 +1089,6 @@ namespace Mix.Domain.Data.Repository
             }
         }
 
-
         #endregion GetModelListBy
 
         // TODO: Should return return enum status code instead
@@ -1312,7 +1310,6 @@ namespace Mix.Domain.Data.Repository
             bool result = true;
             try
             {
-
                 if (model != null && CheckIsExists(model, context, transaction))
                 {
                     context.Entry(model).State = EntityState.Deleted;
@@ -1735,7 +1732,8 @@ namespace Mix.Domain.Data.Repository
                 }
             }
         }
-        #endregion
+
+        #endregion Min
 
         #region Count
 
@@ -2012,15 +2010,15 @@ namespace Mix.Domain.Data.Repository
 
         #endregion Update Fields
 
-        string[] FilterSelectedFields()
+        private string[] FilterSelectedFields()
         {
             var viewProperties = typeof(TView).GetProperties();
             var modelProperties = typeof(TModel).GetProperties();
             return viewProperties.Where(p => modelProperties.Any(m => m.Name == p.Name)).Select(p => p.Name).ToArray();
         }
 
+        #region Cached
 
-        #region Cached       
         public virtual TView GetCachedData(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             if (model != null)
@@ -2084,10 +2082,12 @@ namespace Mix.Domain.Data.Repository
             }
             return result;
         }
+
         public object GetPropValue(object src, string propName)
         {
             return src?.GetType().GetProperty(propName)?.GetValue(src, null);
         }
+
         public string GetCachedKey(TModel model, TDbContext _context)
         {
             var result = string.Empty;
@@ -2100,6 +2100,7 @@ namespace Mix.Domain.Data.Repository
             }
             return result;
         }
+
         public virtual Task AddToCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             if (model != null)
@@ -2111,6 +2112,7 @@ namespace Mix.Domain.Data.Repository
             }
             return Task.CompletedTask;
         }
+
         public virtual Task RemoveCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             if (model != null)
@@ -2128,6 +2130,7 @@ namespace Mix.Domain.Data.Repository
             CacheService.RemoveCacheAsync(folder);
             return Task.CompletedTask;
         }
-        #endregion
+
+        #endregion Cached
     }
 }

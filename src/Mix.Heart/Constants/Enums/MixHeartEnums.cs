@@ -6,11 +6,13 @@ namespace Mix.Heart.Enums
     public class MixHeartEnums
     {
         #region Common
+
         public enum DisplayDirection
         {
             Asc,
             Desc
         }
+
         public enum ExpressionMethod
         {
             Eq,

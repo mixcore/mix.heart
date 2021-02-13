@@ -6,8 +6,8 @@ namespace Mix.Cms.Lib.Helpers
 {
     public class RSAEncryptionHelper
     {
-        static UnicodeEncoding ByteConverter = new UnicodeEncoding();
-        static RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
+        private static UnicodeEncoding ByteConverter = new UnicodeEncoding();
+        private static RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
 
         public static string GetEncryptedText(string text)
         {
@@ -22,8 +22,6 @@ namespace Mix.Cms.Lib.Helpers
             byte[] arrDecryptedtex = Decryption(arrEncryptedtext, RSA.ExportParameters(false), false);
             return ByteConverter.GetString(arrDecryptedtex);
         }
-
-
 
         static public byte[] Encryption(byte[] Data, RSAParameters RSAKey, bool DoOAEPPadding)
         {

@@ -1,14 +1,5 @@
-# Mix Heart
-
-[![CodeFactor](https://www.codefactor.io/repository/github/mixcore/mixcore-heart/badge)](https://www.codefactor.io/repository/github/mixcore/mixcore-heart)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FMix IO%2FMix IO-Heart.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FMix IO%2FMix IO-Heart?ref=badge_shield)
-[![Build Status](https://travis-ci.org/Mix IO/Mix IO-Heart.svg?branch=master)](https://travis-ci.org/Mix IO/Mix IO-Heart)
-
-## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FMix IO%2FMix IO-Heart.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FMix IO%2FMix IO-Heart?ref=badge_large)
-
-## Reference
-https://github.com/Mix IO/Mix IO-Heart-Sample
+# Mix.Heart
+ASP.Net Core Web/Service develop framework kit. The most robust way to build any webs/services.
 
 ## Sample Code
 *Create Models*

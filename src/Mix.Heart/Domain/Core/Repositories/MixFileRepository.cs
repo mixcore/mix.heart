@@ -36,10 +36,8 @@ namespace Mix.Services
         /// Gets the instance.
         /// </summary>
         /// <returns></returns>
-        public static MixFileRepository Instance
-        {
-            get
-            {
+        public static MixFileRepository Instance {
+            get {
                 if (instance == null)
                 {
                     lock (syncRoot)
@@ -50,8 +48,7 @@ namespace Mix.Services
                 }
                 return instance;
             }
-            set
-            {
+            set {
                 instance = value;
             }
         }
@@ -103,7 +100,7 @@ namespace Mix.Services
         {
             string fullPath = CommonHelper.GetFullPath(new string[]
            {
-                "wwwroot",                
+                "wwwroot",
                 folder,
                 filename
            });
@@ -188,7 +185,6 @@ namespace Mix.Services
                 {
                     using (var stream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-
                         using (StreamReader s = new StreamReader(stream))
                         {
                             result = new FileViewModel()
@@ -199,7 +195,6 @@ namespace Mix.Services
                                 Content = s.ReadToEnd()
                             };
                         }
-
                     }
                 }
                 catch
@@ -229,7 +224,7 @@ namespace Mix.Services
             var arr = fullname.Split('.');
             if (arr.Length >= 2)
             {
-                return GetFile(fullname.Substring(0,fullname.LastIndexOf('.')), $".{arr[arr.Length-1]}", FileFolder, isCreate, defaultContent);
+                return GetFile(fullname.Substring(0, fullname.LastIndexOf('.')), $".{arr[arr.Length - 1]}", FileFolder, isCreate, defaultContent);
             }
             else
             {
@@ -259,7 +254,6 @@ namespace Mix.Services
             }
             return true;
         }
-
 
         public bool DeleteFile(string fullPath)
         {
@@ -307,6 +301,7 @@ namespace Mix.Services
             }
             return true;
         }
+
         public bool CopyWebDirectory(string srcPath, string desPath)
         {
             if (srcPath != desPath)
@@ -327,7 +322,6 @@ namespace Mix.Services
             }
             return true;
         }
-
 
         public void CreateDirectoryIfNotExist(string fullPath)
         {
@@ -465,7 +459,7 @@ namespace Mix.Services
         public List<FileViewModel> GetWebFiles(string folder)
         {
             string fullPath = CommonHelper.GetFullPath(new string[] {
-                    "wwwroot",                    
+                    "wwwroot",
                     folder
                 });
 
@@ -494,7 +488,6 @@ namespace Mix.Services
             }
             return result;
         }
-
 
         public bool SaveWebFile(FileViewModel file, int imageSize = 2000)
         {
@@ -718,15 +711,15 @@ namespace Mix.Services
             }
         }
     }
+
     public class FileViewModel
     {
         private string _fullPath = string.Empty;
         private string _webPath = string.Empty;
+
         [JsonProperty("fullPath")]
-        public string FullPath
-        {
-            get
-            {
+        public string FullPath {
+            get {
                 _fullPath = CommonHelper.GetFullPath(new string[] {
                     FileFolder,
                     //FolderName,
@@ -735,44 +728,47 @@ namespace Mix.Services
 
                 return _fullPath;
             }
-            set
-            {
+            set {
                 _fullPath = value;
             }
         }
+
         [JsonProperty("webPath")]
-        public string WebPath
-        {
-            get
-            {
+        public string WebPath {
+            get {
                 _webPath = CommonHelper.GetFullPath(new string[] {
                     FileFolder,
                     $"{Filename}{Extension}"
                 });
                 return _webPath;
             }
-            set
-            {
+            set {
                 _webPath = value;
             }
         }
+
         [JsonProperty("folderName")]
         public string FolderName { get; set; }
+
         [JsonProperty("fileFolder")]
         public string FileFolder { get; set; }
+
         [JsonProperty("fileName")]
         public string Filename { get; set; }
+
         [JsonProperty("extension")]
         public string Extension { get; set; }
+
         [JsonProperty("content")]
         public string Content { get; set; }
+
         [JsonProperty("fileStream")]
         public string FileStream { get; set; }
 
         public FileViewModel()
         {
-
         }
+
         public FileViewModel(IFormFile file, string folder)
         {
             Filename = file.FileName.Substring(0, file.FileName.LastIndexOf('.'));

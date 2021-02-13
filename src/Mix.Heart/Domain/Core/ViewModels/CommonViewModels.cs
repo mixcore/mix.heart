@@ -4,7 +4,6 @@
 
 using Mix.Heart.Enums;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
@@ -269,10 +268,13 @@ namespace Mix.Domain.Core.ViewModels
     {
         [JsonProperty("encrypted")]
         public string Encrypted { get; set; }
+
         [JsonProperty("plainText")]
         public string PlainText { get; set; }
+
         [JsonProperty("iv")]
-        public string IV{ get; set; }
+        public string IV { get; set; }
+
         [JsonProperty("key")]
         public string Key { get; set; }
     }
@@ -380,7 +382,7 @@ namespace Mix.Domain.Core.ViewModels
         /// </value>
         [JsonProperty("pageSize")]
         public int? PageSize { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the index of the page.
         /// </summary>

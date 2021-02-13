@@ -8,7 +8,6 @@ namespace Mix.Helpers
 {
     public class ImageResizer
     {
-
         public static Image cropImage(Image img, Rectangle cropArea)
         {
             Bitmap bmpImage = new Bitmap(img);
@@ -16,6 +15,7 @@ namespace Mix.Helpers
             bmpImage.PixelFormat);
             return (Image)(bmpCrop);
         }
+
         public static void ResizeStream(int imageSize, Stream fileStream, string outputPath)
         {
             try
@@ -66,9 +66,9 @@ namespace Mix.Helpers
             }
             finally
             {
-
             }
         }
+
         public static bool ResizeImage(int imageSize, string base64, string outputPath)
         {
             try
@@ -82,6 +82,7 @@ namespace Mix.Helpers
                 return false;
             }
         }
+
         public static void ResizeStream(Image image, string outputPath, int imageSize)
         {
             try
@@ -131,9 +132,9 @@ namespace Mix.Helpers
             }
             finally
             {
-
             }
         }
+
         public static Image getResizedImage(String path, float width, float height, bool isCrop)
         {
             return getResizedImage(path, width, height, isCrop, false);
@@ -145,7 +146,6 @@ namespace Mix.Helpers
 
             int thumbnailSize = (int)width;
             int newWidth, newHeight;
-
 
             if (image.Width > image.Height)
             {
@@ -160,7 +160,6 @@ namespace Mix.Helpers
                         newWidth = image.Width * thumbnailSize / image.Height;
                     }
                 }
-
             }
             else
             {
@@ -188,8 +187,6 @@ namespace Mix.Helpers
 
             if (isCrop)
             {
-
-
                 Bitmap bmp = returnImage as Bitmap;
                 height = height > bmp.Height ? bmp.Height : height;
                 width = width > bmp.Width ? bmp.Width : width;
@@ -235,6 +232,7 @@ namespace Mix.Helpers
             }
             return ImageFormat.Jpeg;
         }
+
         public static Image Base64ToImage(string base64String)
         {
             // Convert base 64 string to byte[]
@@ -248,7 +246,3 @@ namespace Mix.Helpers
         }
     }
 }
-
-
-
-

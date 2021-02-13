@@ -94,7 +94,7 @@ namespace Mix.Common.Helper
         /// <param name="str">The string.</param>
         /// <returns></returns>
         public static string WhiteSpaceToHyphen(string str, char replaceChar = '-')
-        {           
+        {
             string pattern = " |–";
             MatchCollection matchs = Regex.Matches(str, pattern, RegexOptions.IgnoreCase);
             foreach (Match m in matchs)

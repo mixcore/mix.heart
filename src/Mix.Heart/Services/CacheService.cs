@@ -1,7 +1,5 @@
 ﻿using Mix.Common.Helper;
 using Mix.Domain.Core.ViewModels;
-using Mix.Domain.Data.Repository;
-using Mix.Heart.Helpers;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
@@ -18,20 +16,21 @@ namespace Mix.Services
         /// The synchronize root
         /// </summary>
         private static readonly object syncRoot = new Object();
+
         /// <summary>
         /// The instance
         /// </summary>
         private static volatile CacheService instance;
+
         private static string cacheFolder = CommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheFolder);
         private const string ext = ".json";
+
         public CacheService()
         {
         }
 
-        public static CacheService Instance
-        {
-            get
-            {
+        public static CacheService Instance {
+            get {
                 if (instance == null)
                 {
                     lock (syncRoot)
@@ -46,6 +45,7 @@ namespace Mix.Services
                 return instance;
             }
         }
+
         public static T Get<T>(string key, string folder = null)
         {
             try
@@ -95,6 +95,7 @@ namespace Mix.Services
             byte[] data = Encoding.ASCII.GetBytes(cachedFile.Content);
             return ByteArrayToObject<T>(data);
         }
+
         // Convert a byte array to an Object
         private static T ByteArrayToObject<T>(byte[] arrBytes)
         {
@@ -106,9 +107,9 @@ namespace Mix.Services
 
             return obj;
         }
+
         public static RepositoryResponse<bool> Set<T>(string key, T value, string folder = null)
         {
-
             if (value != null)
             {
                 //var result = SaveBase64(key, value, folder);
@@ -137,6 +138,7 @@ namespace Mix.Services
             };
             return MixFileRepository.Instance.SaveFile(cacheFile);
         }
+
         private static bool SaveBase64<T>(string key, T value, string folder)
         {
             var jobj = JObject.FromObject(value);
@@ -199,12 +201,10 @@ namespace Mix.Services
                 Console.WriteLine(ex);
                 return Task.FromResult(default(T));
             }
-
         }
 
         public static Task<RepositoryResponse<bool>> SetAsync<T>(string key, T value, string folder = null)
         {
-
             if (value != null)
             {
                 //var result = SaveBase64(key, value, folder);
@@ -225,10 +225,12 @@ namespace Mix.Services
         {
             return Task.FromResult(MixFileRepository.Instance.EmptyFolder(cacheFolder));
         }
+
         public static Task RemoveCacheAsync(string folder)
         {
             return Task.FromResult(MixFileRepository.Instance.DeleteFolder($"{cacheFolder}/{folder}"));
         }
+
         public static Task RemoveCacheAsync(Type type, string key = null)
         {
             string path = $"{cacheFolder}/{type.FullName.Substring(0, type.FullName.LastIndexOf('.')).Replace(".", "/")}";
