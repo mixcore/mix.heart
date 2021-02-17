@@ -103,7 +103,7 @@ namespace Mix.Services
         {
             string fullPath = CommonHelper.GetFullPath(new string[]
            {
-                "wwwroot",                
+                "wwwroot",
                 folder,
                 filename
            });
@@ -229,7 +229,7 @@ namespace Mix.Services
             var arr = fullname.Split('.');
             if (arr.Length >= 2)
             {
-                return GetFile(fullname.Substring(0,fullname.LastIndexOf('.')), $".{arr[arr.Length-1]}", FileFolder, isCreate, defaultContent);
+                return GetFile(fullname.Substring(0, fullname.LastIndexOf('.')), $".{arr[arr.Length - 1]}", FileFolder, isCreate, defaultContent);
             }
             else
             {
@@ -465,7 +465,7 @@ namespace Mix.Services
         public List<FileViewModel> GetWebFiles(string folder)
         {
             string fullPath = CommonHelper.GetFullPath(new string[] {
-                    "wwwroot",                    
+                    "wwwroot",
                     folder
                 });
 
@@ -496,7 +496,7 @@ namespace Mix.Services
         }
 
 
-        public bool SaveWebFile(FileViewModel file, int imageSize = 2000)
+        public bool SaveWebFile(FileViewModel file)
         {
             try
             {
@@ -524,19 +524,11 @@ namespace Mix.Services
                     else
                     {
                         string base64 = file.FileStream.Split(',')[1];
-
-                        if (!string.IsNullOrEmpty(ImageResizer.getContentType(fileName)))
+                        byte[] bytes = Convert.FromBase64String(base64);
+                        using (var writer = File.Create(fileName))
                         {
-                            return ImageResizer.ResizeImage(imageSize, base64, fileName);
-                        }
-                        else
-                        {
-                            byte[] bytes = Convert.FromBase64String(base64);
-                            using (var writer = File.Create(fileName))
-                            {
-                                writer.Write(bytes, 0, bytes.Length);
-                                return true;
-                            }
+                            writer.Write(bytes, 0, bytes.Length);
+                            return true;
                         }
                     }
                 }
