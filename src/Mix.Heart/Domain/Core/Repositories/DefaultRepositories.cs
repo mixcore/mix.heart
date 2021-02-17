@@ -43,10 +43,8 @@ namespace Mix.Domain.Data.Repository
         /// <value>
         /// The instance.
         /// </value>
-        public static DefaultRepository<TDbContext, TModel, TView> Instance
-        {
-            get
-            {
+        public static DefaultRepository<TDbContext, TModel, TView> Instance {
+            get {
                 if (instance == null)
                 {
                     lock (syncRoot)

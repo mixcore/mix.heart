@@ -1,6 +1,4 @@
-﻿using Mix.Domain.Core.ViewModels;
-
-namespace Mix.Domain.Core.ViewModels
+﻿namespace Mix.Domain.Core.ViewModels
 {
     public class ViewModelHelper
     {

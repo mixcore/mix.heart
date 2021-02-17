@@ -102,7 +102,6 @@ namespace Mix.Heart.Helpers
                             }
                         }
                     }
-
                 }
                 result.IsSucceed = true;
                 result.Data = new CryptoViewModel<string>()
@@ -117,7 +116,6 @@ namespace Mix.Heart.Helpers
                 result.Exception = ex;
             }
             return result;
-
         }
 
         public static string EncryptString(string text, string keyString, string strIV)
@@ -182,6 +180,7 @@ namespace Mix.Heart.Helpers
                 }
             }
         }
+
         public static string EncryptString(string text, string keyString)
         {
             var key = Encoding.UTF8.GetBytes(keyString);
@@ -215,6 +214,7 @@ namespace Mix.Heart.Helpers
                 }
             }
         }
+
         public static string DecryptString(string cipherText, string keyString)
         {
             var fullCipher = Convert.FromBase64String(cipherText);
@@ -248,14 +248,16 @@ namespace Mix.Heart.Helpers
                 }
             }
         }
-
     }
+
     public class CryptoViewModel<T>
     {
         [JsonProperty("base64Key")]
         public string Base64Key { get; set; }
+
         [JsonProperty("base64IV")]
         public string Base64IV { get; set; }
+
         [JsonProperty("data")]
         public T Data { get; set; }
     }

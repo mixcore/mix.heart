@@ -45,7 +45,7 @@ namespace Mix.Common.Helper
         }
 
         public static RepositoryResponse<TResult> HandleException<TResult>(TResult data, Exception ex, bool isRoot, IDbContextTransaction transaction)
-            
+
         {
             if (isRoot)
             {
@@ -57,7 +57,7 @@ namespace Mix.Common.Helper
             errors.Add(ex.InnerException != null ? ex.InnerException.Message : ex.Message);
             return new RepositoryResponse<TResult>()
             {
-                IsSucceed = false,                
+                IsSucceed = false,
                 Exception = (ex.InnerException ?? ex),
                 Data = data,
                 Errors = errors
@@ -83,18 +83,17 @@ namespace Mix.Common.Helper
             };
         }
 
-        public static void CloseDbContext(ref TDbContext context, ref IDbContextTransaction transaction)            
+        public static void CloseDbContext(ref TDbContext context, ref IDbContextTransaction transaction)
         {
             try
             {
-                transaction.Dispose(); 
+                transaction.Dispose();
                 context.Dispose();
             }
             catch (Exception ex)
             {
                 LogException(ex, typeof(TDbContext));
             }
-            
         }
 
         public static RepositoryResponse<TResult> HandleObjectException<TResult>(Exception ex, bool isRoot, IDbContextTransaction transaction)

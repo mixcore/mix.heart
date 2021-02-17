@@ -52,10 +52,8 @@ namespace Mix.Common.Helper
             }
         }
 
-        public static JObject WebConfigInstance
-        {
-            get
-            {
+        public static JObject WebConfigInstance {
+            get {
                 if (webConfigInstance == null)
                 {
                     lock (syncRoot)
@@ -66,8 +64,7 @@ namespace Mix.Common.Helper
                 }
                 return webConfigInstance;
             }
-            set
-            {
+            set {
                 webConfigInstance = value;
             }
         }
@@ -237,7 +234,6 @@ namespace Mix.Common.Helper
             //this image is a single pixel (black)
             try
             {
-
                 string fileData = strBase64.Substring(strBase64.IndexOf(',') + 1);
                 byte[] bytes = Convert.FromBase64String(fileData);
                 return SaveFileBytes(folder, filename, bytes);
@@ -400,7 +396,6 @@ namespace Mix.Common.Helper
 
                     if (headers == null)
                     {
-
                         // get first item
                         var listColumn = lstData[0].GetType().GetProperties();
 
@@ -454,22 +449,18 @@ namespace Mix.Common.Helper
 
                         return result;
                     }
-                    
                 }
                 else
                 {
                     result.Errors.Add("Can not export data of empty list");
                     return result;
                 }
-
             }
             catch (Exception ex)
             {
                 result.Errors.Add(ex.Message);
                 return result;
             }
-
-            
         }
 
         public static RepositoryResponse<FileViewModel> ExportJObjectToExcel(List<JObject> lstData, string sheetName
@@ -496,7 +487,6 @@ namespace Mix.Common.Helper
 
                     if (headers == null)
                     {
-
                         // get first item
                         var listColumn = lstData[0].Properties();
 
@@ -518,9 +508,9 @@ namespace Mix.Common.Helper
                     foreach (var a in lstData)
                     {
                         var r = dtable.NewRow();
-                            foreach (var prop in a.Properties())
-                            {
-                                r[prop.Name] = a[prop.Name]["value"];
+                        foreach (var prop in a.Properties())
+                        {
+                            r[prop.Name] = a[prop.Name]["value"];
                         }
                         dtable.Rows.Add(r);
                     }
@@ -538,22 +528,18 @@ namespace Mix.Common.Helper
 
                         return result;
                     }
-                    
                 }
                 else
                 {
                     result.Errors.Add("Can not export data of empty list");
                     return result;
                 }
-
             }
             catch (Exception ex)
             {
                 result.Errors.Add(ex.Message);
                 return result;
             }
-
-            
         }
 
         public static RepositoryResponse<FileViewModel> ExportAttributeToExcel(List<JObject> lstData, string sheetName
@@ -580,7 +566,6 @@ namespace Mix.Common.Helper
 
                     if (headers == null)
                     {
-
                         // get first item
                         var listColumn = lstData[0].Properties();
 
@@ -621,29 +606,25 @@ namespace Mix.Common.Helper
                         result.IsSucceed = true;
                         return result;
                     }
-
                 }
                 else
                 {
                     result.Errors.Add("Can not export data of empty list");
                     return result;
                 }
-
             }
             catch (Exception ex)
             {
                 result.Errors.Add(ex.Message);
                 return result;
             }
-
-
         }
 
         public static T GetWebConfig<T>(string name)
         {
-            if (WebConfigInstance[WebConfiguration.MixConfigurations] !=null)
+            if (WebConfigInstance[WebConfiguration.MixConfigurations] != null)
             {
-                var result = WebConfigInstance[WebConfiguration.MixConfigurations][name];            
+                var result = WebConfigInstance[WebConfiguration.MixConfigurations][name];
                 return result != null ? result.Value<T>() : default(T);
             }
             else

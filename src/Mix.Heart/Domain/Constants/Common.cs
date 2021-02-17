@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Mix.Heart.Domain.Constants
+﻿namespace Mix.Heart.Domain.Constants
 {
     public class Common
     {

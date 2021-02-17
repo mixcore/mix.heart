@@ -30,7 +30,7 @@ namespace Mix.Domain.Data.ViewModels
     /// <typeparam name="TDbContext">The type of the database context.</typeparam>
     /// <typeparam name="TModel">The type of the model.</typeparam>
     /// <typeparam name="TView">The type of the view.</typeparam>
-    /// 
+    ///
     [Serializable]
     public abstract class ViewModelBase<TDbContext, TModel, TView> : ISerializable
         where TDbContext : DbContext
@@ -38,12 +38,16 @@ namespace Mix.Domain.Data.ViewModels
         where TView : ViewModelBase<TDbContext, TModel, TView> // instance of inherited
     {
         #region Properties
+
         [JsonIgnore]
         public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>(WebConfiguration.IsCache);
+
         [JsonIgnore]
         private string ModelName { get { return typeof(TView).FullName; } }
+
         [JsonIgnore]
         private string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
+
         [JsonIgnore]
         private string CachedFileName { get { return typeof(TView).Name; } }
 
@@ -79,7 +83,6 @@ namespace Mix.Domain.Data.ViewModels
             ModelRepository = new DefaultModelRepository<TDbContext, TModel>();
         }
 
-        
         /// <summary>
         /// Gets or sets the mapper.
         /// </summary>
@@ -87,8 +90,7 @@ namespace Mix.Domain.Data.ViewModels
         /// The mapper.
         /// </value>
         [JsonIgnore]
-        private IMapper Mapper
-        {
+        private IMapper Mapper {
             get { return _mapper ?? (_mapper = this.CreateMapper()); }
             set => _mapper = value;
         }
@@ -100,10 +102,8 @@ namespace Mix.Domain.Data.ViewModels
         /// The model.
         /// </value>
         [JsonIgnore]
-        public TModel Model
-        {
-            get
-            {
+        public TModel Model {
+            get {
                 if (_model == null)
                 {
                     Type classType = typeof(TModel);
@@ -122,8 +122,7 @@ namespace Mix.Domain.Data.ViewModels
         /// The model mapper.
         /// </value>
         [JsonIgnore]
-        private IMapper ModelMapper
-        {
+        private IMapper ModelMapper {
             get { return _modelMapper ?? (_modelMapper = this.CreateModelMapper()); }
             set => _modelMapper = value;
         }
@@ -287,7 +286,6 @@ namespace Mix.Domain.Data.ViewModels
                             }
 
                             result.IsSucceed = result.IsSucceed && cloneSubResult.IsSucceed && cloneSubResult.IsSucceed;
-
                         }
                         UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     }
@@ -442,7 +440,6 @@ namespace Mix.Domain.Data.ViewModels
                     {
                         _ = RemoveCache(Model);
                     }
-
                 }
             }
             else
@@ -612,7 +609,6 @@ namespace Mix.Domain.Data.ViewModels
 
                             result.IsSucceed = result.IsSucceed && cloneSubResult.IsSucceed && cloneSubResult.IsSucceed;
                             //result.Data.Add(cloneResult.Data);
-
                         }
                         UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     }
@@ -773,7 +769,6 @@ namespace Mix.Domain.Data.ViewModels
                             _ = RemoveCache(Model);
                         }
                     }
-
                 }
             }
             else
@@ -806,8 +801,8 @@ namespace Mix.Domain.Data.ViewModels
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-
         }
+
         /// <summary>
         /// Initializes the context.
         /// </summary>
@@ -845,12 +840,15 @@ namespace Mix.Domain.Data.ViewModels
             //this.Model = InitModel();
             //ParseView(isExpand: false);
         }
+
         protected ViewModelBase(SerializationInfo info, StreamingContext context)
         {
         }
+
         #endregion Contructor
 
-        #region Cached      
+        #region Cached
+
         public string GetCachedKey(TModel model, TDbContext _context, IDbContextTransaction _transaction)
         {
             var result = string.Empty;
@@ -868,6 +866,7 @@ namespace Mix.Domain.Data.ViewModels
         {
             return src.GetType().GetProperty(propName)?.GetValue(src, null);
         }
+
         public virtual Task GenerateCache(TModel model, TView view, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
@@ -899,7 +898,8 @@ namespace Mix.Domain.Data.ViewModels
                     }
                 }
                 result = Task.WhenAll(tasks);
-                return removeTask.ContinueWith(resp => {
+                return removeTask.ContinueWith(resp =>
+                {
                     result.Wait();
                 });
             }
@@ -917,6 +917,7 @@ namespace Mix.Domain.Data.ViewModels
                 }
             }
         }
+
         //public virtual List<Task> GenerateRelatedData(TDbContext context, IDbContextTransaction transaction)
         //{
         //    var tasks = new List<Task>();
@@ -935,6 +936,7 @@ namespace Mix.Domain.Data.ViewModels
             CacheService.Set(CachedFileName, data, folder);
             return Task.CompletedTask;
         }
+
         public virtual Task RemoveCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             string key = GetCachedKey(model, _context, _transaction);
@@ -942,6 +944,7 @@ namespace Mix.Domain.Data.ViewModels
             CacheService.RemoveCacheAsync(folder);
             return Task.CompletedTask;
         }
-        #endregion
+
+        #endregion Cached
     }
 }
