@@ -33,13 +33,14 @@ namespace Mix.Domain.Data.Repository
         #region Properties
 
         public string KeyName { get; set; } = "Id";
-        public string ModelName { get { return typeof(TView).FullName; } }
+        public string ModelName { get { return typeof(TModel).FullName; } }
 
-        public bool IsCache {
+        public bool IsCache
+        {
             get { return CommonHelper.GetWebConfig<bool>("IsCache"); }
         }
 
-        public string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
+        public string CachedFolder { get { return $"{ModelName}/"; } }
         public string CachedFileName { get { return typeof(TView).Name; } }
 
         public string[] SelectedMembers { get { return FilterSelectedFields(); } }
@@ -2025,7 +2026,7 @@ namespace Mix.Domain.Data.Repository
             {
                 string key = GetCachedKey(model, _context);
                 string folder = $"{CachedFolder}/{key}";
-                var data = CacheService.Get<TView>(CachedFileName, folder);
+                var data = MixCacheService.Get<TView>(CachedFileName, folder);
                 if (data != null)
                 {
                     data.ExpandView(_context, _transaction);
@@ -2041,7 +2042,7 @@ namespace Mix.Domain.Data.Repository
                     {
                         Task.Run(() =>
                         {
-                            CacheService.SetAsync(CachedFileName, data, folder);
+                            MixCacheService.SetAsync(CachedFileName, data, folder);
                         });
                     }
                     return data;
@@ -2108,7 +2109,7 @@ namespace Mix.Domain.Data.Repository
                 string key = GetCachedKey(model, _context);
                 string folder = $"{CachedFolder}/{key}";
                 var view = GetCachedData(model, _context, _transaction);
-                CacheService.Set(CachedFileName, view, folder);
+                MixCacheService.Set(CachedFileName, view, folder);
             }
             return Task.CompletedTask;
         }
@@ -2119,7 +2120,7 @@ namespace Mix.Domain.Data.Repository
             {
                 string key = GetCachedKey(model, _context);
                 string folder = $"{CachedFolder}/{key}";
-                CacheService.RemoveCacheAsync(folder);
+                MixCacheService.RemoveCacheAsync(folder);
             }
             return Task.CompletedTask;
         }
@@ -2127,7 +2128,7 @@ namespace Mix.Domain.Data.Repository
         public virtual Task RemoveCache(string key, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             string folder = $"{CachedFolder}/{key}";
-            CacheService.RemoveCacheAsync(folder);
+            MixCacheService.RemoveCacheAsync(folder);
             return Task.CompletedTask;
         }
 

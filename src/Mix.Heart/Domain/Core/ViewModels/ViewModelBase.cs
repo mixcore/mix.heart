@@ -31,7 +31,6 @@ namespace Mix.Domain.Data.ViewModels
     /// <typeparam name="TModel">The type of the model.</typeparam>
     /// <typeparam name="TView">The type of the view.</typeparam>
     ///
-    [Serializable]
     public abstract class ViewModelBase<TDbContext, TModel, TView> : ISerializable
         where TDbContext : DbContext
         where TModel : class
@@ -43,10 +42,10 @@ namespace Mix.Domain.Data.ViewModels
         public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>(WebConfiguration.IsCache);
 
         [JsonIgnore]
-        private string ModelName { get { return typeof(TView).FullName; } }
+        private string ModelName { get { return typeof(TModel).FullName; } }
 
         [JsonIgnore]
-        private string CachedFolder { get { return ModelName.Substring(0, ModelName.LastIndexOf('.')).Replace('.', '/'); } }
+        public string CachedFolder { get { return $"{ModelName}/"; } }
 
         [JsonIgnore]
         private string CachedFileName { get { return typeof(TView).Name; } }
@@ -933,7 +932,7 @@ namespace Mix.Domain.Data.ViewModels
             }
             string key = GetCachedKey(model, _context, _transaction);
             string folder = $"{CachedFolder}/{key}";
-            CacheService.Set(CachedFileName, data, folder);
+            MixCacheService.Set(CachedFileName, data, folder);
             return Task.CompletedTask;
         }
 
@@ -941,7 +940,7 @@ namespace Mix.Domain.Data.ViewModels
         {
             string key = GetCachedKey(model, _context, _transaction);
             string folder = $"{CachedFolder}/{key}";
-            CacheService.RemoveCacheAsync(folder);
+            MixCacheService.RemoveCacheAsync(folder);
             return Task.CompletedTask;
         }
 

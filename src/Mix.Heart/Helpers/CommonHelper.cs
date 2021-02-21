@@ -633,6 +633,20 @@ namespace Mix.Common.Helper
                 return result != null ? result.Value<T>() : default(T);
             }
         }
+        
+        public static T GetWebEnumConfig<T>(string name)
+        {
+            if (WebConfigInstance[WebConfiguration.MixConfigurations] != null)
+            {
+                Enum.TryParse(typeof(T), WebConfigInstance[WebConfiguration.MixConfigurations][name]?.Value<string>(), true, out object result);
+                return result != null ? (T)result : default;
+            }
+            else
+            {
+                Enum.TryParse(typeof(T), WebConfigInstance[name]?.Value<string>(), true, out object result);
+                return result != null ? (T)result : default;
+            }
+        }
 
         public static List<object> ParseEnumToObject(Type enumType)
         {
