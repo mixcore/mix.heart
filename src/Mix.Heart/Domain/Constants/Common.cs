@@ -9,6 +9,7 @@
             public const string MixCacheMode = "MixCacheMode";
             public const string MixCacheFolder = "MixCacheFolder";
             public const string MixLogsFolder = "MixLogsFolder";
+            public const string ImageSizes = "ImageSizes";
         }
     }
 }
