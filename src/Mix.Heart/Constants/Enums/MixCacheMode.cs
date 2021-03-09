@@ -7,6 +7,8 @@ namespace Mix.Heart.Enums
     {
         Json,
         Binary,
-        Base64
+        Base64,
+        Database,
+        Memory
     }
 }

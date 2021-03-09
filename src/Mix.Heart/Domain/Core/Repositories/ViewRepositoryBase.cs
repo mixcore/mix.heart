@@ -35,10 +35,7 @@ namespace Mix.Domain.Data.Repository
         public string KeyName { get; set; } = "Id";
         public string ModelName { get { return typeof(TModel).FullName; } }
 
-        public bool IsCache
-        {
-            get { return CommonHelper.GetWebConfig<bool>("IsCache"); }
-        }
+        public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>("IsCache");
 
         public string CachedFolder { get { return $"{ModelName}/"; } }
         public string CachedFileName { get { return typeof(TView).Name; } }
@@ -2038,11 +2035,11 @@ namespace Mix.Domain.Data.Repository
                     model = _context.Set<TModel>().AsNoTracking().FirstOrDefault(predicate);
 
                     data = ParseView(model, _context, _transaction);
-                    if (data != null && data.IsCache)
+                    if (data != null && IsCache)
                     {
                         Task.Run(() =>
                         {
-                            MixCacheService.SetAsync(CachedFileName, data, folder);
+                            _ = MixCacheService.SetAsync(CachedFileName, data, folder);
                         });
                     }
                     return data;

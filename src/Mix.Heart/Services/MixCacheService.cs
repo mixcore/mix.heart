@@ -1,10 +1,14 @@
-﻿using Mix.Common.Helper;
+﻿using Microsoft.EntityFrameworkCore;
+using Mix.Common.Helper;
 using Mix.Domain.Core.ViewModels;
+using Mix.Heart.Domain;
+using Mix.Heart.Domain.ViewModels;
 using Mix.Heart.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,8 +30,12 @@ namespace Mix.Services
 
         private static string cacheFolder = CommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheFolder);
 
-        public MixCacheService()
+        static MixCacheService()
         {
+            using (var ctx = new MixCacheDbContext())
+            {
+                ctx.Database.Migrate();
+            }
         }
 
         public static MixCacheService Instance
@@ -56,6 +64,8 @@ namespace Mix.Services
                 var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
                 switch (cacheMode)
                 {
+                    case MixCacheMode.Database:
+                        return GetFromDatabase<T>(key, folder);
                     case MixCacheMode.Binary:
                         return GetFromBinary<T>(key, folder);
                     case MixCacheMode.Base64:
@@ -70,6 +80,37 @@ namespace Mix.Services
                 //TODO Handle Exception
                 Console.WriteLine(ex);
                 return default(T);
+            }
+        }
+
+        private static T GetFromDatabase<T>(string key, string folder)
+        {
+            try
+            {
+                using (var ctx = new MixCacheDbContext())
+                {
+                    var cache = ctx.MixCache.FirstOrDefault(m => m.Id == $"{folder}/{key}");
+                    if (cache != null)
+                    {
+                        try
+                        {
+                            JObject jobj = JObject.Parse(cache.Value);
+                            return jobj.ToObject<T>();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Write(ex);
+                            return default;
+                        }
+                    }
+                    return default;
+                }
+            }
+            catch (Exception ex)
+            {
+                //TODO Handle Exception
+                Console.WriteLine(ex);
+                return default;
             }
         }
 
@@ -105,7 +146,7 @@ namespace Mix.Services
                 var data = Convert.FromBase64String(cachedFile.Content);
                 if (data != null)
                 {
-                    var jobj = JObject.Parse(System.Text.Encoding.UTF8.GetString(data));
+                    var jobj = JObject.Parse(Encoding.Unicode.GetString(data));
                     return jobj.ToObject<T>();
                 }
             }
@@ -115,7 +156,7 @@ namespace Mix.Services
         private static T GetFromBinary<T>(string key, string folder)
         {
             var cachedFile = MixFileRepository.Instance.GetFile(key, ".bin", $"{ cacheFolder}/{folder}", false, string.Empty);
-            byte[] data = Encoding.ASCII.GetBytes(cachedFile.Content);
+            byte[] data = Encoding.Unicode.GetBytes(cachedFile.Content);
             return ByteArrayToObject<T>(data);
         }
 
@@ -139,6 +180,9 @@ namespace Mix.Services
                 var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
                 switch (cacheMode)
                 {
+                    case MixCacheMode.Database:
+                        result.IsSucceed = SaveDatabase(key, value, folder);
+                        break;
                     case MixCacheMode.Binary:
                         result.IsSucceed = SaveBinary(key, value, folder);
                         break;
@@ -158,6 +202,25 @@ namespace Mix.Services
             }
         }
 
+        private static bool SaveDatabase<T>(string key, T value, string folder)
+        {
+            var result = new RepositoryResponse<MixCacheViewModel>();
+            if (value != null)
+            {
+                var jobj = JObject.FromObject(value);
+
+                var cache = new MixCacheViewModel()
+                {
+                    Id = $"{folder}/{key}",
+                    Value = jobj.ToString(Newtonsoft.Json.Formatting.None),
+                    CreatedDateTime = DateTime.UtcNow
+                };
+
+                result = cache.SaveModel();
+            }
+            return result.IsSucceed;
+        }
+
         private static bool SaveJson<T>(string key, T value, string folder)
         {
             try
@@ -173,7 +236,7 @@ namespace Mix.Services
                 };
                 return MixFileRepository.Instance.SaveFile(cacheFile);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
                 return false;
@@ -183,7 +246,7 @@ namespace Mix.Services
         private static bool SaveBase64<T>(string key, T value, string folder)
         {
             var jobj = JObject.FromObject(value);
-            var data = System.Text.Encoding.UTF8.GetBytes(jobj.ToString(Newtonsoft.Json.Formatting.None));
+            var data = Encoding.Unicode.GetBytes(jobj.ToString(Formatting.None));
 
             var cacheFile = new FileViewModel()
             {
@@ -241,6 +304,8 @@ namespace Mix.Services
                 var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
                 switch (cacheMode)
                 {
+                    case MixCacheMode.Database:
+                        return GetFromDatabaseAsync<T>(key, folder);
                     case MixCacheMode.Binary:
                         return Task.FromResult(GetFromBinary<T>(key, folder));
                     case MixCacheMode.Base64:
@@ -258,7 +323,38 @@ namespace Mix.Services
             }
         }
 
-        public static Task<RepositoryResponse<bool>> SetAsync<T>(string key, T value, string folder = null)
+        private static async Task<T> GetFromDatabaseAsync<T>(string key, string folder)
+        {
+            try
+            {
+                using (var ctx = new MixCacheDbContext())
+                {
+                    var cache = await ctx.MixCache.FirstOrDefaultAsync(m => m.Id == $"{folder}/{key}");
+                    if (cache != null)
+                    {
+                        try
+                        {
+                            JObject jobj = JObject.Parse(cache.Value);
+                            return jobj.ToObject<T>();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Write(ex);
+                            return default;
+                        }
+                    }
+                    return default;
+                }
+            }
+            catch (Exception ex)
+            {
+                //TODO Handle Exception
+                Console.WriteLine(ex);
+                return default;
+            }
+        }
+
+        public static async Task<RepositoryResponse<bool>> SetAsync<T>(string key, T value, string folder = null)
         {
             if (value != null)
             {
@@ -266,6 +362,9 @@ namespace Mix.Services
                 var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
                 switch (cacheMode)
                 {
+                    case MixCacheMode.Database:
+                        result.IsSucceed = await SaveDatabaseAsync(key, value, folder);
+                        break;
                     case MixCacheMode.Binary:
                         result.IsSucceed = SaveBinary(key, value, folder);
                         break;
@@ -277,22 +376,75 @@ namespace Mix.Services
                         result.IsSucceed = SaveJson(key, value, folder);
                         break;
                 }
-                return Task.FromResult(result);
+                return result;
             }
             else
             {
-                return Task.FromResult(new RepositoryResponse<bool>());
+                return new RepositoryResponse<bool>();
             }
+        }
+
+        private static async Task<bool> SaveDatabaseAsync<T>(string key, T value, string folder)
+        {
+            var result = new RepositoryResponse<MixCacheViewModel>();
+            if (value != null)
+            {
+                var jobj = JObject.FromObject(value);
+
+                var cache = new MixCacheViewModel()
+                {
+                    Id = $"{folder}/{key}",
+                    Value = jobj.ToString(Formatting.None),
+                    CreatedDateTime = DateTime.UtcNow
+                };
+
+                result = await cache.SaveModelAsync();
+            }
+            return result.IsSucceed;
         }
 
         public static Task RemoveCacheAsync()
         {
-            return Task.FromResult(MixFileRepository.Instance.EmptyFolder(cacheFolder));
+            var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
+            switch (cacheMode)
+            {
+                case MixCacheMode.Database:
+                    using (var ctx = new MixCacheDbContext())
+                    {
+                        ctx.MixCache.RemoveRange(ctx.MixCache);
+                        ctx.SaveChangesAsync();
+                        return Task.CompletedTask;
+                    }
+                case MixCacheMode.Json:
+                case MixCacheMode.Binary:
+                case MixCacheMode.Base64:
+                case MixCacheMode.Memory:
+                default:
+                    return Task.FromResult(MixFileRepository.Instance.EmptyFolder(cacheFolder));
+            }
         }
 
         public static Task RemoveCacheAsync(string folder)
         {
-            return Task.FromResult(MixFileRepository.Instance.DeleteFolder($"{cacheFolder}/{folder}"));
+            var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
+            switch (cacheMode)
+            {
+                case MixCacheMode.Database:
+                    using (var ctx = new MixCacheDbContext())
+                    {
+                        ctx.MixCache.RemoveRange(ctx.MixCache.Where(
+                            m => EF.Functions.Like(m.Id, $"%{folder}%")));
+                        ctx.SaveChangesAsync();
+                        return Task.CompletedTask;
+                    }
+                case MixCacheMode.Json:
+                case MixCacheMode.Binary:
+                case MixCacheMode.Base64:
+                case MixCacheMode.Memory:
+                default:
+                    return Task.FromResult(MixFileRepository.Instance.DeleteFolder(
+                        $"{cacheFolder}/{folder}"));
+            }
         }
 
         public static Task RemoveCacheAsync(Type type, string key = null)
