@@ -33,8 +33,14 @@ namespace Mix.Domain.Data.Repository
         /// <summary>
         /// Prevents a default instance of the <see cref="DefaultRepository{TDbContext, TModel, TView}"/> class from being created.
         /// </summary>
+        public DefaultRepository(bool isCache)
+        {
+            IsCache = IsCache;
+        }
+
         public DefaultRepository()
         {
+
         }
 
         /// <summary>
