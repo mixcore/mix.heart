@@ -10,6 +10,7 @@
             public const string MixCacheFolder = "MixCacheFolder";
             public const string MixLogsFolder = "MixLogsFolder";
             public const string MixCacheDb = "MixCacheDb";
+            public const string ImageSizes = "ImageSizes";
         }
     }
 }

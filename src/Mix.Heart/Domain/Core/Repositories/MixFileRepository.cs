@@ -15,12 +15,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using static Mix.Heart.Domain.Constants.Common;
+using Newtonsoft.Json.Linq;
 
 namespace Mix.Services
 {
     public class MixFileRepository
     {
         public string CurrentDirectory { get; set; }
+
 
         /// <summary>
         /// The instance
@@ -492,6 +497,7 @@ namespace Mix.Services
 
         public bool SaveWebFile(FileViewModel file)
         {
+
             try
             {
                 string fullPath = CommonHelper.GetFullPath(new string[] {
@@ -517,13 +523,39 @@ namespace Mix.Services
                     }
                     else
                     {
-                        string base64 = file.FileStream.Split(',')[1];
-                        byte[] bytes = Convert.FromBase64String(base64);
-                        using (var writer = File.Create(fileName))
-                        {
-                            writer.Write(bytes, 0, bytes.Length);
-                            return true;
-                        }
+                        // XL
+                        ResizeImage(file, "XL");
+                        // L
+                        ResizeImage(file, "L");
+                        // M
+                        ResizeImage(file, "M");
+                        // S
+                        ResizeImage(file, "S");
+                        // XS
+                        ResizeImage(file, "XS");
+                        // XXS
+                        ResizeImage(file, "XXS");
+
+                        ResizeImage(file);
+
+                        return true;
+
+                        ////half size
+                        //using (Image image = Image.Load(bytes))
+                        //{
+                        //    int width = image.Width / 2;
+                        //    int height = image.Height / 2;
+                        //    image.Mutate(x => x.Resize(width, height));
+
+                        //    image.Save(CommonHelper.GetFullPath(new string[] { fullPath, file.Filename + "_half" + file.Extension }));
+                        //}
+
+                        ////full size
+                        //using (var writer = File.Create(fileName))
+                        //{
+                        //    writer.Write(bytes, 0, bytes.Length);
+                        //    return true;
+                        //}
                     }
                 }
                 else
@@ -534,6 +566,33 @@ namespace Mix.Services
             catch
             {
                 return false;
+            }
+        }
+
+        private void ResizeImage(FileViewModel file, string size = "")
+        {
+            string base64 = file.FileStream.Split(',')[1];
+            byte[] bytes = Convert.FromBase64String(base64);
+            JObject imageSizes = CommonHelper.GetWebConfig<JObject>(WebConfiguration.ImageSizes);
+            string fullPath = CommonHelper.GetFullPath(new string[] {
+                    "wwwroot",
+                    file.FileFolder
+                });
+
+            using (Image image = Image.Load(bytes))
+            {
+                if (!size.Equals(""))
+                {
+                    int width = imageSizes.GetValue(size).Value<int>("width");
+                    int height = (image.Height * width) / image.Width;
+                    image.Mutate(x => x.Resize(width, height));
+                    image.Save(CommonHelper.GetFullPath(new string[] { fullPath, file.Filename + "_" + size + file.Extension }));
+                }
+                else
+                {
+                    image.Save(CommonHelper.GetFullPath(new string[] { fullPath, file.Filename + file.Extension }));
+                }
+
             }
         }
 
