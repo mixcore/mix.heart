@@ -706,6 +706,79 @@ namespace Mix.Domain.Data.Repository
         }
 
         /// <summary>
+        /// Parses the paging query asynchronous.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="orderByPropertyName">Name of the order by property.</param>
+        /// <param name="direction">The direction.</param>
+        /// <param name="pageSize">Size of the page.</param>
+        /// <param name="pageIndex">Index of the page.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="transaction">The transaction.</param>
+        /// <returns></returns>
+        public virtual async Task<PaginationModel<TView>> ParsePagingSortedQueryAsync(IQueryable<TModel> sortedQuery
+        , int? pageSize, int? pageIndex, int? skip, int? top
+        , TDbContext context, IDbContextTransaction transaction)
+        {
+            List<TModel> lstModel = new List<TModel>();
+
+            PaginationModel<TView> result = new PaginationModel<TView>()
+            {
+                TotalItems = sortedQuery.Count(),
+                PageIndex = pageIndex ?? 0
+            };
+            try
+            {
+                result.PageSize = pageSize ?? result.TotalItems;
+                var members = IsCache ? context.Model.FindEntityType(typeof(TModel)).FindPrimaryKey().Properties.Select(x => x.Name).ToArray()
+                                        : SelectedMembers;
+                if (pageSize.HasValue && pageSize.Value > 0)
+                {
+                    result.TotalPage = (result.TotalItems / pageSize.Value) + (result.TotalItems % pageSize.Value > 0 ? 1 : 0);
+                }
+
+                if (pageSize.HasValue && pageSize.Value > 0)
+                {
+                    lstModel = await sortedQuery.Skip(result.PageIndex * pageSize.Value)
+                    .SelectMembers(members)
+                    .Take(pageSize.Value)
+                    .ToListAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    if (top.HasValue)
+                    {
+                        lstModel = await sortedQuery.Skip(skip ?? 0)
+                            .SelectMembers(members)
+                    .Take(top.Value)
+                    .ToListAsync().ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        lstModel = sortedQuery.ToList();
+                    }
+                }
+                lstModel.ForEach(model => context.Entry(model).State = EntityState.Detached);
+                if (IsCache)
+                {
+                    var lstView = GetCachedData(lstModel, context, transaction);
+                    result.Items = lstView;
+                }
+                else
+                {
+                    result.Items = ParseView(lstModel, context, transaction);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogErrorMessage(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Parses the view.
         /// </summary>
         /// <param name="lstModels">The LST models.</param>

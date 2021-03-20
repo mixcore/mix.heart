@@ -41,8 +41,10 @@ namespace Mix.Services
         /// Gets the instance.
         /// </summary>
         /// <returns></returns>
-        public static MixFileRepository Instance {
-            get {
+        public static MixFileRepository Instance
+        {
+            get
+            {
                 if (instance == null)
                 {
                     lock (syncRoot)
@@ -53,7 +55,8 @@ namespace Mix.Services
                 }
                 return instance;
             }
-            set {
+            set
+            {
                 instance = value;
             }
         }
@@ -766,36 +769,22 @@ namespace Mix.Services
 
     public class FileViewModel
     {
-        private string _fullPath = string.Empty;
-        private string _webPath = string.Empty;
-
         [JsonProperty("fullPath")]
-        public string FullPath {
-            get {
-                _fullPath = CommonHelper.GetFullPath(new string[] {
-                    FileFolder,
-                    //FolderName,
-                    $"{Filename}{Extension}"
-                });
-
-                return _fullPath;
-            }
-            set {
-                _fullPath = value;
+        public string FullPath
+        {
+            get
+            {
+                return $"{FileFolder}/{Filename}{Extension}"; ;
             }
         }
 
         [JsonProperty("webPath")]
-        public string WebPath {
-            get {
-                _webPath = CommonHelper.GetFullPath(new string[] {
-                    FileFolder,
-                    $"{Filename}{Extension}"
-                });
-                return _webPath;
-            }
-            set {
-                _webPath = value;
+        public string WebPath
+        {
+            get
+            {
+
+                return FullPath.Replace("wwwroot", string.Empty);
             }
         }
 
