@@ -9,11 +9,15 @@ namespace Mix.Heart.Extensions
     {
         public static Expression<T> Compose<T>(this Expression<T> firstExpr, Expression<T> secondExpr, Func<Expression, Expression, Expression> merge)
         {
-            // replace parameters in the second lambda expression with parameters from the first
-            var secondExprBody = ParameterRebinder.ReplaceParameters(secondExpr, firstExpr);
+            if (firstExpr != null)
+            {
+                // replace parameters in the second lambda expression with parameters from the first
+                var secondExprBody = ParameterRebinder.ReplaceParameters(secondExpr, firstExpr);
 
-            // apply composition of lambda expression bodies to parameters from the first expression
-            return Expression.Lambda<T>(merge(firstExpr.Body, secondExprBody), firstExpr.Parameters);
+                // apply composition of lambda expression bodies to parameters from the first expression
+                return Expression.Lambda<T>(merge(firstExpr.Body, secondExprBody), firstExpr.Parameters);
+            }
+            return secondExpr;
         }
 
         public static Expression<Func<T, bool>> AndAlso<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
