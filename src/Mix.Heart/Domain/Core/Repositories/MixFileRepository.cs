@@ -656,7 +656,7 @@ namespace Mix.Services
                             return true;
                         }
                     }
-                    else
+                    else if(file.FileStream != null)
                     {
                         string base64 = file.FileStream.Split(',')[1];
                         byte[] bytes = Convert.FromBase64String(base64);
@@ -665,6 +665,11 @@ namespace Mix.Services
                             writer.Write(bytes, 0, bytes.Length);
                             return true;
                         }
+                    }
+                    else
+                    {
+                        File.CreateText(fileName);
+                        return true;
                     }
                 }
                 else
