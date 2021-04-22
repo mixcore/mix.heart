@@ -89,7 +89,8 @@ namespace Mix.Domain.Data.ViewModels
         /// The mapper.
         /// </value>
         [JsonIgnore]
-        private IMapper Mapper {
+        private IMapper Mapper
+        {
             get { return _mapper ?? (_mapper = this.CreateMapper()); }
             set => _mapper = value;
         }
@@ -101,8 +102,10 @@ namespace Mix.Domain.Data.ViewModels
         /// The model.
         /// </value>
         [JsonIgnore]
-        public TModel Model {
-            get {
+        public TModel Model
+        {
+            get
+            {
                 if (_model == null)
                 {
                     Type classType = typeof(TModel);
@@ -121,7 +124,8 @@ namespace Mix.Domain.Data.ViewModels
         /// The model mapper.
         /// </value>
         [JsonIgnore]
-        private IMapper ModelMapper {
+        private IMapper ModelMapper
+        {
             get { return _modelMapper ?? (_modelMapper = this.CreateModelMapper()); }
             set => _modelMapper = value;
         }
@@ -437,7 +441,7 @@ namespace Mix.Domain.Data.ViewModels
                     }
                     if (result.IsSucceed && IsCache)
                     {
-                        _ = RemoveCache(Model);
+                        Task.Run(() => RemoveCache(Model)).ConfigureAwait(false).GetAwaiter().GetResult();
                     }
                 }
             }
