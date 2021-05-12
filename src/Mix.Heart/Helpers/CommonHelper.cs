@@ -3,8 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.AspNetCore.Http;
-using Mix.Domain.Core.ViewModels;
-using Mix.Services;
+using Mix.Heart.Constants;
+using Mix.Heart.Models;
+using Mix.Infrastructure.Repositories;
 using Newtonsoft.Json.Linq;
 using OfficeOpenXml;
 using OfficeOpenXml.Table;
@@ -16,7 +17,6 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using static Mix.Heart.Domain.Constants.Common;
 
 namespace Mix.Common.Helper
 {
@@ -67,6 +67,17 @@ namespace Mix.Common.Helper
             set {
                 webConfigInstance = value;
             }
+        }
+
+        public static List<object> EnumToObject(Type enumType)
+        {
+            List<object> result = new List<object>();
+            var values = Enum.GetValues(enumType);
+            foreach (var item in values)
+            {
+                result.Add(new { name = Enum.GetName(enumType, item), value = Enum.ToObject(enumType, item) });
+            }
+            return result;
         }
 
         private static JObject LoadWebConfig()
