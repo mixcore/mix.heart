@@ -2,8 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Mix.Heart.Domain;
+using Mix.Heart.Infrastructure.ViewModels;
 
 namespace Mix.Heart.Migrations
 {

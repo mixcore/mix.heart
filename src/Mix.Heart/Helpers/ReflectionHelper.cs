@@ -75,7 +75,7 @@ namespace Mix.Heart.Helpers
             return default;
         }
 
-        public static Expression<Func<T, bool>> GetExpression<T>(string propertyName, object propertyValue, MixHeartEnums.ExpressionMethod kind, string name = "model")
+        public static Expression<Func<T, bool>> GetExpression<T>(string propertyName, object propertyValue, ExpressionMethod kind, string name = "model")
             where T : class
         {
             Type type = typeof(T);
@@ -122,37 +122,37 @@ namespace Mix.Heart.Helpers
             BinaryExpression eq = null;
             switch (kind)
             {
-                case MixHeartEnums.ExpressionMethod.Eq:
+                case ExpressionMethod.Eq:
                     eq = Expression.Equal(fieldPropertyExpression,
                                      Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case MixHeartEnums.ExpressionMethod.Lt:
+                case ExpressionMethod.Lt:
                     eq = Expression.LessThan(fieldPropertyExpression,
                                      Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case MixHeartEnums.ExpressionMethod.Gt:
+                case ExpressionMethod.Gt:
                     eq = Expression.GreaterThan(fieldPropertyExpression,
                                      Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case MixHeartEnums.ExpressionMethod.Lte:
+                case ExpressionMethod.Lte:
                     eq = Expression.LessThanOrEqual(fieldPropertyExpression,
                                      Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case MixHeartEnums.ExpressionMethod.Gte:
+                case ExpressionMethod.Gte:
                     eq = Expression.GreaterThanOrEqual(fieldPropertyExpression,
                                      Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case MixHeartEnums.ExpressionMethod.And:
+                case ExpressionMethod.And:
                     eq = Expression.And(fieldPropertyExpression,
                                      Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case MixHeartEnums.ExpressionMethod.Or:
+                case ExpressionMethod.Or:
                     eq = Expression.Or(fieldPropertyExpression,
                                      Expression.Constant(data2, fieldPropertyType));
                     break;

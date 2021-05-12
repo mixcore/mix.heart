@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Mix.Domain.Core.ViewModels;
+using Mix.Heart.Constants;
+using Mix.Heart.Models;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using static Mix.Heart.Domain.Constants.Common;
 
 namespace Mix.Common.Helper
 {

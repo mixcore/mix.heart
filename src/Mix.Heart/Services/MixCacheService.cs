@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Common.Helper;
-using Mix.Domain.Core.ViewModels;
-using Mix.Heart.Domain;
-using Mix.Heart.Domain.ViewModels;
+using Mix.Heart.Constants;
 using Mix.Heart.Enums;
+using Mix.Heart.Infrastructure.ViewModels;
+using Mix.Heart.Models;
+using Mix.Infrastructure.Repositories;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -12,7 +13,6 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
-using static Mix.Heart.Domain.Constants.Common;
 
 namespace Mix.Services
 {
