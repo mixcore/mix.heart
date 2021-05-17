@@ -8,11 +8,10 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Mix.Common.Helper;
 using Mix.Heart.Constants;
 using Mix.Heart.Helpers;
+using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Infrastructure.Repositories;
-using Mix.Heart.Models;
 using Mix.Services;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -30,12 +29,23 @@ namespace Mix.Heart.Infrastructure.ViewModels
     /// <typeparam name="TModel">The type of the model.</typeparam>
     /// <typeparam name="TView">The type of the view.</typeparam>
     ///
-    public abstract class ViewModelBase<TDbContext, TModel, TView> : ISerializable
+    public abstract partial class ViewModelBase<TDbContext, TModel, TView> : ISerializable, IMediator
         where TDbContext : DbContext
         where TModel : class
         where TView : ViewModelBase<TDbContext, TModel, TView> // instance of inherited
     {
         #region Properties
+        [JsonProperty("lastModified")]
+        public DateTime? LastModified { get; set; }
+        [JsonProperty("createdDateTime")]
+        public DateTime CreatedDateTime { get; set; }
+
+        protected IMediator _mediator;
+
+        public void SetMediator(IMediator mediator)
+        {
+            this._mediator = mediator;
+        }
 
         [JsonIgnore]
         public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>(WebConfiguration.IsCache);
@@ -187,298 +197,6 @@ namespace Mix.Heart.Infrastructure.ViewModels
         }
 
         /// <summary>
-        /// Validates the specified context.
-        /// </summary>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        public virtual void Validate(TDbContext _context, IDbContextTransaction _transaction)
-        {
-            var validateContext = new System.ComponentModel.DataAnnotations.ValidationContext(this, serviceProvider: null, items: null);
-            var results = new List<ValidationResult>();
-
-            IsValid = Validator.TryValidateObject(this, validateContext, results);
-            if (!IsValid)
-            {
-                Errors.AddRange(results.Select(e => e.ErrorMessage));
-            }
-        }
-
-        #endregion Common
-
-        #region Async
-
-        public async Task<RepositoryResponse<bool>> UpdateFieldsAsync(JObject fields)
-        {
-            var result = new RepositoryResponse<bool> { IsSucceed = true };
-            try
-            {
-                foreach (JProperty field in fields.Properties())
-                {
-                    // check if field name is exist
-                    var lamda = ReflectionHelper.GetLambda<TView>(field.Name);
-                    if (lamda != null)
-                    {
-                        ReflectionHelper.SetPropertyValue(this, field);
-                    }
-                    else
-                    {
-                        result.IsSucceed = false;
-                        result.Errors.Add($"{field.Name} is invalid");
-                    }
-                }
-                if (result.IsSucceed)
-                {
-                    var saveResult = await this.SaveModelAsync(false);
-                    ViewModelHelper.HandleResult(saveResult, ref result);
-                }
-            }
-            catch (Exception ex)
-            {
-                result.IsSucceed = false;
-                result.Errors.Add(ex.Message);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Clones the asynchronous.
-        /// </summary>
-        /// <param name="model"></param>
-        /// <param name="cloneCultures">The clone cultures.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual async Task<RepositoryResponse<List<TView>>> CloneAsync(TModel model, List<SupportedCulture> cloneCultures
-            , TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            RepositoryResponse<List<TView>> result = new RepositoryResponse<List<TView>>()
-            {
-                IsSucceed = true,
-                Data = new List<TView>()
-            };
-
-            try
-            {
-                if (cloneCultures != null)
-                {
-                    foreach (var culture in cloneCultures)
-                    {
-                        string desSpecificulture = culture.Specificulture;
-
-                        TModel m = (TModel)context.Entry(model).CurrentValues.ToObject();
-                        Type myType = typeof(TModel);
-                        var myFieldInfo = myType.GetProperty("Specificulture");
-                        myFieldInfo.SetValue(m, desSpecificulture);
-                        bool isExist = Repository.CheckIsExists(m, _context: context, _transaction: transaction);
-
-                        if (isExist)
-                        {
-                            result.IsSucceed = true;
-                        }
-                        else
-                        {
-                            context.Entry(m).State = EntityState.Added;
-                            await context.SaveChangesAsync();
-                            var cloneSubResult = await CloneSubModelsAsync(m, cloneCultures, context, transaction).ConfigureAwait(false);
-                            if (!cloneSubResult.IsSucceed)
-                            {
-                                cloneSubResult.Errors.AddRange(cloneSubResult.Errors);
-                                cloneSubResult.Exception = cloneSubResult.Exception;
-                            }
-
-                            result.IsSucceed = result.IsSucceed && cloneSubResult.IsSucceed && cloneSubResult.IsSucceed;
-                        }
-                        UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-                    }
-                    return result;
-                }
-                else
-                {
-                    return result;
-                }
-            }
-            catch (Exception ex)
-            {
-                return UnitOfWorkHelper<TDbContext>.HandleException<List<TView>>(ex, isRoot, transaction);
-            }
-            finally
-            {
-                if (isRoot)
-                {
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Clones the sub models asynchronous.
-        /// </summary>
-        /// <param name="parent">The parent.</param>
-        /// <param name="cloneCultures">The clone cultures.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual async Task<RepositoryResponse<bool>> CloneSubModelsAsync(TModel parent, List<SupportedCulture> cloneCultures, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            var taskSource = new TaskCompletionSource<RepositoryResponse<bool>>();
-            taskSource.SetResult(new RepositoryResponse<bool>() { IsSucceed = true, Data = true });
-            return await taskSource.Task;
-        }
-
-        /// <summary>
-        /// Removes the model asynchronous.
-        /// </summary>
-        /// <param name="isRemoveRelatedModels">if set to <c>true</c> [is remove related models].</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual async Task<RepositoryResponse<TModel>> RemoveModelAsync(bool isRemoveRelatedModels = false, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-
-            RepositoryResponse<TModel> result = new RepositoryResponse<TModel>() { IsSucceed = true };
-            try
-            {
-                ParseModel(_context, _transaction);
-                if (isRemoveRelatedModels)
-                {
-                    var removeRelatedResult = await RemoveRelatedModelsAsync((TView)this, context, transaction).ConfigureAwait(false);
-                    if (removeRelatedResult.IsSucceed)
-                    {
-                        result = await Repository.RemoveModelAsync(Model, context, transaction).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        result.IsSucceed = result.IsSucceed && removeRelatedResult.IsSucceed;
-                        result.Errors.AddRange(removeRelatedResult.Errors);
-                        result.Exception = removeRelatedResult.Exception;
-                    }
-                }
-                else
-                {
-                    result = await Repository.RemoveModelAsync(Model, context, transaction).ConfigureAwait(false);
-                }
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
-            }
-            finally
-            {
-                if (isRoot)
-                {
-                    //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                }
-                if (result.IsSucceed)
-                {
-                    _ = RemoveCache(Model);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes the related models asynchronous.
-        /// </summary>
-        /// <param name="view">The view.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual async Task<RepositoryResponse<bool>> RemoveRelatedModelsAsync(TView view, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            var taskSource = new TaskCompletionSource<RepositoryResponse<bool>>();
-            taskSource.SetResult(new RepositoryResponse<bool>() { IsSucceed = true });
-            return await taskSource.Task;
-        }
-
-        /// <summary>
-        /// Saves the model asynchronous.
-        /// </summary>
-        /// <param name="isSaveSubModels">if set to <c>true</c> [is save sub models].</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual async Task<RepositoryResponse<TView>> SaveModelAsync(bool isSaveSubModels = false, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            RepositoryResponse<TView> result = new RepositoryResponse<TView>() { IsSucceed = true };
-            Validate(context, transaction);
-            if (IsValid)
-            {
-                try
-                {
-                    ParseModel(context, transaction);
-                    result = await Repository.SaveModelAsync((TView)this, _context: context, _transaction: transaction);
-
-                    // Save sub Models
-                    if (result.IsSucceed && isSaveSubModels)
-                    {
-                        var saveResult = await SaveSubModelsAsync(Model, context, transaction);
-                        if (!saveResult.IsSucceed)
-                        {
-                            result.Errors.AddRange(saveResult.Errors);
-                            result.Exception = saveResult.Exception;
-                        }
-                        result.IsSucceed = result.IsSucceed && saveResult.IsSucceed;
-                    }
-
-                    UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
-                }
-                finally
-                {
-                    if (isRoot)
-                    {
-                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                    }
-                    if (result.IsSucceed && IsCache)
-                    {
-                        Task.Run(() => RemoveCache(Model)).ConfigureAwait(false).GetAwaiter().GetResult();
-                    }
-                }
-            }
-            else
-            {
-                if (isRoot)
-                {
-                    //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                }
-                return new RepositoryResponse<TView>()
-                {
-                    IsSucceed = false,
-                    Data = null,
-                    Errors = Errors
-                };
-            }
-        }
-
-        /// <summary>
-        /// Saves the sub models asynchronous.
-        /// </summary>
-        /// <param name="parent">The parent.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual async Task<RepositoryResponse<bool>> SaveSubModelsAsync(TModel parent, TDbContext _context, IDbContextTransaction _transaction)
-        {
-            var taskSource = new TaskCompletionSource<RepositoryResponse<bool>>();
-            taskSource.SetResult(new RepositoryResponse<bool>() { IsSucceed = true });
-            return await taskSource.Task;
-        }
-
-        #endregion Async
-
-        #region Sync
-
-        /// <summary>
         /// Initializes the view.
         /// </summary>
         /// <param name="model">The model.</param>
@@ -558,253 +276,22 @@ namespace Mix.Heart.Infrastructure.ViewModels
         public virtual void ExpandView(TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
         }
-
         /// <summary>
-        /// Clones the specified clone cultures.
+        /// Validates the specified context.
         /// </summary>
-        /// <param name="model"></param>
-        /// <param name="cloneCultures">The clone cultures.</param>
         /// <param name="_context">The context.</param>
         /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<List<TView>> Clone(TModel model, List<SupportedCulture> cloneCultures, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual void Validate(TDbContext _context, IDbContextTransaction _transaction)
         {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            RepositoryResponse<List<TView>> result = new RepositoryResponse<List<TView>>()
-            {
-                IsSucceed = true,
-                Data = new List<TView>()
-            };
+            var validateContext = new System.ComponentModel.DataAnnotations.ValidationContext(this, serviceProvider: null, items: null);
+            var results = new List<ValidationResult>();
 
-            try
+            IsValid = Validator.TryValidateObject(this, validateContext, results);
+            if (!IsValid)
             {
-                if (cloneCultures != null)
-                {
-                    foreach (var culture in cloneCultures)
-                    {
-                        string desSpecificulture = culture.Specificulture;
-
-                        //TView view = InitView();
-                        TModel m = (TModel)context.Entry(model).CurrentValues.ToObject();
-                        Type myType = typeof(TModel);
-                        var myFieldInfo = myType.GetProperty("Specificulture");
-                        myFieldInfo.SetValue(m, desSpecificulture);
-                        //view.Model = m;
-                        //view.ParseView(isExpand: false, _context: context, _transaction: transaction);
-                        bool isExist = Repository.CheckIsExists(m, _context: context, _transaction: transaction);
-
-                        if (isExist)
-                        {
-                            result.IsSucceed = true;
-                            //result.Data.Add(view);
-                        }
-                        else
-                        {
-                            context.Entry(m).State = EntityState.Added;
-                            context.SaveChanges();
-                            var cloneSubResult = CloneSubModels(m, cloneCultures, context, transaction);
-                            if (!cloneSubResult.IsSucceed)
-                            {
-                                cloneSubResult.Errors.AddRange(cloneSubResult.Errors);
-                                cloneSubResult.Exception = cloneSubResult.Exception;
-                            }
-
-                            result.IsSucceed = result.IsSucceed && cloneSubResult.IsSucceed && cloneSubResult.IsSucceed;
-                            //result.Data.Add(cloneResult.Data);
-                        }
-                        UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-                    }
-                    return result;
-                }
-                else
-                {
-                    return result;
-                }
-            }
-            catch (Exception ex)
-            {
-                result.IsSucceed = false;
-                result.Exception = ex;
-                return result;
-            }
-            finally
-            {
-                if (isRoot)
-                {
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                }
+                Errors.AddRange(results.Select(e => e.ErrorMessage));
             }
         }
-
-        /// <summary>
-        /// Clones the sub models.
-        /// </summary>
-        /// <param name="parent">The parent.</param>
-        /// <param name="cloneCultures">The clone cultures.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<bool> CloneSubModels(TModel parent, List<SupportedCulture> cloneCultures, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            return new RepositoryResponse<bool>() { IsSucceed = true };
-        }
-
-        /// <summary>
-        /// Removes the model.
-        /// </summary>
-        /// <param name="isRemoveRelatedModels">if set to <c>true</c> [is remove related models].</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<TModel> RemoveModel(bool isRemoveRelatedModels = false, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            RepositoryResponse<TModel> result = new RepositoryResponse<TModel>() { IsSucceed = true };
-            try
-            {
-                ParseModel(_context, _transaction);
-                if (isRemoveRelatedModels)
-                {
-                    var removeRelatedResult = RemoveRelatedModels((TView)this, context, transaction);
-                    if (removeRelatedResult.IsSucceed)
-                    {
-                        result = Repository.RemoveModel(Model, context, transaction);
-                    }
-                    else
-                    {
-                        result.IsSucceed = result.IsSucceed && removeRelatedResult.IsSucceed;
-                        result.Errors.AddRange(removeRelatedResult.Errors);
-                        result.Exception = removeRelatedResult.Exception;
-                    }
-                }
-                else
-                {
-                    result = Repository.RemoveModel(Model, context, transaction);
-                }
-
-                UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return UnitOfWorkHelper<TDbContext>.HandleException<TModel>(ex, isRoot, transaction);
-            }
-            finally
-            {
-                if (isRoot)
-                {
-                    //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                }
-                if (result.IsSucceed)
-                {
-                    _ = RemoveCache(Model);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes the related models.
-        /// </summary>
-        /// <param name="view">The view.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<bool> RemoveRelatedModels(TView view, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            return new RepositoryResponse<bool>() { IsSucceed = true };
-        }
-
-        /// <summary>
-        /// Saves the model.
-        /// </summary>
-        /// <param name="isSaveSubModels">if set to <c>true</c> [is save sub models].</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<TView> SaveModel(bool isSaveSubModels = false, TDbContext _context = null, IDbContextTransaction _transaction = null)
-        {
-            UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
-            RepositoryResponse<TView> result = new RepositoryResponse<TView>() { IsSucceed = true };
-            Validate(context, transaction);
-            if (IsValid)
-            {
-                try
-                {
-                    ParseModel(context, transaction);
-                    result = Repository.SaveModel((TView)this, _context: context, _transaction: transaction);
-
-                    // Save sub Models
-                    if (result.IsSucceed && isSaveSubModels)
-                    {
-                        var saveResult = SaveSubModels(Model, context, transaction);
-                        if (!saveResult.IsSucceed)
-                        {
-                            result.Errors.AddRange(saveResult.Errors);
-                            result.Exception = saveResult.Exception;
-                        }
-                        result.IsSucceed = result.IsSucceed && saveResult.IsSucceed;
-                    }
-
-                    UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-                    return result;
-                }
-                catch (Exception ex)
-                {
-                    return UnitOfWorkHelper<TDbContext>.HandleException<TView>(ex, isRoot, transaction);
-                }
-                finally
-                {
-                    if (isRoot)
-                    {
-                        //if current Context is Root
-                        if (result.IsSucceed && IsCache)
-                        {
-                            GenerateCache(Model, this as TView);
-                        }
-                        UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                    }
-                    else
-                    {
-                        if (result.IsSucceed && IsCache)
-                        {
-                            _ = RemoveCache(Model);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (isRoot)
-                {
-                    //if current Context is Root
-                    UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                }
-                return new RepositoryResponse<TView>()
-                {
-                    IsSucceed = false,
-                    Data = null,
-                    Errors = Errors
-                };
-            }
-        }
-
-        /// <summary>
-        /// Saves the sub models.
-        /// </summary>
-        /// <param name="parent">The parent.</param>
-        /// <param name="_context">The context.</param>
-        /// <param name="_transaction">The transaction.</param>
-        /// <returns></returns>
-        public virtual RepositoryResponse<bool> SaveSubModels(TModel parent, TDbContext _context, IDbContextTransaction _transaction)
-        {
-            return new RepositoryResponse<bool>() { IsSucceed = true };
-        }
-
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-        }
-
         /// <summary>
         /// Initializes the context.
         /// </summary>
@@ -817,8 +304,11 @@ namespace Mix.Heart.Infrastructure.ViewModels
 
             return context;
         }
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+        }
 
-        #endregion Sync
+        #endregion Common
 
         #region Contructor
 
@@ -861,6 +351,7 @@ namespace Mix.Heart.Infrastructure.ViewModels
             {
                 result += $"_{GetPropValue(model, key)}";
             }
+            result = $"{result}_{ LastModified?.Ticks ?? CreatedDateTime.Ticks }";
             return result;
         }
 
@@ -946,7 +437,6 @@ namespace Mix.Heart.Infrastructure.ViewModels
             MixCacheService.RemoveCacheAsync(folder);
             return Task.CompletedTask;
         }
-
         #endregion Cached
     }
 }
