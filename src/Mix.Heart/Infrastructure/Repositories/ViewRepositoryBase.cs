@@ -9,7 +9,7 @@ using Mix.Common.Helper;
 using Mix.Heart.Enums;
 using Mix.Heart.Extensions;
 using Mix.Heart.Helpers;
-using Mix.Heart.Infrastructure.Interfaces;
+using Mix.Heart.Infrastructure.Entities;
 using Mix.Services;
 using System;
 using System.Collections.Generic;
@@ -328,7 +328,7 @@ namespace Mix.Heart.Infrastructure.Repositories
             var keys = model.FindEntityType(typeof(TModel))
                 .FindPrimaryKey().Properties.Select(x => x.Name)
                 .ToArray();
-            if (model is CachedEntity)
+            if (model is AuditedEntity)
             {
                 keys.Concat(new[] { "CreatedDateTime", "LastModified" });
             }
@@ -337,7 +337,7 @@ namespace Mix.Heart.Infrastructure.Repositories
         private string GetCacheFileName(TModel model)
         {
             string result = typeof(TView).Name;
-            if (model is CachedEntity)
+            if (model is AuditedEntity)
             {
                 var lastModified = ReflectionHelper.GetPropertyValue(model, "LastModified");
                 var createdDate = ReflectionHelper.GetPropertyValue(model, "CreatedDateTime");
