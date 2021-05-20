@@ -34,10 +34,6 @@ namespace Mix.Heart.Infrastructure.ViewModels
         where TView : ViewModelBase<TDbContext, TModel, TView> // instance of inherited
     {
         #region Properties
-        [JsonProperty("lastModified")]
-        public DateTime? LastModified { get; set; }
-        [JsonProperty("createdDateTime")]
-        public DateTime CreatedDateTime { get; set; }
 
         protected IMediator _mediator;
 
@@ -350,7 +346,6 @@ namespace Mix.Heart.Infrastructure.ViewModels
             {
                 result += $"_{GetPropValue(model, key)}";
             }
-            result = $"{result}_{ LastModified?.Ticks ?? CreatedDateTime.Ticks }";
             return result;
         }
 

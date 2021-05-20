@@ -2,30 +2,32 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mix.Heart.Infrastructure.ViewModels;
 
 namespace Mix.Heart.Migrations
 {
     [DbContext(typeof(MixCacheDbContext))]
-    [Migration("20210308191126_InitCache")]
-    partial class InitCache
+    [Migration("20210520103606_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .UseIdentityColumns()
+                .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.1");
 
-            modelBuilder.Entity("Mix.Heart.Domain.Entities.MixCache", b =>
+            modelBuilder.Entity("Mix.Heart.Infrastructure.Entities.MixCache", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("varchar(50)")
-                        .UseCollation("NOCASE");
+                        .HasColumnType("varchar(150)");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("varchar(50)")
-                        .UseCollation("NOCASE");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTime>("CreatedDateTime")
                         .HasColumnType("datetime");
@@ -37,21 +39,18 @@ namespace Mix.Heart.Migrations
                         .HasColumnType("datetime");
 
                     b.Property<string>("ModifiedBy")
-                        .HasColumnType("varchar(50)")
-                        .UseCollation("NOCASE");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<int>("Priority")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("varchar(50)")
-                        .UseCollation("NOCASE");
+                        .HasColumnType("varchar(50)");
 
-                    b.Property<byte[]>("Value")
+                    b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("BLOB")
-                        .UseCollation("NOCASE");
+                        .HasColumnType("ntext");
 
                     b.HasKey("Id");
 

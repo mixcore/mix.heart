@@ -18,16 +18,6 @@ namespace Mix.Services
 {
     public class MixCacheService
     {
-        /// <summary>
-        /// The synchronize root
-        /// </summary>
-        private static readonly object syncRoot = new Object();
-
-        /// <summary>
-        /// The instance
-        /// </summary>
-        private static volatile MixCacheService instance;
-
         private static string cacheFolder = CommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheFolder);
 
         static MixCacheService()
@@ -35,25 +25,6 @@ namespace Mix.Services
             using (var ctx = new MixCacheDbContext())
             {
                 ctx.Database.Migrate();
-            }
-        }
-
-        public static MixCacheService Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (instance == null)
-                        {
-                            instance = new MixCacheService();
-                        }
-                    }
-                }
-
-                return instance;
             }
         }
 
@@ -432,8 +403,7 @@ namespace Mix.Services
                 case MixCacheMode.Database:
                     using (var ctx = new MixCacheDbContext())
                     {
-                        ctx.MixCache.RemoveRange(ctx.MixCache.Where(
-                            m => EF.Functions.Like(m.Id, $"%{folder}%")));
+                        ctx.MixCache.RemoveRange(ctx.MixCache.Where(m => EF.Functions.Like(m.Id, $"%{folder}%")));
                         ctx.SaveChangesAsync();
                         return Task.CompletedTask;
                     }

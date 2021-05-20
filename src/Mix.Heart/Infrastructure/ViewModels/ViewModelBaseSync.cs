@@ -160,15 +160,15 @@ namespace Mix.Heart.Infrastructure.ViewModels
             }
             finally
             {
+                if (result.IsSucceed && IsCache)
+                {
+                    RemoveCache(Model, context, transaction);
+                }
                 if (isRoot)
                 {
                     //if current Context is Root
                     UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                }
-                if (result.IsSucceed)
-                {
-                    _ = RemoveCache(Model);
-                }
+                }                
             }
         }
 
@@ -224,21 +224,14 @@ namespace Mix.Heart.Infrastructure.ViewModels
                 }
                 finally
                 {
+                    if (result.IsSucceed && IsCache)
+                    {
+                        RemoveCache(Model, context, transaction).ConfigureAwait(true).GetAwaiter();
+                    }
                     if (isRoot)
                     {
                         //if current Context is Root
-                        if (result.IsSucceed && IsCache)
-                        {
-                            GenerateCache(Model, this as TView);
-                        }
                         UnitOfWorkHelper<TDbContext>.CloseDbContext(ref context, ref transaction);
-                    }
-                    else
-                    {
-                        if (result.IsSucceed && IsCache)
-                        {
-                            _ = RemoveCache(Model);
-                        }
                     }
                 }
             }
