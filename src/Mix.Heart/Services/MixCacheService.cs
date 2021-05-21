@@ -2,6 +2,7 @@
 using Mix.Common.Helper;
 using Mix.Heart.Constants;
 using Mix.Heart.Enums;
+using Mix.Heart.Infrastructure;
 using Mix.Heart.Infrastructure.ViewModels;
 using Mix.Heart.Models;
 using Mix.Infrastructure.Repositories;
@@ -21,10 +22,28 @@ namespace Mix.Services
         private static string cacheFolder = CommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheFolder);
 
         static MixCacheService()
+        {            
+        }
+
+        public static MixCacheDbContext GetCacheDbContext()
         {
-            using (var ctx = new MixCacheDbContext())
+            var dbProvider = CommonHelper.GetWebEnumConfig<MixDatabaseProvider>(WebConfiguration.MixCacheDbProvider);
+            switch (dbProvider)
             {
-                ctx.Database.Migrate();
+                case MixDatabaseProvider.MSSQL:
+                    return new MsSqlCacheDbContext();
+
+                case MixDatabaseProvider.MySQL:
+                    return new MySqlCacheDbContext();
+
+                case MixDatabaseProvider.SQLITE:
+                    return new SqliteCacheDbContext();
+
+                case MixDatabaseProvider.PostgreSQL:
+                    return new PostgresCacheDbContext();
+
+                default:
+                    return null;
             }
         }
 

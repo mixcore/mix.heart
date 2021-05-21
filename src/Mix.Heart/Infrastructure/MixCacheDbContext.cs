@@ -4,7 +4,7 @@ using Mix.Heart.Constants;
 using Mix.Heart.Enums;
 using Mix.Heart.Infrastructure.Entities;
 
-namespace Mix.Heart.Infrastructure.ViewModels
+namespace Mix.Heart.Infrastructure
 {
     public partial class MixCacheDbContext: DbContext
     {
@@ -40,7 +40,8 @@ namespace Mix.Heart.Infrastructure.ViewModels
             }
             else
             {
-                optionsBuilder.UseSqlite($"Data Source=MixContent\\mix_cache.db");
+                //optionsBuilder.UseSqlite($"Data Source=MixContent\\mix_cache.db");
+                optionsBuilder.UseSqlServer($"Server=localhost;port=3306;Database=mixcore_structure;User=root;Password=;");
             }
 
             base.OnConfiguring(optionsBuilder);

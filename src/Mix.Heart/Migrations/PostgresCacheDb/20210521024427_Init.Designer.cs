@@ -2,19 +2,23 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mix.Heart.Infrastructure;
-using Mix.Heart.Infrastructure.ViewModels;
 
-namespace Mix.Heart.Migrations
+namespace Mix.Heart.Migrations.PostgresCacheDb
 {
-    [DbContext(typeof(MixCacheDbContext))]
-    partial class MixCacheDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(PostgresCacheDbContext))]
+    [Migration("20210521024427_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .UseIdentityColumns()
+                .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.1");
 
             modelBuilder.Entity("Mix.Heart.Infrastructure.Entities.MixCache", b =>
@@ -26,19 +30,19 @@ namespace Mix.Heart.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<DateTime>("CreatedDateTime")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("ExpiredDateTime")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("LastModified")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("varchar(50)");
 
                     b.Property<int>("Priority")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -46,7 +50,7 @@ namespace Mix.Heart.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("ntext");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

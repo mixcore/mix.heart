@@ -1,19 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Mix.Common.Helper;
-using Mix.Heart.Constants;
 using Mix.Heart.Enums;
 using Mix.Heart.Infrastructure.Entities;
-using System.Text;
 
-namespace Mix.Heart.Infrastructure.EntityConfigurations
+namespace Mix.Heart.Infrastructure.EntityConfigurations.SQLITE
 {
     public class MixCacheConfiguration : IEntityTypeConfiguration<MixCache>
     {
         public void Configure(EntityTypeBuilder<MixCache> entity)
         {
-            var dbProvider = CommonHelper.GetWebEnumConfig<MixDatabaseProvider>(WebConfiguration.MixCacheDbProvider);
+            string valueType = "text";
+            string dtType = "datetime";
+
             entity.ToTable("mix_cache");
 
             entity.HasIndex(e => e.ExpiredDateTime)
@@ -27,11 +26,11 @@ namespace Mix.Heart.Infrastructure.EntityConfigurations
                 .HasColumnType("varchar(50)")
                 .IsRequired(false);
 
-            entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
+            entity.Property(e => e.CreatedDateTime).HasColumnType(dtType);
 
-            entity.Property(e => e.ExpiredDateTime).HasColumnType("datetime");
+            entity.Property(e => e.ExpiredDateTime).HasColumnType(dtType);
 
-            entity.Property(e => e.LastModified).HasColumnType("datetime").IsRequired(false);
+            entity.Property(e => e.LastModified).HasColumnType(dtType).IsRequired(false);
 
             entity.Property(e => e.ModifiedBy)
                 .HasColumnType("varchar(50)")
@@ -41,18 +40,10 @@ namespace Mix.Heart.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasConversion(new EnumToStringConverter<MixCacheStatus>())
                 .HasColumnType("varchar(50)");
-            if (dbProvider == MixDatabaseProvider.MSSQL)
-            {
-                entity.Property(e => e.Value)
-                .IsRequired()
-                .HasColumnType("ntext");
-            }
-            else
-            {
-                entity.Property(e => e.Value)
-                .IsRequired()
-                .HasColumnType("text");
-            }
+
+            entity.Property(e => e.Value)
+            .IsRequired()
+            .HasColumnType(valueType);
         }
     }
 }
