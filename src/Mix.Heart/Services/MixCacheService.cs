@@ -19,7 +19,7 @@ namespace Mix.Services
 {
     public class MixCacheService
     {
-        private static string cacheFolder = CommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheFolder);
+        private static string cacheFolder = MixCommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheFolder);
 
         static MixCacheService()
         {            
@@ -27,7 +27,7 @@ namespace Mix.Services
 
         public static MixCacheDbContext GetCacheDbContext()
         {
-            var dbProvider = CommonHelper.GetWebEnumConfig<MixDatabaseProvider>(WebConfiguration.MixCacheDbProvider);
+            var dbProvider = MixCommonHelper.GetWebEnumConfig<MixDatabaseProvider>(WebConfiguration.MixCacheDbProvider);
             switch (dbProvider)
             {
                 case MixDatabaseProvider.MSSQL:
@@ -51,7 +51,7 @@ namespace Mix.Services
         {
             try
             {
-                var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
+                var cacheMode = MixCommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
                 switch (cacheMode)
                 {
                     case MixCacheMode.Database:
@@ -167,7 +167,7 @@ namespace Mix.Services
             if (value != null)
             {
                 var result = new RepositoryResponse<bool>();
-                var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
+                var cacheMode = MixCommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
                 switch (cacheMode)
                 {
                     case MixCacheMode.Database:
@@ -291,7 +291,7 @@ namespace Mix.Services
         {
             try
             {
-                var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
+                var cacheMode = MixCommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
                 switch (cacheMode)
                 {
                     case MixCacheMode.Database:
@@ -349,7 +349,7 @@ namespace Mix.Services
             if (value != null)
             {
                 var result = new RepositoryResponse<bool>();
-                var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
+                var cacheMode = MixCommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
                 switch (cacheMode)
                 {
                     case MixCacheMode.Database:
@@ -393,30 +393,31 @@ namespace Mix.Services
             return result.IsSucceed;
         }
 
-        public static Task RemoveCacheAsync()
+        public static async Task RemoveCacheAsync()
         {
-            var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
+            var cacheMode = MixCommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
             switch (cacheMode)
             {
                 case MixCacheMode.Database:
                     using (var ctx = new MixCacheDbContext())
                     {
                         ctx.MixCache.RemoveRange(ctx.MixCache);
-                        ctx.SaveChangesAsync();
-                        return Task.CompletedTask;
+                        await ctx.SaveChangesAsync();
                     }
+                    break;
                 case MixCacheMode.Json:
                 case MixCacheMode.Binary:
                 case MixCacheMode.Base64:
                 case MixCacheMode.Memory:
                 default:
-                    return Task.FromResult(MixFileRepository.Instance.EmptyFolder(cacheFolder));
+                    MixFileRepository.Instance.EmptyFolder(cacheFolder);
+                    break;
             }
         }
 
         public static Task RemoveCacheAsync(string folder)
         {
-            var cacheMode = CommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
+            var cacheMode = MixCommonHelper.GetWebEnumConfig<MixCacheMode>(WebConfiguration.MixCacheMode);
             switch (cacheMode)
             {
                 case MixCacheMode.Database:

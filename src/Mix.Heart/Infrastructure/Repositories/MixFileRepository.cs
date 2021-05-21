@@ -105,7 +105,7 @@ namespace Mix.Infrastructure.Repositories
 
         public bool DeleteWebFile(string filename, string folder)
         {
-            string fullPath = CommonHelper.GetFullPath(new string[]
+            string fullPath = MixCommonHelper.GetFullPath(new string[]
            {
                 "wwwroot",
                 folder,
@@ -114,14 +114,14 @@ namespace Mix.Infrastructure.Repositories
 
             if (File.Exists(fullPath))
             {
-                CommonHelper.RemoveFile(fullPath);
+                MixCommonHelper.RemoveFile(fullPath);
             }
             return true;
         }
 
         public bool DeleteWebFile(string filePath)
         {
-            string fullPath = CommonHelper.GetFullPath(new string[]
+            string fullPath = MixCommonHelper.GetFullPath(new string[]
            {
                 "wwwroot",
                 filePath
@@ -129,14 +129,14 @@ namespace Mix.Infrastructure.Repositories
 
             if (File.Exists(fullPath))
             {
-                CommonHelper.RemoveFile(fullPath);
+                MixCommonHelper.RemoveFile(fullPath);
             }
             return true;
         }
 
         public bool DeleteWebFolder(string folderPath)
         {
-            string fullPath = CommonHelper.GetFullPath(new string[]
+            string fullPath = MixCommonHelper.GetFullPath(new string[]
             {
                 "wwwroot",
                 folderPath
@@ -153,7 +153,7 @@ namespace Mix.Infrastructure.Repositories
         {
             FileViewModel result = null;
 
-            string folder = CommonHelper.GetFullPath(new string[] { fileFolder });
+            string folder = MixCommonHelper.GetFullPath(new string[] { fileFolder });
             string fullPath = string.Format(@"{0}/{1}.{2}", folder, name, ext);
 
             FileInfo file = new FileInfo(fullPath);
@@ -241,12 +241,12 @@ namespace Mix.Infrastructure.Repositories
 
         public bool DeleteFile(string name, string extension, string FileFolder)
         {
-            string folder = CommonHelper.GetFullPath(new string[] { FileFolder });
+            string folder = MixCommonHelper.GetFullPath(new string[] { FileFolder });
             string fullPath = string.Format(@"{0}/{1}{2}", folder, name, extension);
 
             if (File.Exists(fullPath))
             {
-                CommonHelper.RemoveFile(fullPath);
+                MixCommonHelper.RemoveFile(fullPath);
             }
             return true;
         }
@@ -257,7 +257,7 @@ namespace Mix.Infrastructure.Repositories
 
             if (File.Exists(fullPath))
             {
-                CommonHelper.RemoveFile(fullPath);
+                MixCommonHelper.RemoveFile(fullPath);
             }
             return true;
         }
@@ -266,7 +266,7 @@ namespace Mix.Infrastructure.Repositories
         {
             if (File.Exists(fullPath))
             {
-                CommonHelper.RemoveFile(fullPath);
+                MixCommonHelper.RemoveFile(fullPath);
             }
             return true;
         }
@@ -340,7 +340,7 @@ namespace Mix.Infrastructure.Repositories
 
         public List<FileViewModel> GetUploadFiles(string folder)
         {
-            string fullPath = CommonHelper.GetFullPath(new string[] { folder });
+            string fullPath = MixCommonHelper.GetFullPath(new string[] { folder });
 
             CreateDirectoryIfNotExist(fullPath);
 
@@ -424,7 +424,7 @@ namespace Mix.Infrastructure.Repositories
                         result.Add(new FileViewModel()
                         {
                             FolderName = folderName,
-                            FileFolder = CommonHelper.GetFullPath(new string[] { fullPath, folderName }),
+                            FileFolder = MixCommonHelper.GetFullPath(new string[] { fullPath, folderName }),
                             Filename = file.Name.Substring(0, file.Name.LastIndexOf('.')),
                             Extension = file.Extension,
                             Content = s.ReadToEnd()
@@ -453,7 +453,7 @@ namespace Mix.Infrastructure.Repositories
                     result.Add(new FileViewModel()
                     {
                         FolderName = folderName,
-                        FileFolder = CommonHelper.GetFullPath(new string[] { fullPath, folderName }),
+                        FileFolder = MixCommonHelper.GetFullPath(new string[] { fullPath, folderName }),
                         Filename = file.Name.Substring(0, file.Name.LastIndexOf('.')),
                         Extension = file.Extension,
                         //Content = s.ReadToEnd()
@@ -465,7 +465,7 @@ namespace Mix.Infrastructure.Repositories
 
         public List<FileViewModel> GetWebFiles(string folder)
         {
-            string fullPath = CommonHelper.GetFullPath(new string[] {
+            string fullPath = MixCommonHelper.GetFullPath(new string[] {
                     "wwwroot",
                     folder
                 });
@@ -502,7 +502,7 @@ namespace Mix.Infrastructure.Repositories
 
             try
             {
-                string fullPath = CommonHelper.GetFullPath(new string[] {
+                string fullPath = MixCommonHelper.GetFullPath(new string[] {
                     "wwwroot",
                     file.FileFolder
                 });
@@ -510,7 +510,7 @@ namespace Mix.Infrastructure.Repositories
                 {
                     CreateDirectoryIfNotExist(fullPath);
 
-                    string fileName = CommonHelper.GetFullPath(new string[] { fullPath, file.Filename + file.Extension });
+                    string fileName = MixCommonHelper.GetFullPath(new string[] { fullPath, file.Filename + file.Extension });
                     if (File.Exists(fileName))
                     {
                         DeleteFile(fileName);
@@ -558,8 +558,8 @@ namespace Mix.Infrastructure.Repositories
         {
             string base64 = file.FileStream.Split(',')[1];
             byte[] bytes = Convert.FromBase64String(base64);
-            JObject imageSizes = CommonHelper.GetWebConfig<JObject>(WebConfiguration.ImageSizes);
-            string fullPath = CommonHelper.GetFullPath(new string[] {
+            JObject imageSizes = MixCommonHelper.GetWebConfig<JObject>(WebConfiguration.ImageSizes);
+            string fullPath = MixCommonHelper.GetFullPath(new string[] {
                     "wwwroot",
                     file.FileFolder
                 });
@@ -571,11 +571,11 @@ namespace Mix.Infrastructure.Repositories
                     int width = imageSizes.GetValue(size).Value<int>("width");
                     int height = (image.Height * width) / image.Width;
                     image.Mutate(x => x.Resize(width, height));
-                    image.Save(CommonHelper.GetFullPath(new string[] { fullPath, file.Filename + "_" + size + file.Extension }));
+                    image.Save(MixCommonHelper.GetFullPath(new string[] { fullPath, file.Filename + "_" + size + file.Extension }));
                 }
                 else
                 {
-                    image.Save(CommonHelper.GetFullPath(new string[] { fullPath, file.Filename + file.Extension }));
+                    image.Save(MixCommonHelper.GetFullPath(new string[] { fullPath, file.Filename + file.Extension }));
                 }
 
             }
@@ -590,7 +590,7 @@ namespace Mix.Infrastructure.Repositories
                     CreateDirectoryIfNotExist(fullPath);
 
                     string filename = file.FileName;
-                    string filePath = CommonHelper.GetFullPath(new string[] { fullPath, filename });
+                    string filePath = MixCommonHelper.GetFullPath(new string[] { fullPath, filename });
                     if (File.Exists(filePath))
                     {
                         DeleteFile(filePath);
@@ -623,7 +623,7 @@ namespace Mix.Infrastructure.Repositories
                     string fileName = $"{file.Filename}{file.Extension}";
                     if (!string.IsNullOrEmpty(file.FileFolder))
                     {
-                        fileName = CommonHelper.GetFullPath(new string[] { file.FileFolder, fileName });
+                        fileName = MixCommonHelper.GetFullPath(new string[] { file.FileFolder, fileName });
                     }
                     if (File.Exists(fileName))
                     {
@@ -669,7 +669,7 @@ namespace Mix.Infrastructure.Repositories
         {
             try
             {
-                string fullPath = CommonHelper.GetFullPath(new string[] {
+                string fullPath = MixCommonHelper.GetFullPath(new string[] {
                     "wwwroot",
                     folder
                 });
@@ -701,13 +701,13 @@ namespace Mix.Infrastructure.Repositories
 
         public bool UnZipFile(FileViewModel file)
         {
-            string filePath = CommonHelper.GetFullPath(new string[]
+            string filePath = MixCommonHelper.GetFullPath(new string[]
             {
                  "wwwroot",
                 file.FileFolder,
                 $"{file.Filename}{file.Extension}"
             });
-            string webFolder = CommonHelper.GetFullPath(new string[]
+            string webFolder = MixCommonHelper.GetFullPath(new string[]
             {
                 "wwwroot",
                 file.FileFolder

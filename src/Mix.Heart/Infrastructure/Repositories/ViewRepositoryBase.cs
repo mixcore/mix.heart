@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Mix.Common.Helper;
+using Mix.Heart.Constants;
 using Mix.Heart.Enums;
 using Mix.Heart.Extensions;
 using Mix.Heart.Helpers;
@@ -35,7 +36,7 @@ namespace Mix.Heart.Infrastructure.Repositories
         public string KeyName { get; set; } = "Id";
         public string ModelName { get { return typeof(TModel).FullName; } }
 
-        public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>("IsCache");
+        public bool IsCache { get => MixCommonHelper.GetWebConfig<bool>(WebConfiguration.IsCache); }
 
         public string CachedFolder { get { return $"{ModelName}"; } }
 

@@ -23,7 +23,7 @@ namespace Mix.Common.Helper
     /// <summary>
     /// Common helper
     /// </summary>
-    public static class CommonHelper
+    public static class MixCommonHelper
     {
         private static volatile JObject webConfigInstance;
         private static readonly object syncRoot = new Object();
@@ -67,6 +67,11 @@ namespace Mix.Common.Helper
             set {
                 webConfigInstance = value;
             }
+        }
+
+        public static void ReloadWebConfig()
+        {
+            webConfigInstance = LoadWebConfig();
         }
 
         public static List<object> EnumToObject(Type enumType)

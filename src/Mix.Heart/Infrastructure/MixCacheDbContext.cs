@@ -12,10 +12,10 @@ namespace Mix.Heart.Infrastructure
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            string cnn = CommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheConnectionString);
+            string cnn = MixCommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheConnectionString);
             if (!string.IsNullOrEmpty(cnn))
             {
-                var provider = CommonHelper.GetWebEnumConfig<MixDatabaseProvider>(WebConfiguration.MixCacheDbProvider);
+                var provider = MixCommonHelper.GetWebEnumConfig<MixDatabaseProvider>(WebConfiguration.MixCacheDbProvider);
                 switch (provider)
                 {
                     case MixDatabaseProvider.MSSQL:

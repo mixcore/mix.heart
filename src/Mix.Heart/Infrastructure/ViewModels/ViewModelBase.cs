@@ -43,7 +43,7 @@ namespace Mix.Heart.Infrastructure.ViewModels
         }
 
         [JsonIgnore]
-        public bool IsCache { get; set; } = CommonHelper.GetWebConfig<bool>(WebConfiguration.IsCache);
+        public bool IsCache { get; set; } = MixCommonHelper.GetWebConfig<bool>(WebConfiguration.IsCache);
 
         [JsonIgnore]
         private string ModelName { get { return typeof(TModel).FullName; } }

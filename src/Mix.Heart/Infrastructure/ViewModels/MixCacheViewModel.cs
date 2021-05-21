@@ -25,7 +25,6 @@ namespace Mix.Heart.Infrastructure.ViewModels
         public MixCacheViewModel(): base()
         {
             IsCache = false;
-            Repository.IsCache = false;
         }
 
         public MixCacheViewModel(MixCache model, MixCacheDbContext context, IDbContextTransaction transaction ): base(model, context, transaction)
