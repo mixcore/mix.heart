@@ -40,8 +40,7 @@ namespace Mix.Heart.Infrastructure
             }
             else
             {
-                //optionsBuilder.UseSqlite($"Data Source=MixContent\\mix_cache.db");
-                optionsBuilder.UseSqlServer($"Server=localhost;port=3306;Database=mixcore_structure;User=root;Password=;");
+                optionsBuilder.UseSqlite($"Data Source=MixContent\\mix_cache.db");
             }
 
             base.OnConfiguring(optionsBuilder);
