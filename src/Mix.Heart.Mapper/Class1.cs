@@ -1,0 +1,3 @@
+﻿namespace Mix.Heart.Mapper
+{
+}

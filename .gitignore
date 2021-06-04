@@ -1,3 +1,10 @@
-/.vs
-/src/mix.heart/bin
-/src/mix.heart/obj
+# Build Folders
+[Bb]in/
+[Oo]bj/
+
+# Generated files
+.vs/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
