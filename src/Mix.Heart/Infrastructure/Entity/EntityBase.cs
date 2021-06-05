@@ -1,37 +1,35 @@
 ﻿using Mix.Heart.Enums;
 using System;
 
-namespace Mix.Heart.Entity
-{
-public abstract class EntityBase<TPrimaryKey>: IEntity<TPrimaryKey>
-{
+namespace Mix.Heart.Entity {
+  public abstract class EntityBase<TPrimaryKey> : IEntity<TPrimaryKey> {
     public TPrimaryKey Id {
-        get;
-        set;
+      get;
+      set;
     }
     public DateTime CreatedDateTime {
-        get;
-        set;
+      get;
+      set;
     }
     public DateTime? LastModified {
-        get;
-        set;
+      get;
+      set;
     }
     public Guid CreatedBy {
-        get;
-        set;
+      get;
+      set;
     }
     public Guid? ModifiedBy {
-        get;
-        set;
+      get;
+      set;
     }
     public int Priority {
-        get;
-        set;
+      get;
+      set;
     }
     public MixContentStatus Status {
-        get;
-        set;
+      get;
+      set;
     }
-}
+  }
 }
