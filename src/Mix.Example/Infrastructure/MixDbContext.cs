@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Mix.Example.Infrastructure.Entities;
+using Mix.Example.Infrastructure.MixEntities;
 
 namespace Mix.Example.Infrastructure
 {
@@ -9,7 +9,7 @@ namespace Mix.Example.Infrastructure
         {
         }
 
-        public MixDbContext(DbContextOptions<MixDbContext> options)
+        public MixDbContext(DbContextOptions<MixDbContext> options) : base(options)
         {
         }
 
@@ -19,15 +19,18 @@ namespace Mix.Example.Infrastructure
 
         public DbSet<ProductDetailEntity> ProductDetail { get; set; }
 
+        public DbSet<StoreEntity> Store { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=.;Database=MixExample;Trusted_Connection=True;");
+            optionsBuilder.UseSqlServer("Server=.;Database=MixDb;Trusted_Connection=True;");
             base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);
+            var mixDbConfigurationNamespace = "Mix.Example.Infrastructure.MixConfiguration";
+            modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly, p => p.Namespace == mixDbConfigurationNamespace);
             base.OnModelCreating(modelBuilder);
         }
     }

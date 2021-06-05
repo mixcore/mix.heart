@@ -1,6 +1,6 @@
 ﻿using Mix.Heart.Entity;
 
-namespace Mix.Example.Infrastructure.Entities
+namespace Mix.Example.Infrastructure.MixEntities
 {
     public class CategoryEntity : Entity
     {

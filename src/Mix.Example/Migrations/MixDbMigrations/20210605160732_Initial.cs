@@ -1,32 +1,12 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Mix.Example.Migrations
+namespace Mix.Example.Migrations.MixDbMigrations
 {
-    public partial class AddNewEntity : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_ProductEntity",
-                table: "ProductEntity");
-
-            migrationBuilder.RenameTable(
-                name: "ProductEntity",
-                newName: "Product");
-
-            migrationBuilder.AddColumn<Guid>(
-                name: "CategoryId",
-                table: "Product",
-                type: "uniqueidentifier",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_Product",
-                table: "Product",
-                column: "Id");
-
             migrationBuilder.CreateTable(
                 name: "Category",
                 columns: table => new
@@ -38,6 +18,21 @@ namespace Mix.Example.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Category", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Product",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Producer = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Product", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -55,6 +50,21 @@ namespace Mix.Example.Migrations
                 {
                     table.PrimaryKey("PK_ProductDetail", x => x.Id);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Store",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Country = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Store", x => x.Id);
+                });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -63,24 +73,13 @@ namespace Mix.Example.Migrations
                 name: "Category");
 
             migrationBuilder.DropTable(
+                name: "Product");
+
+            migrationBuilder.DropTable(
                 name: "ProductDetail");
 
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_Product",
-                table: "Product");
-
-            migrationBuilder.DropColumn(
-                name: "CategoryId",
-                table: "Product");
-
-            migrationBuilder.RenameTable(
-                name: "Product",
-                newName: "ProductEntity");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_ProductEntity",
-                table: "ProductEntity",
-                column: "Id");
+            migrationBuilder.DropTable(
+                name: "Store");
         }
     }
 }

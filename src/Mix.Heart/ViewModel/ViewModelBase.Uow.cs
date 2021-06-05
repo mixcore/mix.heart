@@ -25,14 +25,14 @@ namespace Mix.Heart.ViewModel
             _isRoot = true;
 
             var dbContextType = typeof(TDbContext);
-            var contextConstructorInfo = dbContextType.GetConstructor(new Type[] { });
+            var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });
 
-            if (contextConstructorInfo == null)
+            if (contextCtorInfo == null)
             {
                 throw new NullReferenceException();
             }
 
-            var dbContext = (TDbContext)contextConstructorInfo.Invoke(new object[] { });
+            var dbContext = (TDbContext)contextCtorInfo.Invoke(new object[] { });
 
             var dbContextTransaction = dbContext.Database.BeginTransaction();
 
@@ -51,7 +51,6 @@ namespace Mix.Heart.ViewModel
             };
 
             unitOfWorkInfo.Complete();
-            unitOfWorkInfo.Close();
 
             _isRoot = false;
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using Mix.Example.Infrastructure;
-using Mix.Example.Infrastructure.Entities;
+using Mix.Example.Infrastructure.MixEntities;
 using Mix.Heart.UnitOfWork;
 using Mix.Heart.ViewModel;
 

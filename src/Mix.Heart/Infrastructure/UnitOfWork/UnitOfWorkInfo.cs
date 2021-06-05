@@ -36,6 +36,8 @@ namespace Mix.Heart.UnitOfWork
         {
             ActiveDbContext.SaveChanges();
             ActiveTransaction.Commit();
+
+            Close();
         }
 
         /// <summary>

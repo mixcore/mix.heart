@@ -3,17 +3,15 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mix.Example.Infrastructure;
 
-namespace Mix.Example.Migrations
+namespace Mix.Example.Migrations.MixDbMigrations
 {
     [DbContext(typeof(MixDbContext))]
-    [Migration("20210601150307_AddNewEntity")]
-    partial class AddNewEntity
+    partial class MixDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,7 +19,7 @@ namespace Mix.Example.Migrations
                 .HasAnnotation("ProductVersion", "5.0.6")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Mix.Example.Infrastructure.Entities.CategoryEntity", b =>
+            modelBuilder.Entity("Mix.Example.Infrastructure.MixEntities.CategoryEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -38,7 +36,7 @@ namespace Mix.Example.Migrations
                     b.ToTable("Category");
                 });
 
-            modelBuilder.Entity("Mix.Example.Infrastructure.Entities.ProductDetailEntity", b =>
+            modelBuilder.Entity("Mix.Example.Infrastructure.MixEntities.ProductDetailEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -64,7 +62,7 @@ namespace Mix.Example.Migrations
                     b.ToTable("ProductDetail");
                 });
 
-            modelBuilder.Entity("Mix.Example.Infrastructure.Entities.ProductEntity", b =>
+            modelBuilder.Entity("Mix.Example.Infrastructure.MixEntities.ProductEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,6 +83,29 @@ namespace Mix.Example.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Product");
+                });
+
+            modelBuilder.Entity("Mix.Example.Infrastructure.MixEntities.StoreEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Store");
                 });
 #pragma warning restore 612, 618
         }

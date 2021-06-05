@@ -5,6 +5,7 @@
     <UserSecretsId>69df0910-1151-4616-bd77-f51fb00bf84e</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
+    <RootNamespace>Mix.Example</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
