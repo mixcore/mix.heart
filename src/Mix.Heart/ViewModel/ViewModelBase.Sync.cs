@@ -7,11 +7,11 @@ namespace Mix.Heart.ViewModel
 {
     public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
     {
-        public virtual void Save(bool hasSavedRelationship = false)
+        public virtual void Save(bool hasSavedRelationship = false, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
 
                 var context = _unitOfWorkInfo.ActiveDbContext;
 
