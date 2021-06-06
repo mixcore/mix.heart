@@ -16,13 +16,9 @@ namespace Mix.Heart.ViewModel
     {
         public CommandRepository<TDbContext, TEntity, TPrimaryKey> _repository { get; set; }
 
-        public CommandViewModelBase(TDbContext dbContext, CommandRepository<TDbContext, TEntity, TPrimaryKey> repo)
+        public CommandViewModelBase(CommandRepository<TDbContext, TEntity, TPrimaryKey> repository)
         {
-            _repository = repo;
-            _unitOfWorkInfo = new UnitOfWorkInfo();
-            _unitOfWorkInfo.SetDbContext(dbContext);
-            _repository.SetUowInfo(_unitOfWorkInfo);
-
+            _repository = repository;
         }
 
         public CommandViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
@@ -37,19 +33,16 @@ namespace Mix.Heart.ViewModel
         }
 
         #region Async
-        public virtual TEntity InitModel()
-        {
-            Type classType = typeof(TEntity);
-            return (TEntity)Activator.CreateInstance(classType);
-        }
-        
-        public async Task<TPrimaryKey> SaveAsync()
+
+       
+        public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
+                _repository.SetUowInfo(_unitOfWorkInfo);
 
-                var entity = await SaveEntityAsync();
+                var entity = await SaveHandlerAsync();
                 return entity.Id;
             }
             catch(Exception ex)
@@ -64,7 +57,7 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        public virtual async Task<TEntity> SaveEntityAsync()
+        public virtual async Task<TEntity> SaveHandlerAsync()
         {
             var entity = InitModel();
             var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TEntity), GetType()).ReverseMap());

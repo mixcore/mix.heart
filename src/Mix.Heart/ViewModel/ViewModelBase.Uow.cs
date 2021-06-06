@@ -8,8 +8,9 @@ namespace Mix.Heart.ViewModel
     {
         private bool _isRoot;
 
-        protected virtual void BeginUow()
+        protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
+            _unitOfWorkInfo ??= uowInfo;
             if (_unitOfWorkInfo != null)
             {
                 _isRoot = false;
@@ -25,17 +26,15 @@ namespace Mix.Heart.ViewModel
 
             Console.WriteLine("Unit of work starting");
 
+            InitRootUow();
+
+        }
+
+        private void InitRootUow()
+        {
             _isRoot = true;
 
-            var dbContextType = typeof(TDbContext);
-            var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });
-
-            if (contextCtorInfo == null)
-            {
-                throw new NullReferenceException();
-            }
-
-            var dbContext = (TDbContext)contextCtorInfo.Invoke(new object[] { });
+            var dbContext = InitDbContext();
 
             var dbContextTransaction = dbContext.Database.BeginTransaction();
 
@@ -76,6 +75,19 @@ namespace Mix.Heart.ViewModel
             _unitOfWorkInfo.Close();
 
             _isRoot = false;
+        }
+
+        private TDbContext InitDbContext()
+        {
+            var dbContextType = typeof(TDbContext);
+            var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });
+
+            if (contextCtorInfo == null)
+            {
+                throw new NullReferenceException();
+            }
+
+            return (TDbContext)contextCtorInfo.Invoke(new object[] { });
         }
     }
 }

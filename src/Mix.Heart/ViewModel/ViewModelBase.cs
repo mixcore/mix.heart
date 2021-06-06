@@ -21,6 +21,13 @@ namespace Mix.Heart.ViewModel
         public int Priority { get; set; }
         public MixContentStatus Status { get; set;}
 
+
+        public virtual TEntity InitModel()
+        {
+            Type classType = typeof(TEntity);
+            return (TEntity)Activator.CreateInstance(classType);
+        }
+
         protected void HandleException(Exception ex)
         {
             Console.WriteLine(ex);

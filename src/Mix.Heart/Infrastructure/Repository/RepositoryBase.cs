@@ -7,8 +7,9 @@ namespace Mix.Heart.Repository
 {
     public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> where TDbContext : DbContext
     {
-        public TDbContext _dbContext { get; private set; }
         public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
+
+        public virtual TDbContext Context => (TDbContext)(_unitOfWorkInfo?.ActiveDbContext);
 
         public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
         {
@@ -17,9 +18,8 @@ namespace Mix.Heart.Repository
         protected RepositoryBase(TDbContext dbContext)
         {
             _isRoot = true;
-            _dbContext = dbContext;
             _unitOfWorkInfo ??= new UnitOfWorkInfo();
-            _unitOfWorkInfo.SetDbContext(_dbContext);
+            _unitOfWorkInfo.SetDbContext(dbContext);
         }
 
         private bool _isRoot;
@@ -30,7 +30,6 @@ namespace Mix.Heart.Repository
             {
                 _isRoot = false;
                 _unitOfWorkInfo = unitOfWorkInfo;
-                _dbContext = (TDbContext)unitOfWorkInfo.ActiveDbContext;
             };
         }
 
@@ -51,17 +50,15 @@ namespace Mix.Heart.Repository
 
             Console.WriteLine("Unit of work starting");
 
+            InitRootUow();
+            
+        }
+
+        private void InitRootUow()
+        {
             _isRoot = true;
 
-            var dbContextType = typeof(TDbContext);
-            var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });
-
-            if (contextCtorInfo == null)
-            {
-                throw new NullReferenceException();
-            }
-
-            var dbContext = (TDbContext)contextCtorInfo.Invoke(new object[] { });
+            var dbContext = InitDbContext();
 
             var dbContextTransaction = dbContext.Database.BeginTransaction();
 
@@ -104,12 +101,25 @@ namespace Mix.Heart.Repository
             _isRoot = false;
         }
 
-        public virtual TDbContext Context => _dbContext;
+        private TDbContext InitDbContext()
+        {
+            var dbContextType = typeof(TDbContext);
+            var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });
+
+            if (contextCtorInfo == null)
+            {
+                throw new NullReferenceException();
+            }
+
+            return (TDbContext)contextCtorInfo.Invoke(new object[] { });
+        }
 
         protected void HandleException(Exception ex)
         {
             Console.WriteLine(ex);
             return;
         }
+
+        
     }
 }
