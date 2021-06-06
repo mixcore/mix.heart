@@ -1,24 +1,22 @@
 ﻿using Mix.Heart.Enums;
 
-namespace Mix.Heart.Model
-{
-public class PagingModel : IPagingModel
-{
+namespace Mix.Heart.Model {
+  public class PagingModel : IPagingModel {
     public string SortBy {
-        get;
-        set;
+      get;
+      set;
     }
     public SortDirection SortDirection {
-        get;
-        set;
+      get;
+      set;
     }
     public int PageIndex {
-        get;
-        set;
+      get;
+      set;
     }
     public int PageSize {
-        get;
-        set;
+      get;
+      set;
     }
-}
+  }
 }

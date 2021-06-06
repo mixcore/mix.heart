@@ -1,24 +1,22 @@
 ﻿using Mix.Heart.Enums;
 
-namespace Mix.Heart.Model
-{
-public interface IPagingModel
-{
+namespace Mix.Heart.Model {
+  public interface IPagingModel {
     int PageIndex {
-        get;
-        set;
+      get;
+      set;
     }
     int PageSize {
-        get;
-        set;
+      get;
+      set;
     }
     string SortBy {
-        get;
-        set;
+      get;
+      set;
     }
     SortDirection SortDirection {
-        get;
-        set;
+      get;
+      set;
     }
-}
+  }
 }
