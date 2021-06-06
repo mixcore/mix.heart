@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Mix.Heart.Entity;
 using Mix.Heart.Model;
 using System;
 using System.Linq;
@@ -7,9 +8,11 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
 {
-    public class QueryRepository<TDbContext, TEntity> : RepositoryBase<TDbContext>
+    public class QueryRepository<TDbContext, TEntity, TPrimaryKey>
+        : RepositoryBase<TDbContext> 
         where TDbContext : DbContext 
-        where TEntity : class
+        where TEntity: class, IEntity<TPrimaryKey>
+        where TPrimaryKey : IComparable
     {
         public QueryRepository(TDbContext dbContext) : base(dbContext) { }
 
@@ -25,12 +28,15 @@ namespace Mix.Heart.Repository
             return Context.Set<TEntity>().AsQueryable().AsNoTracking();
         }
 
-        public IQueryable<TEntity> GetListQuery(Expression<Func<TEntity, bool>> predicate)
+        public IQueryable<TEntity>
+        GetListQuery(Expression<Func<TEntity, bool>> predicate)
         {
             return GetAllQuery().Where(predicate);
         }
 
-        public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate, IPagingModel paging, out int count)
+        public IQueryable<TEntity>
+        GetPagingQuery(Expression<Func<TEntity, bool>> predicate,
+                       IPagingModel paging, out int count)
         {
             var query = GetListQuery(predicate);
             count = query.Count();
@@ -44,7 +50,8 @@ namespace Mix.Heart.Repository
                     query = Queryable.OrderByDescending(query, sortBy);
                     break;
             }
-            query = query.Skip(paging.PageIndex * paging.PageSize).Take(paging.PageIndex);
+            query =
+                query.Skip(paging.PageIndex * paging.PageSize).Take(paging.PageIndex);
             return query;
         }
 
@@ -52,7 +59,8 @@ namespace Mix.Heart.Repository
 
         #region Async
 
-        public Task<TEntity> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        public Task<TEntity>
+        GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return GetAllQuery().FirstOrDefaultAsync(predicate);
         }
@@ -61,7 +69,8 @@ namespace Mix.Heart.Repository
 
         #region Helper
 
-        protected LambdaExpression GetLambda(string propName, bool isGetDefault = true)
+        protected LambdaExpression GetLambda(string propName,
+                                             bool isGetDefault = true)
         {
             var parameter = Expression.Parameter(typeof(TEntity));
             var type = typeof(TEntity);

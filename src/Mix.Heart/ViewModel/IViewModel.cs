@@ -8,6 +8,7 @@ namespace Mix.Heart.ViewModel
     }
 
     public interface IViewModel<TPrimaryKey> : IHasPrimaryKey<TPrimaryKey>
+        where TPrimaryKey : IComparable
     {
     }
 }

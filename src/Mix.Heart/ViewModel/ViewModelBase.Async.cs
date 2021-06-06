@@ -6,7 +6,8 @@ using Mix.Heart.UnitOfWork;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TPrimaryKey, TEntity, TDbContext>
+    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+        where TPrimaryKey : IComparable
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
