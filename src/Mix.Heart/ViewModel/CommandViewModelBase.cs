@@ -4,8 +4,6 @@ using Mix.Heart.Entity;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
@@ -18,16 +16,24 @@ namespace Mix.Heart.ViewModel
     {
         public CommandRepository<TDbContext, TEntity, TPrimaryKey> _repository { get; set; }
 
-        public CommandViewModelBase(CommandRepository<TDbContext, TEntity, TPrimaryKey> repo)
+        public CommandViewModelBase(TDbContext dbContext, CommandRepository<TDbContext, TEntity, TPrimaryKey> repo)
         {
-            UnitOfWorkInfo = new UnitOfWorkInfo();
             _repository = repo;
-            
+            _unitOfWorkInfo = new UnitOfWorkInfo();
+            _unitOfWorkInfo.SetDbContext(dbContext);
+            _repository.SetUowInfo(_unitOfWorkInfo);
+
         }
 
-        public void SetUow(UnitOfWorkInfo unitOfWorkInfo)
+        public CommandViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
         {
-            _repository.SetUow(unitOfWorkInfo);
+            _unitOfWorkInfo = unitOfWorkInfo;
+            _repository.SetUowInfo(_unitOfWorkInfo);
+        }
+
+        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
+        {
+            _repository.SetUowInfo(unitOfWorkInfo);
         }
 
         #region Async
@@ -36,15 +42,37 @@ namespace Mix.Heart.ViewModel
             Type classType = typeof(TEntity);
             return (TEntity)Activator.CreateInstance(classType);
         }
+        
+        public async Task<TPrimaryKey> SaveAsync()
+        {
+            try
+            {
+                BeginUow();
 
-        public virtual async Task<TPrimaryKey> SaveAsync()
+                var entity = await SaveEntityAsync();
+                return entity.Id;
+            }
+            catch(Exception ex)
+            {
+                HandleException(ex);
+                CloseUow();
+                return default;
+            }
+            finally
+            {
+                CompleteUow();
+            }
+        }
+
+        public virtual async Task<TEntity> SaveEntityAsync()
         {
             var entity = InitModel();
             var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TEntity), GetType()).ReverseMap());
             var mapper = new Mapper(config);
-            mapper.Map(this , entity);
+            mapper.Map(this, entity);
+
             await _repository.SaveAsync(entity);
-            return entity.Id;
+            return entity;
         }
 
         #endregion

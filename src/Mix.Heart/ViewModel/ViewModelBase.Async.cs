@@ -11,23 +11,6 @@ namespace Mix.Heart.ViewModel
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
-        public virtual async Task<int> SaveAsync(UnitOfWorkInfo uowInfo = null)
-        {
-            try
-            {
-                BeginUow(ref uowInfo);
-            }
-            catch (Exception)
-            {
-                CloseUow(uowInfo);
-                throw;
-            }
-            finally
-            {
-                await CompleteUowAsync(uowInfo);
-            }
-
-            return 1;
-        }
+        
     }
 }

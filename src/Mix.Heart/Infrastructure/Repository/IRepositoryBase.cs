@@ -9,6 +9,6 @@ namespace Mix.Heart.Repository
         UnitOfWorkInfo _unitOfWorkInfo { get; set; }
         TDbContext Context { get; }
 
-        void SetUow(UnitOfWorkInfo unitOfWorkInfo);
+        void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo);
     }
 }

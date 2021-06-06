@@ -26,7 +26,7 @@ namespace Mix.Heart.UnitOfWork
         public void Close()
         {
             ActiveDbContext.Dispose();
-            ActiveTransaction.Dispose();
+            ActiveTransaction?.Dispose();
         }
 
         /// <summary>

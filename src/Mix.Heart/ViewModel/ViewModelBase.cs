@@ -12,37 +12,19 @@ namespace Mix.Heart.ViewModel
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
-        public UnitOfWorkInfo UnitOfWorkInfo { get; set; }
+        public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
         public TPrimaryKey Id { get; set; }
-        public DateTime CreatedDateTime
+        public DateTime CreatedDateTime { get; set;}
+        public DateTime? LastModified { get; set; }
+        public Guid CreatedBy { get; set; }
+        public Guid? ModifiedBy { get; set; }
+        public int Priority { get; set; }
+        public MixContentStatus Status { get; set;}
+
+        protected void HandleException(Exception ex)
         {
-            get;
-            set;
-        }
-        public DateTime? LastModified
-        {
-            get;
-            set;
-        }
-        public Guid CreatedBy
-        {
-            get;
-            set;
-        }
-        public Guid? ModifiedBy
-        {
-            get;
-            set;
-        }
-        public int Priority
-        {
-            get;
-            set;
-        }
-        public MixContentStatus Status
-        {
-            get;
-            set;
+            Console.WriteLine(ex);
+            return;
         }
     }
 }

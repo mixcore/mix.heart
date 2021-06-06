@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using Mix.Heart.Entity;
 using Mix.Heart.UnitOfWork;
 
 namespace Mix.Heart.ViewModel
 {
     public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
     {
-        public virtual void Save(bool hasSavedRelationship = false, UnitOfWorkInfo uowInfo = null)
+        public virtual void Save(bool hasSavedRelationship = false)
         {
             try
             {
-                BeginUow(ref uowInfo);
+                BeginUow();
 
-                var context = uowInfo.ActiveDbContext;
+                var context = _unitOfWorkInfo.ActiveDbContext;
 
                 var entity = context.Set<TEntity>().Find(Id);
                 if (entity != null)
@@ -33,7 +32,7 @@ namespace Mix.Heart.ViewModel
 
                 if (hasSavedRelationship)
                 {
-                    SaveEntityRelationship(entity, uowInfo);
+                    SaveEntityRelationship(entity);
                 }
             }
             catch (Exception ex)
@@ -43,16 +42,16 @@ namespace Mix.Heart.ViewModel
                     throw;
                 };
 
-                CloseUow(uowInfo);
+                CloseUow();
                 Console.WriteLine(ex.Message);
             }
             finally
             {
-                CompleteUow(uowInfo);
+                CompleteUow();
             }
         }
 
-        protected virtual void SaveEntityRelationship(TEntity parentEntity, UnitOfWorkInfo uowInfo)
+        protected virtual void SaveEntityRelationship(TEntity parentEntity)
         {
             throw new NotImplementedException();
         }

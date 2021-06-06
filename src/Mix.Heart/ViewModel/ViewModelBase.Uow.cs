@@ -8,11 +8,18 @@ namespace Mix.Heart.ViewModel
     {
         private bool _isRoot;
 
-        protected virtual void BeginUow(ref UnitOfWorkInfo unitOfWorkInfo)
+        protected virtual void BeginUow()
         {
-            if (unitOfWorkInfo != null)
+            if (_unitOfWorkInfo != null)
             {
                 _isRoot = false;
+                if (_unitOfWorkInfo.ActiveTransaction == null)
+                {
+
+                    _unitOfWorkInfo.SetTransaction(
+                        _unitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
+                        ?? _unitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
+                }
                 return;
             };
 
@@ -32,41 +39,41 @@ namespace Mix.Heart.ViewModel
 
             var dbContextTransaction = dbContext.Database.BeginTransaction();
 
-            unitOfWorkInfo = new UnitOfWorkInfo();
-            unitOfWorkInfo.SetDbContext(dbContext);
-            unitOfWorkInfo.SetTransaction(dbContextTransaction);
+            _unitOfWorkInfo = new UnitOfWorkInfo();
+            _unitOfWorkInfo.SetDbContext(dbContext);
+            _unitOfWorkInfo.SetTransaction(dbContextTransaction);
 
             Console.WriteLine("Unit of work started");
         }
 
-        protected virtual void CompleteUow(UnitOfWorkInfo unitOfWorkInfo)
+        protected virtual void CompleteUow()
         {
             if (!_isRoot)
             {
                 return;
             };
 
-            unitOfWorkInfo.Complete();
+            _unitOfWorkInfo.Complete();
 
             _isRoot = false;
 
             Console.WriteLine("Unit of work completed.");
         }
 
-        protected virtual void CloseUow(UnitOfWorkInfo unitOfWorkInfo)
+        protected virtual void CloseUow()
         {
-            unitOfWorkInfo.Close();
+            _unitOfWorkInfo.Close();
         }
 
-        protected virtual async Task CompleteUowAsync(UnitOfWorkInfo unitOfWorkInfo)
+        protected virtual async Task CompleteUowAsync()
         {
             if (!_isRoot)
             {
                 return;
             };
 
-            await unitOfWorkInfo.CompleteAsync();
-            unitOfWorkInfo.Close();
+            await _unitOfWorkInfo.CompleteAsync();
+            _unitOfWorkInfo.Close();
 
             _isRoot = false;
         }
