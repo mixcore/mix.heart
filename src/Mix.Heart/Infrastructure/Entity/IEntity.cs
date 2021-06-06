@@ -7,6 +7,7 @@ namespace Mix.Heart.Entity
     }
 
     public interface IEntity<TPrimaryKey> : IHasPrimaryKey<TPrimaryKey>
+        where TPrimaryKey: IComparable
     {
     }
 }

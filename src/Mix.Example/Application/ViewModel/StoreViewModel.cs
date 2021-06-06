@@ -5,7 +5,7 @@ using System;
 
 namespace Mix.Example.Application.ViewModel
 {
-    public class StoreViewModel : ViewModelBase<Guid, StoreEntity, MixDbContext>
+    public class StoreViewModel : ViewModelBase<MixDbContext, StoreEntity, Guid >
     {
         public string Name { get; set; }
 

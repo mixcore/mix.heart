@@ -3,13 +3,18 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Mix.Example.Infrastructure;
 using Mix.Example.Infrastructure.MixEntities;
+using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using Mix.Heart.ViewModel;
 
 namespace Mix.Example.Application.ViewModel
 {
-    public class ProductViewModel : ViewModelBase<Guid, ProductEntity, MixDbContext>
+    public class ProductViewModel : CommandViewModelBase<MixDbContext, ProductEntity, Guid>
     {
+        public ProductViewModel(CommandRepository<MixDbContext, ProductEntity, Guid> repository) : base(repository)
+        {
+        }
+
         public string Name { get; set; }
 
         public string Description { get; set; }
@@ -24,13 +29,13 @@ namespace Mix.Example.Application.ViewModel
 
         public List<ProductDetailViewModel> ProductDetails { get; set; }
 
-        protected override void SaveEntityRelationship(ProductEntity parentEntity, UnitOfWorkInfo uowInfo)
+        protected override void SaveEntityRelationship(ProductEntity parentEntity)
         {
             // TODO: Save view list need to improve
             foreach (var detail in ProductDetails)
             {
                 detail.ProductId = parentEntity.Id;
-                detail.Save(false, uowInfo);
+                detail.Save(false, _unitOfWorkInfo);
             }
         }
     }

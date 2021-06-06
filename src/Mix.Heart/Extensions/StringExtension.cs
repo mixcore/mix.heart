@@ -36,21 +36,22 @@ namespace Mix.Heart.Extensions
             return str;
         }
 
+        public static string ToSEOString(this string str, char replaceChar = '-')
+        {
+            return !string.IsNullOrEmpty(str) 
+                ? WhiteSpaceToHyphen(ConvertToUnSign(DeleteSpecialCharaters(str)), replaceChar) 
+                : str;
+        }
+
         public static bool IsBase64(this string base64String)
         {
             base64String = base64String?.IndexOf(',') >= 0
                                ? base64String.Split(',')[1]
                                : base64String;
-
-            if (string.IsNullOrEmpty(base64String)
-                || base64String.Length % 4 != 0
-                || base64String.Contains(" ")
-                || base64String.Contains("\t")
-                || base64String.Contains("\r")
-                || base64String.Contains("\n"))
-            {
+            if (string.IsNullOrEmpty(base64String) || base64String.Length % 4 != 0 ||
+                base64String.Contains(" ") || base64String.Contains("\t") ||
+                base64String.Contains("\r") || base64String.Contains("\n"))
                 return false;
-            }
 
             try
             {
@@ -91,7 +92,8 @@ namespace Mix.Heart.Extensions
             return DecryptStringFromBytes(encrypted, keybytes, iv);
         }
 
-        private static byte[] EncryptStringToBytes(string plainText, byte[] key, byte[] iv)
+        private static byte[] EncryptStringToBytes(string plainText, byte[] key,
+                                                   byte[] iv)
         {
             // Check arguments.
             if (plainText == null || plainText.Length <= 0)
@@ -140,7 +142,8 @@ namespace Mix.Heart.Extensions
             return encrypted;
         }
 
-        private static string DecryptStringFromBytes(byte[] cipherText, byte[] key, byte[] iv)
+        private static string DecryptStringFromBytes(byte[] cipherText, byte[] key,
+                                                     byte[] iv)
         {
             // Check arguments.
             if (cipherText == null || cipherText.Length <= 0)
@@ -180,7 +183,8 @@ namespace Mix.Heart.Extensions
                     // Create the streams used for decryption.
                     using (var msDecrypt = new MemoryStream(cipherText))
                     {
-                        using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                        using (var csDecrypt = new CryptoStream(msDecrypt, decryptor,
+                                                               CryptoStreamMode.Read))
                         {
 
                             using (var srDecrypt = new StreamReader(csDecrypt))
@@ -199,6 +203,77 @@ namespace Mix.Heart.Extensions
             }
 
             return plaintext;
+        }
+
+        public static string WhiteSpaceToHyphen(string str, char replaceChar = '-')
+        {
+            string pattern = " |–";
+            MatchCollection matchs = Regex.Matches(str, pattern, RegexOptions.IgnoreCase);
+            foreach (Match m in matchs)
+            {
+                str = str.Replace(m.Value[0], replaceChar);
+            }
+            replaceChar = '\'';
+            pattern = "\"|“|”";
+            matchs = Regex.Matches(str, pattern, RegexOptions.IgnoreCase);
+            foreach (Match m in matchs)
+            {
+                str = str.Replace(m.Value[0], replaceChar);
+            }
+            return str.ToLower();
+        }
+
+        /// <summary>
+        /// Converts to un sign.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns></returns>
+        public static string ConvertToUnSign(string text)
+        {
+            if (text != null)
+            {
+                for (int i = 33; i < 48; i++)
+                {
+                    text = text.Replace(((char)i).ToString(), "");
+                }
+
+                for (int i = 58; i < 65; i++)
+                {
+                    text = text.Replace(((char)i).ToString(), "");
+                }
+
+                for (int i = 91; i < 97; i++)
+                {
+                    text = text.Replace(((char)i).ToString(), "");
+                }
+
+                for (int i = 123; i < 127; i++)
+                {
+                    text = text.Replace(((char)i).ToString(), "");
+                }
+            }
+            else
+            {
+                text = "";
+            }
+
+            Regex regex = new Regex(@"\p{IsCombiningDiacriticalMarks}+");
+
+            string strFormD = text.Normalize(System.Text.NormalizationForm.FormD);
+
+            return regex.Replace(strFormD, String.Empty).Replace('\u0111', 'd').Replace('\u0110', 'D');
+        }
+
+        public static string DeleteSpecialCharaters(string str)
+        {
+            const string replaceChar = "";
+            string[] pattern = { ".", "/", "\\", "&", ":", "%" };
+
+            foreach (string item in pattern)
+            {
+                str = str.Replace(item, replaceChar);
+            }
+            return str;
         }
     }
 }

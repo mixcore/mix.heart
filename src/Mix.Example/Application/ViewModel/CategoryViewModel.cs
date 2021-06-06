@@ -6,7 +6,7 @@ using Mix.Heart.ViewModel;
 
 namespace Mix.Example.Application.ViewModel
 {
-    public class CategoryViewModel : ViewModelBase<Guid, CategoryEntity, MixDbContext>
+    public class CategoryViewModel : ViewModelBase<MixDbContext, CategoryEntity, Guid>
     {
         public string Name { get; set; }
 
@@ -14,10 +14,10 @@ namespace Mix.Example.Application.ViewModel
 
         public ProductViewModel Product { get; set; }
 
-        protected override void SaveEntityRelationship(CategoryEntity parentEntity, UnitOfWorkInfo uowInfo)
+        protected override void SaveEntityRelationship(CategoryEntity parentEntity)
         {
             Product.CategoryId = parentEntity.Id;
-            Product.Save(true, uowInfo);
+            Product.Save(false, _unitOfWorkInfo);
         }
     }
 }

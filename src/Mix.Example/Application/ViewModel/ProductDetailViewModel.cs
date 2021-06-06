@@ -6,7 +6,7 @@ using Mix.Heart.ViewModel;
 
 namespace Mix.Example.Application.ViewModel
 {
-    public class ProductDetailViewModel : ViewModelBase<Guid, ProductDetailEntity, MixDbContext>
+    public class ProductDetailViewModel : ViewModelBase<MixDbContext, ProductDetailEntity, Guid>
     {
         public string Name { get; set; }
 
