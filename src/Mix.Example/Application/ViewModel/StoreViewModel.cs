@@ -3,28 +3,26 @@ using Mix.Example.Infrastructure.MixEntities;
 using Mix.Heart.ViewModel;
 using System;
 
-namespace Mix.Example.Application.ViewModel
-{
-public class StoreViewModel : ViewModelBase<MixDbContext, StoreEntity, Guid >
-{
+namespace Mix.Example.Application.ViewModel {
+  public class StoreViewModel : ViewModelBase<MixDbContext, StoreEntity, Guid> {
     public string Name {
-        get;
-        set;
+      get;
+      set;
     }
 
     public string Description {
-        get;
-        set;
+      get;
+      set;
     }
 
     public string Address {
-        get;
-        set;
+      get;
+      set;
     }
 
     public string Country {
-        get;
-        set;
+      get;
+      set;
     }
-}
+  }
 }

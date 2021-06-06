@@ -4,28 +4,27 @@ using Mix.Example.Infrastructure;
 using Mix.Example.Infrastructure.MixEntities;
 using Mix.Heart.ViewModel;
 
-namespace Mix.Example.Application.ViewModel
-{
-public class ProductDetailViewModel : ViewModelBase<MixDbContext, ProductDetailEntity, Guid>
-{
+namespace Mix.Example.Application.ViewModel {
+  public class ProductDetailViewModel
+      : ViewModelBase<MixDbContext, ProductDetailEntity, Guid> {
     public string Name {
-        get;
-        set;
+      get;
+      set;
     }
 
     public string Description {
-        get;
-        set;
+      get;
+      set;
     }
 
     public int Quantity {
-        get;
-        set;
+      get;
+      set;
     }
 
     public int InventoryNumber {
-        get;
-        set;
+      get;
+      set;
     }
 
     /// <summary>
@@ -33,8 +32,8 @@ public class ProductDetailViewModel : ViewModelBase<MixDbContext, ProductDetailE
     /// </summary>
     [JsonIgnore]
     public Guid ProductId {
-        get;
-        set;
+      get;
+      set;
     }
-}
+  }
 }

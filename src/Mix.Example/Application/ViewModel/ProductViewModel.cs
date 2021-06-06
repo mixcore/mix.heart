@@ -7,27 +7,26 @@ using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using Mix.Heart.ViewModel;
 
-namespace Mix.Example.Application.ViewModel
-{
-public class ProductViewModel : CommandViewModelBase<MixDbContext, ProductEntity, Guid>
-{
-    public ProductViewModel(CommandRepository<MixDbContext, ProductEntity, Guid> repository) : base(repository)
-    {
-    }
+namespace Mix.Example.Application.ViewModel {
+  public class ProductViewModel
+      : CommandViewModelBase<MixDbContext, ProductEntity, Guid> {
+    public ProductViewModel(
+        CommandRepository<MixDbContext, ProductEntity, Guid> repository)
+        : base(repository) {}
 
     public string Name {
-        get;
-        set;
+      get;
+      set;
     }
 
     public string Description {
-        get;
-        set;
+      get;
+      set;
     }
 
     public string Producer {
-        get;
-        set;
+      get;
+      set;
     }
 
     /// <summary>
@@ -35,23 +34,21 @@ public class ProductViewModel : CommandViewModelBase<MixDbContext, ProductEntity
     /// </summary>
     [JsonIgnore]
     public Guid CategoryId {
-        get;
-        set;
+      get;
+      set;
     }
 
     public List<ProductDetailViewModel> ProductDetails {
-        get;
-        set;
+      get;
+      set;
     }
 
-    protected override void SaveEntityRelationship(ProductEntity parentEntity)
-    {
-        // TODO: Save view list need to improve
-        foreach (var detail in ProductDetails)
-        {
-            detail.ProductId = parentEntity.Id;
-            detail.Save(false, _unitOfWorkInfo);
-        }
+    protected override void SaveEntityRelationship(ProductEntity parentEntity) {
+      // TODO: Save view list need to improve
+      foreach (var detail in ProductDetails) {
+        detail.ProductId = parentEntity.Id;
+        detail.Save(false, _unitOfWorkInfo);
+      }
     }
-}
+  }
 }

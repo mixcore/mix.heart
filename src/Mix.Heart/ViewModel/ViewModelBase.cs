@@ -4,58 +4,52 @@ using Mix.Heart.Enums;
 using Mix.Heart.UnitOfWork;
 using System;
 
-namespace Mix.Heart.ViewModel
-{
-public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
-    : IViewModel<TPrimaryKey>
-      where TPrimaryKey : IComparable
-      where TEntity : class, IEntity<TPrimaryKey>
-      where TDbContext : DbContext
-{
+namespace Mix.Heart.ViewModel {
+  public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+      : IViewModel<TPrimaryKey> where TPrimaryKey : IComparable where TEntity
+      : class,
+        IEntity<TPrimaryKey> where TDbContext : DbContext {
     public UnitOfWorkInfo _unitOfWorkInfo {
-        get;
-        set;
+      get;
+      set;
     }
     public TPrimaryKey Id {
-        get;
-        set;
+      get;
+      set;
     }
     public DateTime CreatedDateTime {
-        get;
-        set;
+      get;
+      set;
     }
     public DateTime? LastModified {
-        get;
-        set;
+      get;
+      set;
     }
     public Guid CreatedBy {
-        get;
-        set;
+      get;
+      set;
     }
     public Guid? ModifiedBy {
-        get;
-        set;
+      get;
+      set;
     }
     public int Priority {
-        get;
-        set;
+      get;
+      set;
     }
     public MixContentStatus Status {
-        get;
-        set;
+      get;
+      set;
     }
 
-
-    public virtual TEntity InitModel()
-    {
-        Type classType = typeof(TEntity);
-        return (TEntity)Activator.CreateInstance(classType);
+    public virtual TEntity InitModel() {
+      Type classType = typeof(TEntity);
+      return (TEntity) Activator.CreateInstance(classType);
     }
 
-    protected void HandleException(Exception ex)
-    {
-        Console.WriteLine(ex);
-        return;
+    protected void HandleException(Exception ex) {
+      Console.WriteLine(ex);
+      return;
     }
-}
+  }
 }
