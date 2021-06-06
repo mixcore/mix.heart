@@ -1,3 +1,10 @@
-﻿namespace Mix.Heart.Enums {
-  public enum MixDatabaseProvider { MSSQL, MySQL, PostgreSQL, SQLITE }
+﻿namespace Mix.Heart.Enums
+{
+    public enum MixDatabaseProvider
+    {
+        MSSQL,
+        MySQL,
+        PostgreSQL,
+        SQLITE
+    }
 }

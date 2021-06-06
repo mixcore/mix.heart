@@ -1,3 +1,4 @@
-﻿namespace Mix.Heart.Enums {
-  public enum SortDirection { Asc, Desc }
+﻿namespace Mix.Heart.Enums
+{
+    public enum SortDirection { Asc, Desc }
 }
