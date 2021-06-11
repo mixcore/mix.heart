@@ -89,7 +89,7 @@ namespace Mix.Heart.Infrastructure.SignalR
                 Data = objData,
                 //authData = accessToken,
             };
-            Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
+            Clients.Client(Context.ConnectionId).SendAsync("receive_message", result);
         }
     }
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.3.4</Version>
+    <Version>1.0.3.6</Version>
     <Company>MIXCORE CO., LTD</Company>
     <Authors>Mixcore Team</Authors>
     <Product>Mixcore Heart</Product>
@@ -13,8 +13,8 @@
     <PackageIconUrl>https://avatars1.githubusercontent.com/u/41290098</PackageIconUrl>
     <RepositoryUrl>https://github.com/mixcore/mix.heart</RepositoryUrl>
     <PackageTags>mixcore, mixcore cms, dotnet core, asp.net core, web service framework base</PackageTags>
-    <AssemblyVersion>1.0.3.4</AssemblyVersion>
-    <FileVersion>1.0.3.4</FileVersion>
+    <AssemblyVersion>1.0.3.6</AssemblyVersion>
+    <FileVersion>1.0.3.6</FileVersion>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 

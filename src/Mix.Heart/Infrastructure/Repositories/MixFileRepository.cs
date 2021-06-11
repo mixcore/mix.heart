@@ -566,7 +566,7 @@ namespace Mix.Infrastructure.Repositories
 
             using (Image image = Image.Load(bytes))
             {
-                if (!size.Equals(""))
+                if (!string.IsNullOrEmpty(size))
                 {
                     int width = imageSizes.GetValue(size).Value<int>("width");
                     int height = (image.Height * width) / image.Width;
