@@ -252,7 +252,7 @@ namespace Mix.Heart.Infrastructure.ViewModels
                     }
 
                     UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
-                    _ = this.SendNotifyAsync(this, RepositoryAction.Save, result.IsSucceed);
+                    await this.SendNotifyAsync(this, RepositoryAction.Save, result.IsSucceed);
                     return result;
                 }
                 catch (Exception ex)

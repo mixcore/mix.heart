@@ -83,7 +83,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                 result.Data = view;
                 if (result.IsSucceed)
                 {
-                    _ = RemoveCache(view.Model, context, transaction);
+                    await RemoveCacheAsync(view.Model, context, transaction);
                 }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
@@ -645,7 +645,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                     result = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
                     if (result)
                     {
-                        _ = RemoveCache(model);
+                        await RemoveCacheAsync(model);
                     }
                 }
 
@@ -670,7 +670,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                 }
                 if (result)
                 {
-                    _ = RemoveCache(model);
+                    await RemoveCacheAsync(model);
                 }
             }
         }
@@ -695,7 +695,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                     result.IsSucceed = await context.SaveChangesAsync().ConfigureAwait(false) > 0;
                     if (result.IsSucceed)
                     {
-                        _ = RemoveCache(model);
+                        await RemoveCacheAsync(model);
                     }
                 }
 
@@ -716,7 +716,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                 }
                 if (result.IsSucceed)
                 {
-                    _ = RemoveCache(model);
+                    await RemoveCacheAsync(model);
                 }
             }
         }
@@ -995,7 +995,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                 }
                 if (result)
                 {
-                    _ = RemoveCache(model, context, transaction);
+                    await RemoveCacheAsync(model, context, transaction);
                 }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
 

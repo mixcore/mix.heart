@@ -290,34 +290,31 @@ namespace Mix.Heart.Infrastructure.Repositories
             return result;
         }
 
-        public virtual Task AddToCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual async Task AddToCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             if (model != null)
             {
                 string key = GetCachedKey(model, _context);
                 string folder = $"{CachedFolder}/{key}";
                 var view = GetCachedData(model, _context, _transaction);
-                MixCacheService.Set(GetCacheFileName(model), view, folder);
+                await MixCacheService.SetAsync(GetCacheFileName(model), view, folder);
             }
-            return Task.CompletedTask;
         }
 
-        public virtual Task RemoveCache(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual async Task RemoveCacheAsync(TModel model, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             if (model != null)
             {
                 string key = GetCachedKey(model, _context);
                 string folder = $"{CachedFolder}/{key}";
-                MixCacheService.RemoveCacheAsync(folder);
+                await MixCacheService.RemoveCacheAsync(folder);
             }
-            return Task.CompletedTask;
         }
 
-        public virtual Task RemoveCache(string key, TDbContext _context = null, IDbContextTransaction _transaction = null)
+        public virtual async Task RemoveCacheAsync(string key, TDbContext _context = null, IDbContextTransaction _transaction = null)
         {
             string folder = $"{CachedFolder}/{key}";
-            MixCacheService.RemoveCacheAsync(folder);
-            return Task.CompletedTask;
+            await MixCacheService.RemoveCacheAsync(folder);
         }
 
         private string[] GetKeyMembers(IModel model)

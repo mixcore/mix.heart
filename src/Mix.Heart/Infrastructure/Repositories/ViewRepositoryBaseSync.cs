@@ -74,7 +74,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                 result.Data = view;
                 if (result.IsSucceed)
                 {
-                    RemoveCache(view.Model, context, transaction);
+                    RemoveCacheAsync(view.Model, context, transaction).GetAwaiter().GetResult();
                 }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                 return result;
@@ -635,7 +635,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                 }
                 if (result)
                 {
-                    _ = RemoveCache(model);
+                    RemoveCacheAsync(model).GetAwaiter().GetResult();
                 }
             }
         }
@@ -680,7 +680,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                 }
                 if (result)
                 {
-                    RemoveCache(model);
+                    RemoveCacheAsync(model).GetAwaiter().GetResult();
                 }
             }
         }
@@ -861,7 +861,7 @@ namespace Mix.Heart.Infrastructure.Repositories
                 }
                 if (result)
                 {
-                    RemoveCache(model, context, transaction);
+                    RemoveCacheAsync(model, context, transaction).GetAwaiter().GetResult();
                 }
                 UnitOfWorkHelper<TDbContext>.HandleTransaction(result, isRoot, transaction);
 
