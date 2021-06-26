@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Mix.Heart.UnitOfWork;
 
@@ -51,7 +53,7 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        protected virtual void SaveEntityRelationship(TEntity parentEntity)
+        protected virtual Task SaveEntityRelationship(TEntity parentEntity)
         {
             throw new NotImplementedException();
         }
