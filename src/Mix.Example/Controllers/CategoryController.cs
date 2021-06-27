@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 
 namespace Mix.Example.Controllers
 {
-    [ApiController]
-    [Route("categories")]
-    public class CategoryController : ControllerBase
+[ApiController]
+[Route("categories")]
+public class CategoryController : ControllerBase
+{
+    [HttpPost("save")]
+    public async Task<int> SaveSyncAsync([FromBody] SaveCategoryDto categoryDto)
     {
-        [HttpPost("save")]
-        public async Task<int> SaveSyncAsync([FromBody] SaveCategoryDto categoryDto)
-        {
-            var cate = new CategoryViewModel(categoryDto);
-            await cate.SaveAsync();
-            return 1;
-        }
+        var cate = new CategoryViewModel(categoryDto);
+        await cate.SaveAsync();
+        return 1;
     }
+}
 }

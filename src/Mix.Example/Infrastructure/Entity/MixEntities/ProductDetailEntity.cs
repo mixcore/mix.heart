@@ -3,16 +3,31 @@ using Mix.Heart.Entities;
 
 namespace Mix.Example.Infrastructure.MixEntities
 {
-    public class ProductDetailEntity : Entity
-    {
-        public string Name { get; set; }
-
-        public string Description { get; set; }
-
-        public int Quantity { get; set; }
-
-        public int InventoryNumber { get; set; }
-
-        public Guid ProductId { get; set; }
+public class ProductDetailEntity : Entity
+{
+    public string Name {
+        get;
+        set;
     }
+
+    public string Description {
+        get;
+        set;
+    }
+
+    public int Quantity {
+        get;
+        set;
+    }
+
+    public int InventoryNumber {
+        get;
+        set;
+    }
+
+    public Guid ProductId {
+        get;
+        set;
+    }
+}
 }

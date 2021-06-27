@@ -5,86 +5,86 @@ using Mix.Heart.UnitOfWork;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+{
+    private bool _isRoot;
+
+    protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
     {
-        private bool _isRoot;
-
-        protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
+        _unitOfWorkInfo ??= uowInfo;
+        if (_unitOfWorkInfo != null)
         {
-            _unitOfWorkInfo ??= uowInfo;            
-            if (_unitOfWorkInfo != null)
+            _isRoot = false;
+            if (_unitOfWorkInfo.ActiveTransaction == null)
             {
-                _isRoot = false;
-                if (_unitOfWorkInfo.ActiveTransaction == null)
-                {
 
-                    _unitOfWorkInfo.SetTransaction(
-                        _unitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? _unitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
-                }
-                _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
-                _repository.SetUowInfo(_unitOfWorkInfo);
-                return;
-            };
-
-            InitRootUow();
-
-        }
-
-        private void InitRootUow()
-        {
-            _isRoot = true;
-
-            var dbContext = InitDbContext();
-            var dbContextTransaction = dbContext.Database.BeginTransaction();
-            _unitOfWorkInfo = new UnitOfWorkInfo();
-            _unitOfWorkInfo.SetDbContext(dbContext);
-            _unitOfWorkInfo.SetTransaction(dbContextTransaction);
+                _unitOfWorkInfo.SetTransaction(
+                    _unitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
+                    ?? _unitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
+            }
             _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
             _repository.SetUowInfo(_unitOfWorkInfo);
-        }
+            return;
+        };
 
-        protected virtual void CompleteUow()
-        {
-            if (!_isRoot)
-            {
-                return;
-            };
+        InitRootUow();
 
-            _unitOfWorkInfo.Complete();
-
-            _isRoot = false;
-        }
-
-        protected virtual void CloseUow()
-        {
-            _unitOfWorkInfo.Close();
-        }
-
-        protected virtual async Task CompleteUowAsync()
-        {
-            if (!_isRoot)
-            {
-                return;
-            };
-
-            await _unitOfWorkInfo.CompleteAsync();
-            _unitOfWorkInfo.Close();
-
-            _isRoot = false;
-        }
-
-        private TDbContext InitDbContext()
-        {
-            var dbContextType = typeof(TDbContext);
-            var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });
-
-            if (contextCtorInfo == null)
-            {
-                throw new NullReferenceException();
-            }
-
-            return (TDbContext)contextCtorInfo.Invoke(new object[] { });
-        }
     }
+
+    private void InitRootUow()
+    {
+        _isRoot = true;
+
+        var dbContext = InitDbContext();
+        var dbContextTransaction = dbContext.Database.BeginTransaction();
+        _unitOfWorkInfo = new UnitOfWorkInfo();
+        _unitOfWorkInfo.SetDbContext(dbContext);
+        _unitOfWorkInfo.SetTransaction(dbContextTransaction);
+        _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
+        _repository.SetUowInfo(_unitOfWorkInfo);
+    }
+
+    protected virtual void CompleteUow()
+    {
+        if (!_isRoot)
+        {
+            return;
+        };
+
+        _unitOfWorkInfo.Complete();
+
+        _isRoot = false;
+    }
+
+    protected virtual void CloseUow()
+    {
+        _unitOfWorkInfo.Close();
+    }
+
+    protected virtual async Task CompleteUowAsync()
+    {
+        if (!_isRoot)
+        {
+            return;
+        };
+
+        await _unitOfWorkInfo.CompleteAsync();
+        _unitOfWorkInfo.Close();
+
+        _isRoot = false;
+    }
+
+    private TDbContext InitDbContext()
+    {
+        var dbContextType = typeof(TDbContext);
+        var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });
+
+        if (contextCtorInfo == null)
+        {
+            throw new NullReferenceException();
+        }
+
+        return (TDbContext)contextCtorInfo.Invoke(new object[] { });
+    }
+}
 }

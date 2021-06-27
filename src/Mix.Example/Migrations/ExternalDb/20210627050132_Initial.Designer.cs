@@ -7,33 +7,33 @@ using Mix.Example.Infrastructure;
 
 namespace Mix.Example.Migrations.ExternalDb
 {
-    [DbContext(typeof(ExternalDbContext))]
-    [Migration("20210627050132_Initial")]
-    partial class Initial
+[DbContext(typeof(ExternalDbContext))]
+[Migration("20210627050132_Initial")]
+partial class Initial
+{
+    protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
-        {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.6");
+        modelBuilder
+        .HasAnnotation("ProductVersion", "5.0.6");
 
-            modelBuilder.Entity("Mix.Example.Infrastructure.ExternalEntites.SiteEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+        modelBuilder.Entity("Mix.Example.Infrastructure.ExternalEntites.SiteEntity", b =>
+        {
+            b.Property<int>("Id")
+            .ValueGeneratedOnAdd()
+            .HasColumnType("INTEGER");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
+            b.Property<string>("Description")
+            .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("TEXT");
+            b.Property<string>("Name")
+            .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+            b.HasKey("Id");
 
-                    b.ToTable("Site");
-                });
+            b.ToTable("Site");
+        });
 #pragma warning restore 612, 618
-        }
     }
+}
 }

@@ -2,8 +2,11 @@
 
 namespace Mix.Example.Dto
 {
-    public class SaveCategoryDto: CategoryEntity
-    {
-        public SaveProductDto Product { get; set; }
+public class SaveCategoryDto: CategoryEntity
+{
+    public SaveProductDto Product {
+        get;
+        set;
     }
+}
 }

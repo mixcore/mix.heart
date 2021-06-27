@@ -2,7 +2,7 @@
 
 namespace Mix.Example.Dto
 {
-    public class SaveProductDetailDto: ProductDetailEntity
-    {
-    }
+public class SaveProductDetailDto: ProductDetailEntity
+{
+}
 }
