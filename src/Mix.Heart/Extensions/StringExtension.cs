@@ -22,7 +22,7 @@ namespace Mix.Heart.Extensions
         {
             if (!string.IsNullOrEmpty(str) && str.Length > 1)
             {
-                return Char.ToLowerInvariant(str[0]) + str.Substring(1);
+                return char.ToLowerInvariant(str[0]) + str.Substring(1);
             }
             return str;
         }
@@ -31,7 +31,7 @@ namespace Mix.Heart.Extensions
         {
             if (!string.IsNullOrEmpty(str) && str.Length > 1)
             {
-                return Char.ToUpperInvariant(str[0]) + str.Substring(1);
+                return char.ToUpperInvariant(str[0]) + str.Substring(1);
             }
             return str;
         }

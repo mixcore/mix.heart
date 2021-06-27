@@ -107,7 +107,7 @@ namespace Mix.Heart.Helpers
                 fieldPropertyType = fieldInfo.FieldType;
                 fieldPropertyExpression = Expression.Field(par, fieldInfo);
             }
-            object data2 = null;
+            object data2;
             if (fieldPropertyType.IsGenericType &&
                 fieldPropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
