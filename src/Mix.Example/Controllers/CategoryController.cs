@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Mix.Example.Application.ViewModel;
+using Mix.Example.Dto;
+using System.Threading.Tasks;
 
 namespace Mix.Example.Controllers
 {
@@ -8,10 +10,10 @@ namespace Mix.Example.Controllers
     public class CategoryController : ControllerBase
     {
         [HttpPost("save")]
-        public int SaveSync([FromBody] CategoryViewModel categoryDto)
+        public async Task<int> SaveSyncAsync([FromBody] SaveCategoryDto categoryDto)
         {
-            categoryDto.Save(true);
-
+            var cate = new CategoryViewModel(categoryDto);
+            await cate.SaveAsync();
             return 1;
         }
     }

@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Mix.Example.Infrastructure;
+using Mix.Heart.Extensions;
+using System.Reflection;
 
 namespace Mix.Example
 {
@@ -23,7 +25,7 @@ namespace Mix.Example
 
             services.AddMixDbContext(Configuration);
             services.AddExternalDbContext(Configuration);
-
+            services.AddRepositories(Assembly.GetExecutingAssembly(), typeof(MixDbContext));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

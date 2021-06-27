@@ -1,5 +1,5 @@
 ﻿using System;
-using Mix.Heart.Entity;
+using Mix.Heart.Entities;
 
 namespace Mix.Heart.ViewModel
 {

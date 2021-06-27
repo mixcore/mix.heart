@@ -34,7 +34,7 @@ namespace Mix.Heart.ViewModel
 
                 if (hasSavedRelationship)
                 {
-                    SaveEntityRelationship(entity);
+                    SaveEntityRelationshipAsync(entity);
                 }
             }
             catch (Exception ex)
@@ -53,9 +53,9 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        protected virtual Task SaveEntityRelationship(TEntity parentEntity)
+        protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         protected virtual void MapObject<TSource, TDestination>(TSource sourceObject, TDestination destObject)

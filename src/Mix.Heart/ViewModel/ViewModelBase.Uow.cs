@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 
 namespace Mix.Heart.ViewModel
@@ -10,7 +11,7 @@ namespace Mix.Heart.ViewModel
 
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
-            _unitOfWorkInfo ??= uowInfo;
+            _unitOfWorkInfo ??= uowInfo;            
             if (_unitOfWorkInfo != null)
             {
                 _isRoot = false;
@@ -21,10 +22,10 @@ namespace Mix.Heart.ViewModel
                         _unitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
                         ?? _unitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
                 }
+                _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
+                _repository.SetUowInfo(_unitOfWorkInfo);
                 return;
             };
-
-            Console.WriteLine("Unit of work starting");
 
             InitRootUow();
 
@@ -35,14 +36,12 @@ namespace Mix.Heart.ViewModel
             _isRoot = true;
 
             var dbContext = InitDbContext();
-
             var dbContextTransaction = dbContext.Database.BeginTransaction();
-
             _unitOfWorkInfo = new UnitOfWorkInfo();
             _unitOfWorkInfo.SetDbContext(dbContext);
             _unitOfWorkInfo.SetTransaction(dbContextTransaction);
-
-            Console.WriteLine("Unit of work started");
+            _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
+            _repository.SetUowInfo(_unitOfWorkInfo);
         }
 
         protected virtual void CompleteUow()
@@ -55,8 +54,6 @@ namespace Mix.Heart.ViewModel
             _unitOfWorkInfo.Complete();
 
             _isRoot = false;
-
-            Console.WriteLine("Unit of work completed.");
         }
 
         protected virtual void CloseUow()

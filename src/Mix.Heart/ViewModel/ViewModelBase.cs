@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Mix.Heart.Entity;
+using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.UnitOfWork;
 using System;
@@ -16,12 +16,12 @@ namespace Mix.Heart.ViewModel
     {
         public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
         public TPrimaryKey Id { get; set; }
-        public DateTime CreatedDateTime { get; set;}
+        public DateTime CreatedDateTime { get; set; }
         public DateTime? LastModified { get; set; }
         public Guid CreatedBy { get; set; }
         public Guid? ModifiedBy { get; set; }
         public int Priority { get; set; }
-        public MixContentStatus Status { get; set;}
+        public MixContentStatus Status { get; set; }
 
 
         public virtual TEntity InitModel()
@@ -36,12 +36,9 @@ namespace Mix.Heart.ViewModel
             return;
         }
 
-        public virtual Task<T> ParseView<T>(TEntity entity)
-            where T : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+        public virtual Task ParseView(TEntity entity)
         {
-            var view = Activator.CreateInstance<T>();
-            MapObject(entity, view);
-            return Task.FromResult(view);
+            return Task.Run(() => MapObject(entity, this));
         }
 
         public virtual Task<TEntity> ParseEntity<T>(T view)
@@ -52,13 +49,12 @@ namespace Mix.Heart.ViewModel
             return Task.FromResult(entity);
         }
 
-        protected virtual void Mapping<TSource, TDestination>(TSource sourceObject, TDestination destObject)
-            where TSource : class
-            where TDestination : class
+        public virtual void Mapping<TSource>(TSource sourceObject)
+            where TSource : TEntity
         {
-            var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TDestination)));
+            var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), GetType()));
             var mapper = new Mapper(config);
-            mapper.Map(sourceObject, destObject);
+            mapper.Map(sourceObject, this);
         }
     }
 }
