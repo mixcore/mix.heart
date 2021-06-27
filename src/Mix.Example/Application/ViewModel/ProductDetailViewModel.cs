@@ -4,41 +4,22 @@ using Mix.Example.Infrastructure;
 using Mix.Example.Infrastructure.MixEntities;
 using Mix.Heart.ViewModel;
 
-namespace Mix.Example.Application.ViewModel
-{
-public class ProductDetailViewModel : ViewModelBase<MixDbContext, ProductDetailEntity, Guid>
-{
-    public ProductDetailViewModel(ProductDetailEntity entity) : base(entity)
-    {
-    }
+namespace Mix.Example.Application.ViewModel {
+  public class ProductDetailViewModel
+      : ViewModelBase<MixDbContext, ProductDetailEntity, Guid> {
+    public ProductDetailViewModel(ProductDetailEntity entity) : base(entity) {}
 
-    public string Name {
-        get;
-        set;
-    }
+    public string Name { get; set; }
 
-    public string Description {
-        get;
-        set;
-    }
+    public string Description { get; set; }
 
-    public int Quantity {
-        get;
-        set;
-    }
+    public int Quantity { get; set; }
 
-    public int InventoryNumber {
-        get;
-        set;
-    }
+    public int InventoryNumber { get; set; }
 
     /// <summary>
     /// TODO: consider with JsonIgnore attribute
     /// </summary>
-    [JsonIgnore]
-    public Guid ProductId {
-        get;
-        set;
-    }
-}
+    [JsonIgnore] public Guid ProductId { get; set; }
+  }
 }
