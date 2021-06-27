@@ -12,11 +12,11 @@ namespace Mix.Heart.ViewModel
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
-        public CommandRepository<TDbContext, TEntity, TPrimaryKey> _repository { get; set; }
+        protected CommandRepository<TDbContext, TEntity, TPrimaryKey> _repository { get; set; }
 
-        public ViewModelBase(CommandRepository<TDbContext, TEntity, TPrimaryKey> repository)
+        public ViewModelBase()
         {
-            _repository = repository;
+
         }
 
         public ViewModelBase(TEntity entity)
@@ -55,10 +55,11 @@ namespace Mix.Heart.ViewModel
             }
             finally
             {
-                CompleteUow();
+                CompleteUowAsync();
             }
         }
 
+        // Override this method if need
         protected virtual async Task<TEntity> SaveHandlerAsync()
         {
             var entity = await ParseEntity(this);
@@ -66,6 +67,13 @@ namespace Mix.Heart.ViewModel
             await SaveEntityRelationshipAsync(entity);
             return entity;
         }
+
+        // Override this method if need
+        protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity)
+        {
+            return Task.CompletedTask;
+        }
+
         #endregion
     }
 }

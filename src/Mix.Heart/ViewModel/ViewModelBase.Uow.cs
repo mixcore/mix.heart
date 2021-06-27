@@ -44,18 +44,6 @@ namespace Mix.Heart.ViewModel
             _repository.SetUowInfo(_unitOfWorkInfo);
         }
 
-        protected virtual void CompleteUow()
-        {
-            if (!_isRoot)
-            {
-                return;
-            };
-
-            _unitOfWorkInfo.Complete();
-
-            _isRoot = false;
-        }
-
         protected virtual void CloseUow()
         {
             _unitOfWorkInfo.Close();

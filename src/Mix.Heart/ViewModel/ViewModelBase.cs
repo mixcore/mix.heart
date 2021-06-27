@@ -4,6 +4,7 @@ using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.UnitOfWork;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
@@ -38,7 +39,7 @@ namespace Mix.Heart.ViewModel
 
         public virtual Task ParseView(TEntity entity)
         {
-            return Task.Run(() => MapObject(entity, this));
+            return Task.Run(() => Mapping(entity));
         }
 
         public virtual Task<TEntity> ParseEntity<T>(T view)
@@ -55,6 +56,41 @@ namespace Mix.Heart.ViewModel
             var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), GetType()));
             var mapper = new Mapper(config);
             mapper.Map(sourceObject, this);
+        }
+
+        private void MapObject<TSource, TDestination>(TSource sourceObject, TDestination destObject)
+            where TSource : class
+            where TDestination : class
+        {
+            var sourceType = sourceObject.GetType();
+            var destType = destObject.GetType();
+
+            var sourceProperties = sourceType.GetProperties();
+            var destProperties = destType.GetProperties();
+
+            var commonProperties =
+                from sourceProperty in sourceProperties
+                join destProperty in destProperties
+                    on new
+                    {
+                        sourceProperty.Name,
+                        sourceProperty.PropertyType
+                    }
+                    equals new
+                    {
+                        destProperty.Name,
+                        destProperty.PropertyType
+                    }
+                select new
+                {
+                    SourceProperty = sourceProperty,
+                    DestProperty = destProperty
+                };
+
+            foreach (var property in commonProperties)
+            {
+                property.DestProperty.SetValue(destObject, property.SourceProperty.GetValue(sourceObject));
+            }
         }
     }
 }

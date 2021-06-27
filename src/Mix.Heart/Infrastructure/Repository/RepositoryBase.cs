@@ -7,15 +7,15 @@ namespace Mix.Heart.Repository
 {
     public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> where TDbContext : DbContext
     {
-        public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
+        public UnitOfWorkInfo UnitOfWorkInfo { get; set; }
 
-        public virtual TDbContext Context => (TDbContext)(_unitOfWorkInfo?.ActiveDbContext);
+        public virtual TDbContext Context => (TDbContext)(UnitOfWorkInfo?.ActiveDbContext);
 
         private bool _isRoot;
 
         public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
         {
-            _unitOfWorkInfo = unitOfWorkInfo;
+            UnitOfWorkInfo = unitOfWorkInfo;
         }
 
         protected RepositoryBase(TDbContext dbContext)
@@ -27,22 +27,22 @@ namespace Mix.Heart.Repository
             if (unitOfWorkInfo != null)
             {
                 _isRoot = false;
-                _unitOfWorkInfo = unitOfWorkInfo;
+                UnitOfWorkInfo = unitOfWorkInfo;
             };
         }
 
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
-            _unitOfWorkInfo ??= uowInfo;
-            if (_unitOfWorkInfo != null)
+            UnitOfWorkInfo ??= uowInfo;
+            if (UnitOfWorkInfo != null)
             {
                 _isRoot = false;
-                if (_unitOfWorkInfo.ActiveTransaction == null)
+                if (UnitOfWorkInfo.ActiveTransaction == null)
                 {
 
-                    _unitOfWorkInfo.SetTransaction(
-                        _unitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? _unitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
+                    UnitOfWorkInfo.SetTransaction(
+                        UnitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
+                        ?? UnitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
                 }
                 return;
             };
@@ -59,9 +59,9 @@ namespace Mix.Heart.Repository
 
             var dbContextTransaction = dbContext.Database.BeginTransaction();
 
-            _unitOfWorkInfo = new UnitOfWorkInfo();
-            _unitOfWorkInfo.SetDbContext(dbContext);
-            _unitOfWorkInfo.SetTransaction(dbContextTransaction);
+            UnitOfWorkInfo = new UnitOfWorkInfo();
+            UnitOfWorkInfo.SetDbContext(dbContext);
+            UnitOfWorkInfo.SetTransaction(dbContextTransaction);
         }
 
         protected virtual void CompleteUow()
@@ -71,7 +71,7 @@ namespace Mix.Heart.Repository
                 return;
             };
 
-            _unitOfWorkInfo.Complete();
+            UnitOfWorkInfo.Complete();
 
             _isRoot = false;
 
@@ -80,7 +80,7 @@ namespace Mix.Heart.Repository
 
         protected virtual void CloseUow()
         {
-            _unitOfWorkInfo.Close();
+            UnitOfWorkInfo.Close();
         }
 
         protected virtual async Task CompleteUowAsync()
@@ -90,8 +90,8 @@ namespace Mix.Heart.Repository
                 return;
             };
 
-            await _unitOfWorkInfo.CompleteAsync();
-            _unitOfWorkInfo.Close();
+            await UnitOfWorkInfo.CompleteAsync();
+            UnitOfWorkInfo.Close();
 
             _isRoot = false;
         }
