@@ -5,120 +5,123 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
 {
-    public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> where TDbContext : DbContext
+public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> where TDbContext : DbContext
+{
+    public UnitOfWorkInfo UnitOfWorkInfo {
+        get;
+        set;
+    }
+
+    public virtual TDbContext Context => (TDbContext)(UnitOfWorkInfo?.ActiveDbContext);
+
+    private bool _isRoot;
+
+    public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
     {
-        public UnitOfWorkInfo UnitOfWorkInfo { get; set; }
+        UnitOfWorkInfo = unitOfWorkInfo;
+    }
 
-        public virtual TDbContext Context => (TDbContext)(UnitOfWorkInfo?.ActiveDbContext);
+    protected RepositoryBase(TDbContext dbContext)
+    {
+    }
 
-        private bool _isRoot;
-
-        public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
+    public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
+    {
+        if (unitOfWorkInfo != null)
         {
+            _isRoot = false;
             UnitOfWorkInfo = unitOfWorkInfo;
-        }
+        };
+    }
 
-        protected RepositoryBase(TDbContext dbContext)
+    protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
+    {
+        UnitOfWorkInfo ??= uowInfo;
+        if (UnitOfWorkInfo != null)
         {
-        }
-
-        public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
-        {
-            if (unitOfWorkInfo != null)
-            {
-                _isRoot = false;
-                UnitOfWorkInfo = unitOfWorkInfo;
-            };
-        }
-
-        protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
-        {
-            UnitOfWorkInfo ??= uowInfo;
-            if (UnitOfWorkInfo != null)
-            {
-                _isRoot = false;
-                if (UnitOfWorkInfo.ActiveTransaction == null)
-                {
-
-                    UnitOfWorkInfo.SetTransaction(
-                        UnitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? UnitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
-                }
-                return;
-            };
-
-            InitRootUow();
-            
-        }
-
-        private void InitRootUow()
-        {
-            _isRoot = true;
-
-            var dbContext = InitDbContext();
-
-            var dbContextTransaction = dbContext.Database.BeginTransaction();
-
-            UnitOfWorkInfo = new UnitOfWorkInfo();
-            UnitOfWorkInfo.SetDbContext(dbContext);
-            UnitOfWorkInfo.SetTransaction(dbContextTransaction);
-        }
-
-        protected virtual void CompleteUow()
-        {
-            if (!_isRoot)
-            {
-                return;
-            };
-
-            UnitOfWorkInfo.Complete();
-
             _isRoot = false;
-
-            Console.WriteLine("Unit of work completed.");
-        }
-
-        protected virtual void CloseUow()
-        {
-            UnitOfWorkInfo.Close();
-        }
-
-        protected virtual async Task CompleteUowAsync()
-        {
-            if (!_isRoot)
+            if (UnitOfWorkInfo.ActiveTransaction == null)
             {
-                return;
-            };
 
-            await UnitOfWorkInfo.CompleteAsync();
-            UnitOfWorkInfo.Close();
-
-            _isRoot = false;
-        }
-
-        private TDbContext InitDbContext()
-        {
-            var dbContextType = typeof(TDbContext);
-            var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });
-
-            if (contextCtorInfo == null)
-            {
-                throw new NullReferenceException();
-            }
-
-            return (TDbContext)contextCtorInfo.Invoke(new object[] { });
-        }
-
-        protected void HandleException(Exception ex)
-        {
-            Console.WriteLine(ex);
-            if (_isRoot)
-            {
-                CloseUow();
+                UnitOfWorkInfo.SetTransaction(
+                    UnitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
+                    ?? UnitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
             }
             return;
+        };
+
+        InitRootUow();
+
+    }
+
+    private void InitRootUow()
+    {
+        _isRoot = true;
+
+        var dbContext = InitDbContext();
+
+        var dbContextTransaction = dbContext.Database.BeginTransaction();
+
+        UnitOfWorkInfo = new UnitOfWorkInfo();
+        UnitOfWorkInfo.SetDbContext(dbContext);
+        UnitOfWorkInfo.SetTransaction(dbContextTransaction);
+    }
+
+    protected virtual void CompleteUow()
+    {
+        if (!_isRoot)
+        {
+            return;
+        };
+
+        UnitOfWorkInfo.Complete();
+
+        _isRoot = false;
+
+        Console.WriteLine("Unit of work completed.");
+    }
+
+    protected virtual void CloseUow()
+    {
+        UnitOfWorkInfo.Close();
+    }
+
+    protected virtual async Task CompleteUowAsync()
+    {
+        if (!_isRoot)
+        {
+            return;
+        };
+
+        await UnitOfWorkInfo.CompleteAsync();
+        UnitOfWorkInfo.Close();
+
+        _isRoot = false;
+    }
+
+    private TDbContext InitDbContext()
+    {
+        var dbContextType = typeof(TDbContext);
+        var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });
+
+        if (contextCtorInfo == null)
+        {
+            throw new NullReferenceException();
         }
 
-        
+        return (TDbContext)contextCtorInfo.Invoke(new object[] { });
     }
+
+    protected void HandleException(Exception ex)
+    {
+        Console.WriteLine(ex);
+        if (_isRoot)
+        {
+            CloseUow();
+        }
+        return;
+    }
+
+
+}
 }
