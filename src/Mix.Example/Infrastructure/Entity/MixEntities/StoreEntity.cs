@@ -1,4 +1,4 @@
-﻿using Mix.Heart.Entity;
+﻿using Mix.Heart.Entities;
 
 namespace Mix.Example.Infrastructure.MixEntities
 {

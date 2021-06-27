@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Mix.Heart.Entity
+namespace Mix.Heart.Entities
 {
-    public class Entity : Entity<Guid>, IEntity
+    public abstract class Entity : Entity<Guid>, IEntity
     {
     }
 

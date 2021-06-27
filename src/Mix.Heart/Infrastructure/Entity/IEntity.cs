@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mix.Heart.Entity
+namespace Mix.Heart.Entities
 {
     public interface IEntity : IEntity<Guid>
     {

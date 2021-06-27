@@ -17,7 +17,7 @@ namespace Mix.Example.Infrastructure
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=.;Database=ExternalDb;Trusted_Connection=True;");
+            optionsBuilder.UseSqlite("Data Source=mix-heart-example.db");
             base.OnConfiguring(optionsBuilder);
         }
 

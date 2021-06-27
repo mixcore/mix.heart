@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Mix.Heart.Entity;
+using Mix.Heart.Entities;
 using Mix.Heart.Model;
+using Mix.Heart.UnitOfWork;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -9,11 +10,12 @@ using System.Threading.Tasks;
 namespace Mix.Heart.Repository
 {
     public class QueryRepository<TDbContext, TEntity, TPrimaryKey>
-        : RepositoryBase<TDbContext> 
-        where TDbContext : DbContext 
-        where TEntity: class, IEntity<TPrimaryKey>
+        : RepositoryBase<TDbContext>
+        where TDbContext : DbContext
+        where TEntity : class, IEntity<TPrimaryKey>
         where TPrimaryKey : IComparable
     {
+        public QueryRepository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
         public QueryRepository(TDbContext dbContext) : base(dbContext) { }
 
         public virtual object GetById(object id)

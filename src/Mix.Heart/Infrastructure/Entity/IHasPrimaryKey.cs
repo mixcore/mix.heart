@@ -1,4 +1,4 @@
-﻿namespace Mix.Heart.Entity
+﻿namespace Mix.Heart.Entities
 {
     public interface IHasPrimaryKey<TPrimaryKey>
     {

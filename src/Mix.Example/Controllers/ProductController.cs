@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Mix.Example.Application.ViewModel;
+using Mix.Example.Dto;
 using Mix.Example.Infrastructure;
 using Mix.Example.Infrastructure.MixEntities;
 using Mix.Heart.Repository;
@@ -20,19 +21,19 @@ namespace Mix.Example.Controllers
         }
 
         [HttpPost("save")]
-        public int SaveSync([FromBody] ProductViewModel productVm)
+        public async Task<int> SaveSyncAsync([FromBody] SaveProductDto dto)
         {
-            productVm.Save();
+            var productVm = new ProductViewModel(dto);
+            await productVm.SaveAsync();
 
             return 1;
         }
 
-        [HttpPost("save-async")]
-        public Task<Guid> SaveASync()
+        [HttpDelete("delete/{id}")]
+        public async Task<ActionResult<Guid>> Delete(Guid id)
         {
-            var productVm = new ProductViewModel(repository).SaveAsync();
-
-            return productVm;
+            await repository.DeleteAsync(id);
+            return Ok(id);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Mix.Heart.Enums;
 using System;
 
-namespace Mix.Heart.Entity
+namespace Mix.Heart.Entities
 {
     public abstract class EntityBase<TPrimaryKey> : IEntity<TPrimaryKey>
       where TPrimaryKey : IComparable

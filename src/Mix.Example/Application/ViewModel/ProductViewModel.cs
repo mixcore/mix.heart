@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using Mix.Example.Dto;
 using Mix.Example.Infrastructure;
 using Mix.Example.Infrastructure.MixEntities;
 using Mix.Heart.Repository;
-using Mix.Heart.UnitOfWork;
 using Mix.Heart.ViewModel;
 
 namespace Mix.Example.Application.ViewModel
 {
-    public class ProductViewModel : CommandViewModelBase<MixDbContext, ProductEntity, Guid>
+    public class ProductViewModel : ViewModelBase<MixDbContext, ProductEntity, Guid>
     {
         public ProductViewModel(CommandRepository<MixDbContext, ProductEntity, Guid> repository) : base(repository)
         {
+        }
+
+        public ProductViewModel(SaveProductDto dto) : base(dto)
+        {
+            MappDto(dto);
         }
 
         public string Name { get; set; }
@@ -27,15 +33,23 @@ namespace Mix.Example.Application.ViewModel
         [JsonIgnore]
         public Guid CategoryId { get; set; }
 
-        public List<ProductDetailViewModel> ProductDetails { get; set; }
+        public List<ProductDetailViewModel> ProductDetails { get; set; } = new List<ProductDetailViewModel>();
 
-        protected override void SaveEntityRelationship(ProductEntity parentEntity)
+        protected void MappDto(SaveProductDto dto)
+        {
+            foreach (var item in dto.ProductDetailDtos)
+            {
+                ProductDetails.Add(new ProductDetailViewModel(item));
+            }
+        }
+
+        protected override async Task SaveEntityRelationshipAsync(ProductEntity parentEntity)
         {
             // TODO: Save view list need to improve
             foreach (var detail in ProductDetails)
             {
                 detail.ProductId = parentEntity.Id;
-                detail.Save(false, _unitOfWorkInfo);
+                await detail.SaveAsync(_unitOfWorkInfo);
             }
         }
     }

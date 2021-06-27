@@ -11,18 +11,16 @@ namespace Mix.Heart.Repository
 
         public virtual TDbContext Context => (TDbContext)(_unitOfWorkInfo?.ActiveDbContext);
 
+        private bool _isRoot;
+
         public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
         {
             _unitOfWorkInfo = unitOfWorkInfo;
         }
+
         protected RepositoryBase(TDbContext dbContext)
         {
-            _isRoot = true;
-            _unitOfWorkInfo ??= new UnitOfWorkInfo();
-            _unitOfWorkInfo.SetDbContext(dbContext);
         }
-
-        private bool _isRoot;
 
         public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
         {
@@ -33,8 +31,9 @@ namespace Mix.Heart.Repository
             };
         }
 
-        protected virtual void BeginUow()
+        protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
+            _unitOfWorkInfo ??= uowInfo;
             if (_unitOfWorkInfo != null)
             {
                 _isRoot = false;
@@ -47,8 +46,6 @@ namespace Mix.Heart.Repository
                 }
                 return;
             };
-
-            Console.WriteLine("Unit of work starting");
 
             InitRootUow();
             
@@ -65,8 +62,6 @@ namespace Mix.Heart.Repository
             _unitOfWorkInfo = new UnitOfWorkInfo();
             _unitOfWorkInfo.SetDbContext(dbContext);
             _unitOfWorkInfo.SetTransaction(dbContextTransaction);
-
-            Console.WriteLine("Unit of work started");
         }
 
         protected virtual void CompleteUow()
@@ -117,6 +112,10 @@ namespace Mix.Heart.Repository
         protected void HandleException(Exception ex)
         {
             Console.WriteLine(ex);
+            if (_isRoot)
+            {
+                CloseUow();
+            }
             return;
         }
 

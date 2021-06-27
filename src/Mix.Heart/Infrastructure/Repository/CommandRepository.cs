@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Mix.Heart.Entity;
+using Mix.Heart.Entities;
 using Mix.Heart.Infrastructure.Exceptions;
 using Mix.Heart.UnitOfWork;
 using System;
@@ -14,6 +14,7 @@ namespace Mix.Heart.Repository
         where TDbContext : DbContext
         where TEntity : class, IEntity<TPrimaryKey>
     {
+        public CommandRepository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
         public CommandRepository(TDbContext dbContext) : base(dbContext) { }
 
         public virtual bool CheckIsExists(TEntity entity)
@@ -98,6 +99,31 @@ namespace Mix.Heart.Repository
             }
         }
 
+        public virtual async Task DeleteAsync(TPrimaryKey id)
+        {
+            try
+            {
+                BeginUow();
+                var entity = GetById(id);
+                if (entity == null)
+                {
+                    HandleException(new EntityNotFoundException());
+                    return;
+                }
+
+                Context.Entry(entity).State = EntityState.Deleted;
+                await Context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+            }
+            finally
+            {
+                CompleteUow();
+            }
+        }
+        
         public virtual async Task DeleteAsync(TEntity entity)
         {
             try

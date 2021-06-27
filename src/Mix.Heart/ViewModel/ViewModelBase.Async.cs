@@ -1,6 +1,5 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Mix.Heart.Entity;
+﻿using Microsoft.EntityFrameworkCore;
+using Mix.Heart.Entities;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using System;
@@ -19,11 +18,10 @@ namespace Mix.Heart.ViewModel
         {
             _repository = repository;
         }
-        
-        public ViewModelBase(CommandRepository<TDbContext, TEntity, TPrimaryKey> repository, TEntity entity)
+
+        public ViewModelBase(TEntity entity)
         {
-            _repository = repository;
-            Mapping(entity, this);
+            ParseView(entity);
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
@@ -46,7 +44,6 @@ namespace Mix.Heart.ViewModel
             {
                 BeginUow(uowInfo);
                 _repository.SetUowInfo(_unitOfWorkInfo);
-
                 var entity = await SaveHandlerAsync();
                 return entity.Id;
             }
@@ -66,6 +63,7 @@ namespace Mix.Heart.ViewModel
         {
             var entity = await ParseEntity(this);
             await _repository.SaveAsync(entity);
+            await SaveEntityRelationshipAsync(entity);
             return entity;
         }
         #endregion

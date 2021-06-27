@@ -23,7 +23,7 @@ namespace Mix.Example.Infrastructure
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=.;Database=MixDb;Trusted_Connection=True;");
+            optionsBuilder.UseSqlite("Data Source=mix-db-example.db");
             base.OnConfiguring(optionsBuilder);
         }
 
