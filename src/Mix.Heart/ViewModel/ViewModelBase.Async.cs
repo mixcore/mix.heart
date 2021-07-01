@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
+using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
+using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
@@ -13,10 +17,10 @@ namespace Mix.Heart.ViewModel
         where TDbContext : DbContext
     {
         protected CommandRepository<TDbContext, TEntity, TPrimaryKey> _repository { get; set; }
-
-        public ViewModelBase()
+        protected TDbContext _context;
+        public ViewModelBase(TDbContext context)
         {
-
+            _context = context;
         }
 
         public ViewModelBase(TEntity entity)
@@ -38,24 +42,30 @@ namespace Mix.Heart.ViewModel
         #region Async
 
 
-        public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null)
+        public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
         {
             try
             {
-                BeginUow(uowInfo);
-                _repository.SetUowInfo(_unitOfWorkInfo);
+                BeginUow(uowInfo, consumer);
+                await Validate();
+                if (!IsValid)
+                {
+                    throw new HttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+                }
                 var entity = await SaveHandlerAsync();
+                await PublishAsync(this, MixViewModelAction.Save, true);
                 return entity.Id;
             }
             catch (Exception ex)
             {
                 HandleException(ex);
+                await PublishAsync(this, MixViewModelAction.Save, false, ex);
                 CloseUow();
                 return default;
             }
             finally
             {
-                CompleteUowAsync();
+                await CompleteUowAsync();
             }
         }
 
