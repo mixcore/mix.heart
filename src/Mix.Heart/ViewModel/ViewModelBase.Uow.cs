@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 
@@ -9,9 +10,14 @@ namespace Mix.Heart.ViewModel
     {
         private bool _isRoot;
 
-        protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
+        protected ViewModelBase()
         {
-            _unitOfWorkInfo ??= uowInfo;            
+        }
+
+        protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+        {
+            _consumer ??= consumer;
+            _unitOfWorkInfo ??= uowInfo;
             if (_unitOfWorkInfo != null)
             {
                 _isRoot = false;
@@ -35,7 +41,7 @@ namespace Mix.Heart.ViewModel
         {
             _isRoot = true;
 
-            var dbContext = InitDbContext();
+            var dbContext = _context ?? InitDbContext();
             var dbContextTransaction = dbContext.Database.BeginTransaction();
             _unitOfWorkInfo = new UnitOfWorkInfo();
             _unitOfWorkInfo.SetDbContext(dbContext);
