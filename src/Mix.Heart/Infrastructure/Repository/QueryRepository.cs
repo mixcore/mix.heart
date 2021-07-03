@@ -30,18 +30,21 @@ namespace Mix.Heart.Repository
             return Context.Set<TEntity>().AsQueryable().AsNoTracking();
         }
 
-        public IQueryable<TEntity>
-        GetListQuery(Expression<Func<TEntity, bool>> predicate)
+        public IQueryable<TEntity> GetListQuery(Expression<Func<TEntity, bool>> predicate)
         {
             return GetAllQuery().Where(predicate);
         }
 
-        public IQueryable<TEntity>
-        GetPagingQuery(Expression<Func<TEntity, bool>> predicate,
-                       IPagingModel paging, out int count)
+        public async Task<TEntity> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await GetAllQuery().SingleOrDefaultAsync(predicate);
+        }
+
+        public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate,
+                       IPagingModel paging)
         {
             var query = GetListQuery(predicate);
-            count = query.Count();
+            paging.Total = query.Count();
             dynamic sortBy = GetLambda(paging.SortBy);
             switch (paging.SortDirection)
             {
@@ -53,7 +56,7 @@ namespace Mix.Heart.Repository
                     break;
             }
             query =
-                query.Skip(paging.PageIndex * paging.PageSize).Take(paging.PageIndex);
+                query.Skip(paging.PageIndex * paging.PageSize).Take(paging.PageSize);
             return query;
         }
 
@@ -61,8 +64,7 @@ namespace Mix.Heart.Repository
 
         #region Async
 
-        public Task<TEntity>
-        GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        public Task<TEntity> GetFirstAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return GetAllQuery().FirstOrDefaultAsync(predicate);
         }
@@ -79,7 +81,7 @@ namespace Mix.Heart.Repository
             var prop = Array.Find(type.GetProperties(), p => p.Name == propName);
             if (prop == null && isGetDefault)
             {
-                propName = type.GetProperties().FirstOrDefault()?.Name;
+                propName = "Id";
             }
             var memberExpression = Expression.Property(parameter, propName);
             return Expression.Lambda(memberExpression, parameter);

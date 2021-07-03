@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
+using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
+using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
@@ -13,49 +17,35 @@ namespace Mix.Heart.ViewModel
         where TDbContext : DbContext
     {
         protected CommandRepository<TDbContext, TEntity, TPrimaryKey> _repository { get; set; }
-
-        public ViewModelBase()
-        {
-
-        }
-
-        public ViewModelBase(TEntity entity)
-        {
-            ParseView(entity);
-        }
-
-        public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
-        {
-            _unitOfWorkInfo = unitOfWorkInfo;
-            _repository.SetUowInfo(_unitOfWorkInfo);
-        }
-
-        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
-        {
-            _repository.SetUowInfo(unitOfWorkInfo);
-        }
-
+        protected TDbContext Context { get; set; }
+        
+        
         #region Async
 
 
-        public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null)
+        public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
         {
             try
             {
-                BeginUow(uowInfo);
-                _repository.SetUowInfo(_unitOfWorkInfo);
+                BeginUow(uowInfo, consumer);
+                await Validate();
+                if (!IsValid)
+                {
+                    throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+                }
                 var entity = await SaveHandlerAsync();
+                await PublishAsync(this, MixViewModelAction.Save, true);
                 return entity.Id;
             }
             catch (Exception ex)
             {
-                HandleException(ex);
                 CloseUow();
+                HandleException(ex);
                 return default;
             }
             finally
             {
-                CompleteUowAsync();
+                await CompleteUowAsync();
             }
         }
 

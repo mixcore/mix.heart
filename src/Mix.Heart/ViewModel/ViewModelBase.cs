@@ -2,20 +2,26 @@
 using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
 using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
+using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.UnitOfWork;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
     public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
-        : IViewModel<TPrimaryKey>
+        : IViewModel<TPrimaryKey>, IMixMediator
         where TPrimaryKey : IComparable
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
-        public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
+        #region Properties
+
         public TPrimaryKey Id { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime? LastModified { get; set; }
@@ -23,7 +29,66 @@ namespace Mix.Heart.ViewModel
         public Guid? ModifiedBy { get; set; }
         public int Priority { get; set; }
         public MixContentStatus Status { get; set; }
+        public bool IsValid { get; set; }
 
+        [JsonIgnore]
+        public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
+        [JsonIgnore]
+        protected IMixMediator _consumer;
+
+        [JsonIgnore]
+        public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
+
+        #endregion
+
+        #region Contructors
+
+        public ViewModelBase()
+        {
+            Context ??= InitDbContext();
+        }
+
+        public ViewModelBase(TDbContext context)
+        {
+            Context = context;
+        }
+
+        public ViewModelBase(TEntity entity)
+        {
+            ParseView(entity);
+        }
+
+        public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
+        {
+            _unitOfWorkInfo = unitOfWorkInfo;
+            _repository.SetUowInfo(_unitOfWorkInfo);
+        }
+
+        #endregion
+
+        #region Abstracts
+
+        protected abstract void InitEntityValues();
+        
+        #endregion
+
+        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
+        {
+            _repository.SetUowInfo(unitOfWorkInfo);
+        }
+
+        public virtual Task Validate()
+        {
+            var validateContext = new System.ComponentModel.DataAnnotations.ValidationContext(this, serviceProvider: null, items: null);
+
+            IsValid = Validator.TryValidateObject(this, validateContext, Errors);
+            return Task.CompletedTask;
+        }
+
+        public void SetConsumer(IMixMediator consumer)
+        {
+            _consumer = consumer;
+        }
 
         public virtual TEntity InitModel()
         {
@@ -31,20 +96,26 @@ namespace Mix.Heart.ViewModel
             return (TEntity)Activator.CreateInstance(classType);
         }
 
+        protected void HandleErrors()
+        {
+            throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+        }
+
         protected void HandleException(Exception ex)
         {
-            Console.WriteLine(ex);
-            return;
+            throw new MixHttpResponseException(MixErrorStatus.ServerError, ex.Message);
         }
 
         public virtual Task ParseView(TEntity entity)
         {
-            return Task.Run(() => Mapping(entity));
+            Mapping(entity);
+            return Task.CompletedTask;
         }
 
         public virtual Task<TEntity> ParseEntity<T>(T view)
             where T : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         {
+            InitEntityValues();
             var entity = Activator.CreateInstance<TEntity>();
             MapObject(view, entity);
             return Task.FromResult(entity);
@@ -91,6 +162,18 @@ namespace Mix.Heart.ViewModel
             {
                 property.DestProperty.SetValue(destObject, property.SourceProperty.GetValue(sourceObject));
             }
+        }
+
+        public Task PublishAsync(object sender, MixViewModelAction action, bool isSucceed, Exception ex = null)
+        {
+            return _consumer != null
+               ? _consumer.ConsumeAsync(sender, action, isSucceed)
+               : Task.CompletedTask;
+        }
+
+        public virtual Task ConsumeAsync(object sender, MixViewModelAction action, bool isSucceed, Exception ex = null)
+        {
+            return PublishAsync(sender, action, isSucceed, ex);
         }
     }
 }

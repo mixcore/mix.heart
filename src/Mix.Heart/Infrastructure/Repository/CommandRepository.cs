@@ -4,6 +4,7 @@ using Mix.Heart.Infrastructure.Exceptions;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
@@ -28,6 +29,11 @@ namespace Mix.Heart.Repository
         }
 
         #region Async
+
+        public virtual int MaxAsync(Func<TEntity, int> predicate)
+        {
+            return GetAllQuery().Max(predicate);
+        }
 
         public virtual async Task CreateAsync(TEntity entity)
         {
@@ -67,7 +73,6 @@ namespace Mix.Heart.Repository
             catch (Exception ex)
             {
                 HandleException(ex);
-                CloseUow();
             }
             finally
             {
@@ -79,7 +84,7 @@ namespace Mix.Heart.Repository
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
 
                 if (CheckIsExists(entity))
                 {
@@ -91,7 +96,6 @@ namespace Mix.Heart.Repository
             catch (Exception ex)
             {
                 HandleException(ex);
-                CloseUow();
             }
             finally
             {
@@ -123,7 +127,53 @@ namespace Mix.Heart.Repository
                 CompleteUow();
             }
         }
-        
+
+        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            try
+            {
+                BeginUow();
+                var entity = await GetSingleAsync(predicate);
+                if (entity == null)
+                {
+                    HandleException(new EntityNotFoundException());
+                    return;
+                }
+
+                Context.Entry(entity).State = EntityState.Deleted;
+                await Context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+            }
+            finally
+            {
+                CompleteUow();
+            }
+        }
+
+        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            try
+            {
+                BeginUow();
+
+                await Context.Set<TEntity>().Where(predicate).ForEachAsync(
+                    m => Context.Entry(m).State = EntityState.Deleted
+                    );
+                await Context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+            }
+            finally
+            {
+                CompleteUow();
+            }
+        }
+
         public virtual async Task DeleteAsync(TEntity entity)
         {
             try

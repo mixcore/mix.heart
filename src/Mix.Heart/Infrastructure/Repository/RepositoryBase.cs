@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Threading.Tasks;
@@ -9,7 +11,7 @@ namespace Mix.Heart.Repository
     {
         public UnitOfWorkInfo UnitOfWorkInfo { get; set; }
 
-        public virtual TDbContext Context => (TDbContext)(UnitOfWorkInfo?.ActiveDbContext);
+        public virtual TDbContext Context { get; set; }
 
         private bool _isRoot;
 
@@ -20,6 +22,7 @@ namespace Mix.Heart.Repository
 
         protected RepositoryBase(TDbContext dbContext)
         {
+            Context = dbContext;
         }
 
         public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
@@ -28,6 +31,7 @@ namespace Mix.Heart.Repository
             {
                 _isRoot = false;
                 UnitOfWorkInfo = unitOfWorkInfo;
+                Context = (TDbContext)UnitOfWorkInfo.ActiveDbContext;
             };
         }
 
@@ -37,6 +41,7 @@ namespace Mix.Heart.Repository
             if (UnitOfWorkInfo != null)
             {
                 _isRoot = false;
+                Context = (TDbContext)UnitOfWorkInfo.ActiveDbContext;
                 if (UnitOfWorkInfo.ActiveTransaction == null)
                 {
 
@@ -48,20 +53,14 @@ namespace Mix.Heart.Repository
             };
 
             InitRootUow();
-            
+
         }
 
         private void InitRootUow()
         {
             _isRoot = true;
-
-            var dbContext = InitDbContext();
-
-            var dbContextTransaction = dbContext.Database.BeginTransaction();
-
-            UnitOfWorkInfo = new UnitOfWorkInfo();
-            UnitOfWorkInfo.SetDbContext(dbContext);
-            UnitOfWorkInfo.SetTransaction(dbContextTransaction);
+            Context ??= InitDbContext();
+            UnitOfWorkInfo = new UnitOfWorkInfo(Context);
         }
 
         protected virtual void CompleteUow()
@@ -111,14 +110,10 @@ namespace Mix.Heart.Repository
 
         protected void HandleException(Exception ex)
         {
-            Console.WriteLine(ex);
-            if (_isRoot)
-            {
-                CloseUow();
-            }
-            return;
+            CloseUow();
+            throw new MixHttpResponseException(MixErrorStatus.Badrequest, ex.Message);
         }
 
-        
+
     }
 }

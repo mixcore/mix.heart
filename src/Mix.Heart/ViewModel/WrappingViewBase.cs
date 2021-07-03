@@ -36,12 +36,7 @@ namespace Mix.Heart.ViewModel
             }
 
             var dbContext = (TDbContext)contextCtorInfo.Invoke(new object[] { });
-
-            var dbContextTransaction = dbContext.Database.BeginTransaction();
-
-            uowInfo = new UnitOfWorkInfo();
-            uowInfo.SetDbContext(dbContext);
-            uowInfo.SetTransaction(dbContextTransaction);
+            uowInfo = new UnitOfWorkInfo(dbContext);
         }
 
         protected abstract void SaveGroupView(UnitOfWorkInfo uowInfo);

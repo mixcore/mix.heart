@@ -1,4 +1,6 @@
-﻿using Mix.Heart.Enums;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Mix.Heart.Enums;
 using Mix.Heart.Extensions;
 using Newtonsoft.Json.Linq;
 using System;
@@ -181,6 +183,22 @@ namespace Mix.Heart.Helpers
             ConstructorInfo classConstructor = classType.GetConstructor(new Type[] { });
             T context = (T)classConstructor.Invoke(new object[] { });
             return context;
+        }
+
+        public static string[] GetKeyMembers<TDbContext>(TDbContext context, Type entityType)
+            where TDbContext: DbContext
+
+        {
+            return context.Model.FindEntityType(entityType)
+                .FindPrimaryKey().Properties.Select(x => x.Name)
+                .ToArray();
+        }
+
+        public static string[] FilterSelectedFields<TView, TEntity>()
+        {
+            var viewProperties = typeof(TView).GetProperties();
+            var modelProperties = typeof(TEntity).GetProperties();
+            return viewProperties.Where(p => modelProperties.Any(m => m.Name == p.Name)).Select(p => p.Name).ToArray();
         }
 
         private class ReplaceExpressionVisitor : ExpressionVisitor
