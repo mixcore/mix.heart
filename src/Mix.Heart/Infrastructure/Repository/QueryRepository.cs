@@ -56,7 +56,7 @@ namespace Mix.Heart.Repository
                     break;
             }
             query =
-                query.Skip(paging.PageIndex * paging.PageSize).Take(paging.PageIndex);
+                query.Skip(paging.PageIndex * paging.PageSize).Take(paging.PageSize);
             return query;
         }
 

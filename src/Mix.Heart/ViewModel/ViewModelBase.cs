@@ -14,17 +14,13 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
-    [Serializable]
     public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         : IViewModel<TPrimaryKey>, IMixMediator
         where TPrimaryKey : IComparable
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
-        [JsonIgnore]
-        public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
-        [JsonIgnore]
-        protected IMixMediator _consumer;
+        #region Properties
 
         public TPrimaryKey Id { get; set; }
         public DateTime CreatedDateTime { get; set; }
@@ -35,8 +31,51 @@ namespace Mix.Heart.ViewModel
         public MixContentStatus Status { get; set; }
         public bool IsValid { get; set; }
 
+        [JsonIgnore]
+        public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
+        [JsonIgnore]
+        protected IMixMediator _consumer;
+
+        [JsonIgnore]
         public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
+
+        #endregion
+
+        #region Contructors
+
+        public ViewModelBase()
+        {
+            Context ??= InitDbContext();
+        }
+
+        public ViewModelBase(TDbContext context)
+        {
+            Context = context;
+        }
+
+        public ViewModelBase(TEntity entity)
+        {
+            ParseView(entity);
+        }
+
+        public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
+        {
+            _unitOfWorkInfo = unitOfWorkInfo;
+            _repository.SetUowInfo(_unitOfWorkInfo);
+        }
+
+        #endregion
+
+        #region Abstracts
+
+        protected abstract void InitEntityValues();
         
+        #endregion
+
+        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
+        {
+            _repository.SetUowInfo(unitOfWorkInfo);
+        }
 
         public virtual Task Validate()
         {
@@ -59,9 +98,9 @@ namespace Mix.Heart.ViewModel
 
         protected void HandleErrors()
         {
-            throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e=>e.ErrorMessage).ToArray());
+            throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
         }
-        
+
         protected void HandleException(Exception ex)
         {
             throw new MixHttpResponseException(MixErrorStatus.ServerError, ex.Message);
@@ -69,12 +108,14 @@ namespace Mix.Heart.ViewModel
 
         public virtual Task ParseView(TEntity entity)
         {
-            return Task.Run(() => Mapping(entity));
+            Mapping(entity);
+            return Task.CompletedTask;
         }
 
         public virtual Task<TEntity> ParseEntity<T>(T view)
             where T : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         {
+            InitEntityValues();
             var entity = Activator.CreateInstance<TEntity>();
             MapObject(view, entity);
             return Task.FromResult(entity);

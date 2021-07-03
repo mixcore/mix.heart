@@ -10,10 +10,6 @@ namespace Mix.Heart.ViewModel
     {
         private bool _isRoot;
 
-        protected ViewModelBase()
-        {
-        }
-
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
         {
             _consumer ??= consumer;
@@ -21,6 +17,7 @@ namespace Mix.Heart.ViewModel
             if (_unitOfWorkInfo != null)
             {
                 _isRoot = false;
+                Context = (TDbContext)_unitOfWorkInfo.ActiveDbContext;
                 if (_unitOfWorkInfo.ActiveTransaction == null)
                 {
 
@@ -41,8 +38,8 @@ namespace Mix.Heart.ViewModel
         {
             _isRoot = true;
 
-            var dbContext = _context ?? InitDbContext();
-            _unitOfWorkInfo = new UnitOfWorkInfo(dbContext);
+            Context ??= InitDbContext();
+            _unitOfWorkInfo = new UnitOfWorkInfo(Context);
             _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
             _repository.SetUowInfo(_unitOfWorkInfo);
         }

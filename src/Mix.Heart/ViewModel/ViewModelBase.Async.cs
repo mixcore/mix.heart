@@ -17,28 +17,9 @@ namespace Mix.Heart.ViewModel
         where TDbContext : DbContext
     {
         protected CommandRepository<TDbContext, TEntity, TPrimaryKey> _repository { get; set; }
-        protected TDbContext _context;
-        public ViewModelBase(TDbContext context)
-        {
-            _context = context;
-        }
-
-        public ViewModelBase(TEntity entity)
-        {
-            ParseView(entity);
-        }
-
-        public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
-        {
-            _unitOfWorkInfo = unitOfWorkInfo;
-            _repository.SetUowInfo(_unitOfWorkInfo);
-        }
-
-        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
-        {
-            _repository.SetUowInfo(unitOfWorkInfo);
-        }
-
+        protected TDbContext Context { get; set; }
+        
+        
         #region Async
 
 

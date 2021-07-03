@@ -30,6 +30,11 @@ namespace Mix.Heart.Repository
 
         #region Async
 
+        public virtual int MaxAsync(Func<TEntity, int> predicate)
+        {
+            return GetAllQuery().Max(predicate);
+        }
+
         public virtual async Task CreateAsync(TEntity entity)
         {
             try
@@ -122,7 +127,7 @@ namespace Mix.Heart.Repository
                 CompleteUow();
             }
         }
-        
+
         public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
         {
             try
@@ -147,7 +152,7 @@ namespace Mix.Heart.Repository
                 CompleteUow();
             }
         }
-        
+
         public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate)
         {
             try
@@ -168,7 +173,7 @@ namespace Mix.Heart.Repository
                 CompleteUow();
             }
         }
-        
+
         public virtual async Task DeleteAsync(TEntity entity)
         {
             try
