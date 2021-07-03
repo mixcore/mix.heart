@@ -67,7 +67,6 @@ namespace Mix.Heart.Repository
             catch (Exception ex)
             {
                 HandleException(ex);
-                CloseUow();
             }
             finally
             {
@@ -79,7 +78,7 @@ namespace Mix.Heart.Repository
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
 
                 if (CheckIsExists(entity))
                 {
@@ -91,7 +90,6 @@ namespace Mix.Heart.Repository
             catch (Exception ex)
             {
                 HandleException(ex);
-                CloseUow();
             }
             finally
             {

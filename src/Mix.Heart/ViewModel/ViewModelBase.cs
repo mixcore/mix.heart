@@ -54,12 +54,12 @@ namespace Mix.Heart.ViewModel
 
         protected void HandleErrors()
         {
-            throw new HttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e=>e.ErrorMessage).ToArray());
+            throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e=>e.ErrorMessage).ToArray());
         }
         
         protected void HandleException(Exception ex)
         {
-            throw new HttpResponseException(MixErrorStatus.ServerError, ex.Message);
+            throw new MixHttpResponseException(MixErrorStatus.ServerError, ex.Message);
         }
 
         public virtual Task ParseView(TEntity entity)

@@ -10,6 +10,12 @@ namespace Mix.Heart.UnitOfWork
 
         public IDbContextTransaction ActiveTransaction { get; private set; }
 
+        public UnitOfWorkInfo(DbContext dbContext)
+        {
+            ActiveDbContext = dbContext;
+            ActiveTransaction = dbContext.Database.BeginTransaction();
+        }
+
         public void SetDbContext(DbContext dbContext)
         {
             ActiveDbContext = dbContext;

@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Threading.Tasks;
@@ -48,20 +50,14 @@ namespace Mix.Heart.Repository
             };
 
             InitRootUow();
-            
+
         }
 
         private void InitRootUow()
         {
             _isRoot = true;
-
             var dbContext = InitDbContext();
-
-            var dbContextTransaction = dbContext.Database.BeginTransaction();
-
-            UnitOfWorkInfo = new UnitOfWorkInfo();
-            UnitOfWorkInfo.SetDbContext(dbContext);
-            UnitOfWorkInfo.SetTransaction(dbContextTransaction);
+            UnitOfWorkInfo = new UnitOfWorkInfo(dbContext);
         }
 
         protected virtual void CompleteUow()
@@ -111,14 +107,10 @@ namespace Mix.Heart.Repository
 
         protected void HandleException(Exception ex)
         {
-            Console.WriteLine(ex);
-            if (_isRoot)
-            {
-                CloseUow();
-            }
-            return;
+            CloseUow();
+            throw new MixHttpResponseException(MixErrorStatus.Badrequest, ex.Message);
         }
 
-        
+
     }
 }

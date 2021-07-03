@@ -42,10 +42,7 @@ namespace Mix.Heart.ViewModel
             _isRoot = true;
 
             var dbContext = _context ?? InitDbContext();
-            var dbContextTransaction = dbContext.Database.BeginTransaction();
-            _unitOfWorkInfo = new UnitOfWorkInfo();
-            _unitOfWorkInfo.SetDbContext(dbContext);
-            _unitOfWorkInfo.SetTransaction(dbContextTransaction);
+            _unitOfWorkInfo = new UnitOfWorkInfo(dbContext);
             _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
             _repository.SetUowInfo(_unitOfWorkInfo);
         }

@@ -50,7 +50,7 @@ namespace Mix.Heart.ViewModel
                 await Validate();
                 if (!IsValid)
                 {
-                    throw new HttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+                    throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
                 }
                 var entity = await SaveHandlerAsync();
                 await PublishAsync(this, MixViewModelAction.Save, true);
@@ -58,9 +58,8 @@ namespace Mix.Heart.ViewModel
             }
             catch (Exception ex)
             {
-                HandleException(ex);
-                await PublishAsync(this, MixViewModelAction.Save, false, ex);
                 CloseUow();
+                HandleException(ex);
                 return default;
             }
             finally
