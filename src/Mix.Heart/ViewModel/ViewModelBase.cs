@@ -9,17 +9,23 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
+    [Serializable]
     public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         : IViewModel<TPrimaryKey>, IMixMediator
         where TPrimaryKey : IComparable
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
+        [JsonIgnore]
         public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
+        [JsonIgnore]
+        protected IMixMediator _consumer;
+
         public TPrimaryKey Id { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime? LastModified { get; set; }
@@ -30,8 +36,7 @@ namespace Mix.Heart.ViewModel
         public bool IsValid { get; set; }
 
         public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
-
-        protected IMixMediator _consumer;
+        
 
         public virtual Task Validate()
         {

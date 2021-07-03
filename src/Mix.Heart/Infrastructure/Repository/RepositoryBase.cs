@@ -11,7 +11,7 @@ namespace Mix.Heart.Repository
     {
         public UnitOfWorkInfo UnitOfWorkInfo { get; set; }
 
-        public virtual TDbContext Context => (TDbContext)(UnitOfWorkInfo?.ActiveDbContext);
+        public virtual TDbContext Context { get; set; }
 
         private bool _isRoot;
 
@@ -22,6 +22,7 @@ namespace Mix.Heart.Repository
 
         protected RepositoryBase(TDbContext dbContext)
         {
+            Context = dbContext;
         }
 
         public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
@@ -30,6 +31,7 @@ namespace Mix.Heart.Repository
             {
                 _isRoot = false;
                 UnitOfWorkInfo = unitOfWorkInfo;
+                Context = (TDbContext)UnitOfWorkInfo.ActiveDbContext;
             };
         }
 
@@ -39,6 +41,7 @@ namespace Mix.Heart.Repository
             if (UnitOfWorkInfo != null)
             {
                 _isRoot = false;
+                Context = (TDbContext)UnitOfWorkInfo.ActiveDbContext;
                 if (UnitOfWorkInfo.ActiveTransaction == null)
                 {
 
@@ -56,8 +59,8 @@ namespace Mix.Heart.Repository
         private void InitRootUow()
         {
             _isRoot = true;
-            var dbContext = InitDbContext();
-            UnitOfWorkInfo = new UnitOfWorkInfo(dbContext);
+            Context ??= InitDbContext();
+            UnitOfWorkInfo = new UnitOfWorkInfo(Context);
         }
 
         protected virtual void CompleteUow()
