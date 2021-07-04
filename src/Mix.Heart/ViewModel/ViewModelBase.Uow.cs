@@ -17,7 +17,6 @@ namespace Mix.Heart.ViewModel
             if (_unitOfWorkInfo != null)
             {
                 _isRoot = false;
-                Context = (TDbContext)_unitOfWorkInfo.ActiveDbContext;
                 if (_unitOfWorkInfo.ActiveTransaction == null)
                 {
 
@@ -38,26 +37,26 @@ namespace Mix.Heart.ViewModel
         {
             _isRoot = true;
 
-            Context ??= InitDbContext();
-            _unitOfWorkInfo = new UnitOfWorkInfo(Context);
+            _unitOfWorkInfo = new UnitOfWorkInfo(InitDbContext());
             _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
             _repository.SetUowInfo(_unitOfWorkInfo);
         }
 
         protected virtual void CloseUow()
         {
-            _unitOfWorkInfo.Close();
+            if (_isRoot)
+            {
+                _unitOfWorkInfo.Close();
+            }
         }
 
         protected virtual async Task CompleteUowAsync()
         {
-            if (!_isRoot)
+            if (_isRoot)
             {
+                await _unitOfWorkInfo.CompleteAsync();
                 return;
             };
-
-            await _unitOfWorkInfo.CompleteAsync();
-            _unitOfWorkInfo.Close();
 
             _isRoot = false;
         }

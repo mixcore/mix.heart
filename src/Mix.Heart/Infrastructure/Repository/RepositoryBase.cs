@@ -79,18 +79,28 @@ namespace Mix.Heart.Repository
 
         protected virtual void CloseUow()
         {
-            UnitOfWorkInfo.Close();
+            if (_isRoot)
+            {
+                UnitOfWorkInfo.Close();
+            }
+        }
+
+        protected virtual async Task CloseUowAsync()
+        {
+            if (_isRoot)
+            {
+                await UnitOfWorkInfo.CloseAsync();
+            }
         }
 
         protected virtual async Task CompleteUowAsync()
         {
-            if (!_isRoot)
+            if (_isRoot)
             {
+                await UnitOfWorkInfo.CompleteAsync();
+                UnitOfWorkInfo.Close();
                 return;
             };
-
-            await UnitOfWorkInfo.CompleteAsync();
-            UnitOfWorkInfo.Close();
 
             _isRoot = false;
         }

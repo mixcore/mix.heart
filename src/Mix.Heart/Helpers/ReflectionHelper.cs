@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Mix.Heart.Enums;
 using Mix.Heart.Extensions;
+using Mix.Heart.Model;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
@@ -54,13 +55,13 @@ namespace Mix.Heart.Helpers
             return Expression.Lambda(memberExpression, parameter);
         }
 
-        public static void SetPropertyValue<T>(T data, JProperty field) where T
+        public static void SetPropertyValue<T>(T data, EntityPropertyModel propety) where T
             : class
         {
-            var prop = data.GetType().GetProperty(field.Name.ToTitleCase());
+            var prop = data.GetType().GetProperty(propety.PropertyName.ToTitleCase());
             if (prop != null)
             {
-                prop.SetValue(data, field.Value.ToObject(prop.PropertyType));
+                prop.SetValue(data, propety.PropertyValue);
             }
         }
 

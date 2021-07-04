@@ -91,7 +91,7 @@ namespace Mix.Heart.Repository
                     await UpdateAsync(entity);
                 }
                 else { await CreateAsync(entity); }
-
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
@@ -99,7 +99,7 @@ namespace Mix.Heart.Repository
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
@@ -108,7 +108,7 @@ namespace Mix.Heart.Repository
             try
             {
                 BeginUow();
-                var entity = GetById(id);
+                var entity = GetByIdAsync(id);
                 if (entity == null)
                 {
                     HandleException(new EntityNotFoundException());

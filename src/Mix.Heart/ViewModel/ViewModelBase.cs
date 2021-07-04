@@ -45,12 +45,11 @@ namespace Mix.Heart.ViewModel
 
         public ViewModelBase()
         {
-            Context ??= InitDbContext();
         }
 
         public ViewModelBase(TDbContext context)
         {
-            Context = context;
+            _unitOfWorkInfo ??= new UnitOfWorkInfo(context);
         }
 
         public ViewModelBase(TEntity entity)
@@ -82,6 +81,11 @@ namespace Mix.Heart.ViewModel
             var validateContext = new System.ComponentModel.DataAnnotations.ValidationContext(this, serviceProvider: null, items: null);
 
             IsValid = Validator.TryValidateObject(this, validateContext, Errors);
+
+            if (!IsValid)
+            {
+                throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+            }
             return Task.CompletedTask;
         }
 

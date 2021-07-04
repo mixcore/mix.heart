@@ -18,9 +18,9 @@ namespace Mix.Heart.Repository
         public QueryRepository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
         public QueryRepository(TDbContext dbContext) : base(dbContext) { }
 
-        public virtual object GetById(object id)
+        public virtual async Task<TEntity> GetByIdAsync(TPrimaryKey id)
         {
-            return Context.Set<TEntity>().Find(id);
+            return await Context.Set<TEntity>().FindAsync(id);
         }
 
         #region IQueryable
