@@ -5,7 +5,7 @@ namespace Mix.Heart.Repository
 {
     public interface IRepositoryBase<TDbContext> where TDbContext : DbContext
     {
-        UnitOfWorkInfo UnitOfWorkInfo { get; set; }
+        UnitOfWorkInfo _unitOfWorkInfo { get; set; }
         TDbContext Context { get; }
 
         void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo);

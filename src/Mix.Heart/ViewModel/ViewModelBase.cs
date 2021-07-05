@@ -4,6 +4,7 @@ using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Interfaces;
+using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,6 @@ namespace Mix.Heart.ViewModel
         public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
         [JsonIgnore]
         protected IMixMediator _consumer;
-
         [JsonIgnore]
         public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
 
@@ -43,13 +43,9 @@ namespace Mix.Heart.ViewModel
 
         #region Contructors
 
-        public ViewModelBase()
+        public ViewModelBase(CommandRepository<TDbContext, TEntity, TPrimaryKey> repository)
         {
-        }
-
-        public ViewModelBase(TDbContext context)
-        {
-            _unitOfWorkInfo ??= new UnitOfWorkInfo(context);
+            Repository = repository;
         }
 
         public ViewModelBase(TEntity entity)
@@ -60,7 +56,7 @@ namespace Mix.Heart.ViewModel
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
         {
             _unitOfWorkInfo = unitOfWorkInfo;
-            _repository.SetUowInfo(_unitOfWorkInfo);
+            Repository.SetUowInfo(_unitOfWorkInfo);
         }
 
         #endregion
@@ -73,7 +69,7 @@ namespace Mix.Heart.ViewModel
 
         public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
         {
-            _repository.SetUowInfo(unitOfWorkInfo);
+            Repository.SetUowInfo(unitOfWorkInfo);
         }
 
         public virtual Task Validate()

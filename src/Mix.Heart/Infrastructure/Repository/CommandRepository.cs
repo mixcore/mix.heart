@@ -30,45 +30,45 @@ namespace Mix.Heart.Repository
 
         #region Async
 
-        public virtual int MaxAsync(Func<TEntity, int> predicate)
+        public virtual async Task<int> MaxAsync(Expression<Func<TEntity, int>> predicate)
         {
-            return GetAllQuery().Max(predicate);
+            return await GetAllQuery().MaxAsync(predicate);
         }
 
-        public virtual async Task CreateAsync(TEntity entity)
+        public virtual async Task CreateAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
                 Context.Entry(entity).State = EntityState.Added;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
                 HandleException(ex);
-                CloseUow();
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
-        public virtual async Task UpdateAsync(TEntity entity)
+        public virtual async Task UpdateAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
 
                 if (!CheckIsExists(entity))
                 {
                     HandleException(new EntityNotFoundException(entity.Id.ToString()));
-                    CloseUow();
                     return;
                 }
 
                 Context.Entry(entity).State = EntityState.Modified;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
@@ -76,7 +76,7 @@ namespace Mix.Heart.Repository
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
@@ -103,11 +103,11 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(TPrimaryKey id)
+        public virtual async Task DeleteAsync(TPrimaryKey id, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
                 var entity = GetByIdAsync(id);
                 if (entity == null)
                 {
@@ -117,6 +117,7 @@ namespace Mix.Heart.Repository
 
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
@@ -124,15 +125,15 @@ namespace Mix.Heart.Repository
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
-        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
                 var entity = await GetSingleAsync(predicate);
                 if (entity == null)
                 {
@@ -142,6 +143,7 @@ namespace Mix.Heart.Repository
 
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
@@ -149,20 +151,22 @@ namespace Mix.Heart.Repository
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
-        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
 
                 await Context.Set<TEntity>().Where(predicate).ForEachAsync(
                     m => Context.Entry(m).State = EntityState.Deleted
                     );
+
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
@@ -170,15 +174,15 @@ namespace Mix.Heart.Repository
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
-        public virtual async Task DeleteAsync(TEntity entity)
+        public virtual async Task DeleteAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
 
                 if (!CheckIsExists(entity))
                 {
@@ -189,15 +193,15 @@ namespace Mix.Heart.Repository
 
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
                 HandleException(ex);
-                CloseUow();
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
         #endregion

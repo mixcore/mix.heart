@@ -13,7 +13,6 @@ namespace Mix.Heart.UnitOfWork
         public UnitOfWorkInfo(DbContext dbContext)
         {
             ActiveDbContext = dbContext;
-            ActiveTransaction = dbContext.Database.BeginTransaction();
         }
 
         public void SetDbContext(DbContext dbContext)

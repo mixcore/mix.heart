@@ -7,7 +7,6 @@ using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Model;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +19,7 @@ namespace Mix.Heart.ViewModel
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
-        protected CommandRepository<TDbContext, TEntity, TPrimaryKey> _repository { get; set; }
+        public static CommandRepository<TDbContext, TEntity, TPrimaryKey> Repository { get; set; }
         protected TDbContext Context { get => (TDbContext)_unitOfWorkInfo?.ActiveDbContext; }
 
 
@@ -73,7 +72,7 @@ namespace Mix.Heart.ViewModel
                 }
                 await Validate();
                 var entity = await ParseEntity(this);
-                await _repository.SaveAsync(entity);
+                await Repository.SaveAsync(entity);
                 await CompleteUowAsync();
                 return entity.Id;
             }
@@ -92,7 +91,7 @@ namespace Mix.Heart.ViewModel
         protected virtual async Task<TEntity> SaveHandlerAsync()
         {
             var entity = await ParseEntity(this);
-            await _repository.SaveAsync(entity);
+            await Repository.SaveAsync(entity);
             await SaveEntityRelationshipAsync(entity);
             return entity;
         }

@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Mix.Heart.Entities;
 using Mix.Heart.Repository;
+using Mix.Heart.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Mix.Heart.Extensions
 {
