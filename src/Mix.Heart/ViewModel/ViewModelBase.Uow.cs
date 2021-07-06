@@ -44,11 +44,11 @@ namespace Mix.Heart.ViewModel
             Repository.SetUowInfo(_unitOfWorkInfo);
         }
 
-        protected virtual void CloseUow()
+        protected virtual async Task CloseUowAsync()
         {
             if (_isRoot)
             {
-                _unitOfWorkInfo.Close();
+                await _unitOfWorkInfo.CloseAsync();
             }
         }
 

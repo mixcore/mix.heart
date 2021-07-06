@@ -61,28 +61,6 @@ namespace Mix.Heart.Repository
             _unitOfWorkInfo = new UnitOfWorkInfo(context);
         }
 
-        protected virtual void CompleteUow()
-        {
-            if (!_isRoot)
-            {
-                return;
-            };
-
-            _unitOfWorkInfo.Complete();
-
-            _isRoot = false;
-
-            Console.WriteLine("Unit of work completed.");
-        }
-
-        protected virtual void CloseUow()
-        {
-            if (_isRoot)
-            {
-                _unitOfWorkInfo.Close();
-            }
-        }
-
         protected virtual async Task CloseUowAsync()
         {
             if (_isRoot)
@@ -116,7 +94,7 @@ namespace Mix.Heart.Repository
             return (TDbContext)contextCtorInfo.Invoke(new object[] { });
         }
 
-        public void HandleException(Exception ex)
+        public Task HandleException(Exception ex)
         {
             throw new MixException(MixErrorStatus.Badrequest, ex.Message);
         }

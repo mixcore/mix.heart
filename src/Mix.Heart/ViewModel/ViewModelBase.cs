@@ -33,7 +33,7 @@ namespace Mix.Heart.ViewModel
         public bool IsValid { get; set; }
 
         [JsonIgnore]
-        public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
+        protected UnitOfWorkInfo _unitOfWorkInfo { get; set; }
         [JsonIgnore]
         protected IMixMediator _consumer;
         [JsonIgnore]
@@ -101,9 +101,9 @@ namespace Mix.Heart.ViewModel
             HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
         }
 
-        protected virtual void HandleException(Exception ex)
+        protected virtual Task HandleException(Exception ex)
         {
-            Repository.HandleException(new MixException(MixErrorStatus.ServerError, ex.Message));
+            return Repository.HandleException(new MixException(MixErrorStatus.ServerError, ex.Message));
         }
 
         public virtual Task ExtendView()

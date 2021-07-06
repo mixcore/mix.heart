@@ -34,7 +34,7 @@ namespace Mix.Heart.ViewModel
                 await Validate();
                 if (!IsValid)
                 {
-                    HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
+                    await HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
                 }
                 var entity = await SaveHandlerAsync();
                 await PublishAsync(this, MixViewModelAction.Save, true);
@@ -43,12 +43,12 @@ namespace Mix.Heart.ViewModel
             }
             catch (Exception ex)
             {
-                HandleException(ex);
+                await HandleException(ex);
                 return default;
             }
             finally
             {
-                CloseUow();
+                await CloseUowAsync();
             }
         }
 
@@ -67,7 +67,7 @@ namespace Mix.Heart.ViewModel
                     }
                     else
                     {
-                        HandleException(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
+                        await HandleException(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
                     }
                 }
                 await Validate();
@@ -78,12 +78,12 @@ namespace Mix.Heart.ViewModel
             }
             catch (Exception ex)
             {
-                HandleException(ex);
+                await HandleException(ex);
                 return default;
             }
             finally
             {
-                CloseUow();
+                await CloseUowAsync();
             }
         }
 
