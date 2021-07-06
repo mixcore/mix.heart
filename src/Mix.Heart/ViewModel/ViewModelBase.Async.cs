@@ -19,7 +19,7 @@ namespace Mix.Heart.ViewModel
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
-        public static CommandRepository<TDbContext, TEntity, TPrimaryKey> Repository { get; set; }
+        public static Repository<TDbContext, TEntity, TPrimaryKey> Repository { get; set; }
         protected TDbContext Context { get => (TDbContext)_unitOfWorkInfo?.ActiveDbContext; }
 
 
@@ -34,7 +34,7 @@ namespace Mix.Heart.ViewModel
                 await Validate();
                 if (!IsValid)
                 {
-                    throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+                    HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
                 }
                 var entity = await SaveHandlerAsync();
                 await PublishAsync(this, MixViewModelAction.Save, true);
@@ -67,7 +67,7 @@ namespace Mix.Heart.ViewModel
                     }
                     else
                     {
-                        throw new MixHttpResponseException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}");
+                        HandleException(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
                     }
                 }
                 await Validate();

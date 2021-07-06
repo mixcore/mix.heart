@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
@@ -24,7 +26,7 @@ namespace Mix.Heart.ViewModel
                         _unitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
                         ?? _unitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
                 }
-                Repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
+                Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
                 Repository.SetUowInfo(_unitOfWorkInfo);
                 return;
             };
@@ -38,7 +40,7 @@ namespace Mix.Heart.ViewModel
             _isRoot = true;
 
             _unitOfWorkInfo = new UnitOfWorkInfo(InitDbContext());
-            Repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
+            Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
             Repository.SetUowInfo(_unitOfWorkInfo);
         }
 
@@ -68,7 +70,7 @@ namespace Mix.Heart.ViewModel
 
             if (contextCtorInfo == null)
             {
-                throw new NullReferenceException();
+                HandleException(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
             }
 
             return (TDbContext)contextCtorInfo.Invoke(new object[] { });

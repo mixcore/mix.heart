@@ -43,7 +43,7 @@ namespace Mix.Heart.ViewModel
 
         #region Contructors
 
-        public ViewModelBase(CommandRepository<TDbContext, TEntity, TPrimaryKey> repository)
+        public ViewModelBase(Repository<TDbContext, TEntity, TPrimaryKey> repository)
         {
             Repository = repository;
         }
@@ -51,12 +51,12 @@ namespace Mix.Heart.ViewModel
         public ViewModelBase(TEntity entity)
         {
             ParseView(entity);
+            ExtendView();
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
         {
             _unitOfWorkInfo = unitOfWorkInfo;
-            Repository.SetUowInfo(_unitOfWorkInfo);
         }
 
         #endregion
@@ -80,7 +80,7 @@ namespace Mix.Heart.ViewModel
 
             if (!IsValid)
             {
-                throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+                Repository.HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
             }
             return Task.CompletedTask;
         }
@@ -98,17 +98,16 @@ namespace Mix.Heart.ViewModel
 
         protected void HandleErrors()
         {
-            throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+            HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
         }
 
-        protected void HandleException(Exception ex)
+        protected virtual void HandleException(Exception ex)
         {
-            throw new MixHttpResponseException(MixErrorStatus.ServerError, ex.Message);
+            Repository.HandleException(new MixException(MixErrorStatus.ServerError, ex.Message));
         }
 
-        public virtual Task ParseView(TEntity entity)
+        public virtual Task ExtendView()
         {
-            Mapping(entity);
             return Task.CompletedTask;
         }
 
@@ -121,7 +120,7 @@ namespace Mix.Heart.ViewModel
             return Task.FromResult(entity);
         }
 
-        public virtual void Mapping<TSource>(TSource sourceObject)
+        public virtual void ParseView<TSource>(TSource sourceObject)
             where TSource : TEntity
         {
             var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), GetType()));

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
+using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
 using Mix.Heart.Helpers;
@@ -94,11 +95,15 @@ namespace Mix.Heart.Repository
 
         #region View Async
 
-        public virtual async Task<TView> GetViewByIdAsync<TView>(TPrimaryKey id)
+        public virtual async Task<TView> GetSingleViewAsync<TView>(TPrimaryKey id)
             where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         {
             var entity = await GetByIdAsync(id);
-            return await BuildViewModel<TView>(entity);
+            if (entity != null)
+            {
+                return await BuildViewModel<TView>(entity);
+            }
+            throw new MixException(MixErrorStatus.NotFound, id);
         }
 
         public virtual async Task<List<TView>> GetListViewAsync<TView>(Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
@@ -167,7 +172,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                throw new MixHttpResponseException(ex.Message);
+                throw new MixException(ex.Message);
             }
         }
 
@@ -207,7 +212,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                throw new MixHttpResponseException(ex.Message);
+                throw new MixException(ex.Message);
             }
         }
 

@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
+using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Exceptions;
 using Mix.Heart.UnitOfWork;
 using System;
@@ -9,24 +11,14 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
 {
-    public class CommandRepository<TDbContext, TEntity, TPrimaryKey>
+    public class Repository<TDbContext, TEntity, TPrimaryKey>
         : QueryRepository<TDbContext, TEntity, TPrimaryKey>
         where TPrimaryKey : IComparable
         where TDbContext : DbContext
         where TEntity : class, IEntity<TPrimaryKey>
     {
-        public CommandRepository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
-        public CommandRepository(TDbContext dbContext) : base(dbContext) { }
-
-        public virtual bool CheckIsExists(TEntity entity)
-        {
-            return GetAllQuery().Any(e => e.Id.Equals(entity.Id));
-        }
-
-        public virtual bool CheckIsExists(Func<TEntity, bool> predicate)
-        {
-            return GetAllQuery().Any(predicate);
-        }
+        public Repository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
+        public Repository(TDbContext dbContext) : base(dbContext) { }
 
         #region Async
 
@@ -111,7 +103,7 @@ namespace Mix.Heart.Repository
                 var entity = GetByIdAsync(id);
                 if (entity == null)
                 {
-                    HandleException(new EntityNotFoundException());
+                    HandleException(new MixException(MixErrorStatus.NotFound, id));
                     return;
                 }
 

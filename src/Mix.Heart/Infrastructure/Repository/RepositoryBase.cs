@@ -110,15 +110,15 @@ namespace Mix.Heart.Repository
 
             if (contextCtorInfo == null)
             {
-                throw new NullReferenceException();
+                HandleException(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
             }
 
             return (TDbContext)contextCtorInfo.Invoke(new object[] { });
         }
 
-        protected void HandleException(Exception ex)
+        public void HandleException(Exception ex)
         {
-            throw new MixHttpResponseException(MixErrorStatus.Badrequest, ex.Message);
+            throw new MixException(MixErrorStatus.Badrequest, ex.Message);
         }
 
 
