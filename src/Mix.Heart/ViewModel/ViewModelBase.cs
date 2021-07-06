@@ -30,12 +30,13 @@ namespace Mix.Heart.ViewModel
         public Guid? ModifiedBy { get; set; }
         public int Priority { get; set; }
         public MixContentStatus Status { get; set; }
+        
         public bool IsValid { get; set; }
 
         [JsonIgnore]
-        protected UnitOfWorkInfo _unitOfWorkInfo { get; set; }
-        [JsonIgnore]
         protected IMixMediator _consumer;
+        [JsonIgnore]
+        protected UnitOfWorkInfo UowInfo { get; set; }
         [JsonIgnore]
         public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
 
@@ -56,7 +57,7 @@ namespace Mix.Heart.ViewModel
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
         {
-            _unitOfWorkInfo = unitOfWorkInfo;
+            UowInfo = unitOfWorkInfo;
         }
 
         #endregion
@@ -80,7 +81,7 @@ namespace Mix.Heart.ViewModel
 
             if (!IsValid)
             {
-                Repository.HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
+                HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
             }
             return Task.CompletedTask;
         }

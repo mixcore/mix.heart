@@ -20,7 +20,7 @@ namespace Mix.Heart.ViewModel
         where TDbContext : DbContext
     {
         public static Repository<TDbContext, TEntity, TPrimaryKey> Repository { get; set; }
-        protected TDbContext Context { get => (TDbContext)_unitOfWorkInfo?.ActiveDbContext; }
+        protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
 
 
         #region Async

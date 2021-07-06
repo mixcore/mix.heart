@@ -9,20 +9,20 @@ namespace Mix.Heart.Repository
 {
     public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> where TDbContext : DbContext
     {
-        public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
+        public UnitOfWorkInfo UowInfo { get; set; }
 
-        public virtual TDbContext Context { get => (TDbContext)_unitOfWorkInfo?.ActiveDbContext; }
+        public virtual TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
 
         private bool _isRoot;
 
         protected RepositoryBase(TDbContext dbContext)
         {
-            _unitOfWorkInfo = new UnitOfWorkInfo(dbContext);
+            UowInfo = new UnitOfWorkInfo(dbContext);
         }
 
         public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
         {
-            _unitOfWorkInfo = unitOfWorkInfo;
+            UowInfo = unitOfWorkInfo;
         }
 
         public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
@@ -30,22 +30,22 @@ namespace Mix.Heart.Repository
             if (unitOfWorkInfo != null)
             {
                 _isRoot = false;
-                _unitOfWorkInfo = unitOfWorkInfo;
+                UowInfo = unitOfWorkInfo;
             };
         }
 
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
-            _unitOfWorkInfo ??= uowInfo;
-            if (_unitOfWorkInfo != null)
+            UowInfo ??= uowInfo;
+            if (UowInfo != null)
             {
                 _isRoot = false;
-                if (_unitOfWorkInfo.ActiveTransaction == null)
+                if (UowInfo.ActiveTransaction == null)
                 {
 
-                    _unitOfWorkInfo.SetTransaction(
-                        _unitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? _unitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
+                    UowInfo.SetTransaction(
+                        UowInfo.ActiveDbContext.Database.CurrentTransaction
+                        ?? UowInfo.ActiveDbContext.Database.BeginTransaction());
                 }
                 return;
             };
@@ -58,14 +58,14 @@ namespace Mix.Heart.Repository
         {
             _isRoot = true;
             var context = InitDbContext();
-            _unitOfWorkInfo = new UnitOfWorkInfo(context);
+            UowInfo = new UnitOfWorkInfo(context);
         }
 
         protected virtual async Task CloseUowAsync()
         {
             if (_isRoot)
             {
-                await _unitOfWorkInfo.CloseAsync();
+                await UowInfo.CloseAsync();
             }
         }
 
@@ -73,8 +73,8 @@ namespace Mix.Heart.Repository
         {
             if (_isRoot)
             {
-                await _unitOfWorkInfo.CompleteAsync();
-                _unitOfWorkInfo.Close();
+                await UowInfo.CompleteAsync();
+                UowInfo.Close();
                 return;
             };
 

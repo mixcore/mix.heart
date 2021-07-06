@@ -15,19 +15,19 @@ namespace Mix.Heart.ViewModel
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
         {
             _consumer ??= consumer;
-            _unitOfWorkInfo ??= uowInfo;
-            if (_unitOfWorkInfo != null)
+            UowInfo ??= uowInfo;
+            if (UowInfo != null)
             {
                 _isRoot = false;
-                if (_unitOfWorkInfo.ActiveTransaction == null)
+                if (UowInfo.ActiveTransaction == null)
                 {
 
-                    _unitOfWorkInfo.SetTransaction(
-                        _unitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? _unitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
+                    UowInfo.SetTransaction(
+                        UowInfo.ActiveDbContext.Database.CurrentTransaction
+                        ?? UowInfo.ActiveDbContext.Database.BeginTransaction());
                 }
-                Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
-                Repository.SetUowInfo(_unitOfWorkInfo);
+                Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(UowInfo);
+                Repository.SetUowInfo(UowInfo);
                 return;
             };
 
@@ -39,16 +39,16 @@ namespace Mix.Heart.ViewModel
         {
             _isRoot = true;
 
-            _unitOfWorkInfo = new UnitOfWorkInfo(InitDbContext());
-            Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
-            Repository.SetUowInfo(_unitOfWorkInfo);
+            UowInfo = new UnitOfWorkInfo(InitDbContext());
+            Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(UowInfo);
+            Repository.SetUowInfo(UowInfo);
         }
 
         protected virtual async Task CloseUowAsync()
         {
             if (_isRoot)
             {
-                await _unitOfWorkInfo.CloseAsync();
+                await UowInfo.CloseAsync();
             }
         }
 
@@ -56,7 +56,7 @@ namespace Mix.Heart.ViewModel
         {
             if (_isRoot)
             {
-                await _unitOfWorkInfo.CompleteAsync();
+                await UowInfo.CompleteAsync();
                 return;
             };
 
