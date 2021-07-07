@@ -64,7 +64,7 @@ namespace Mix.Heart.ViewModel
 
         #region Abstracts
 
-        protected abstract void InitEntityValues();
+        protected virtual void InitEntityValues() { }
         
         #endregion
 
