@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
+using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Exceptions;
 using Mix.Heart.UnitOfWork;
 using System;
@@ -9,74 +11,64 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
 {
-    public class CommandRepository<TDbContext, TEntity, TPrimaryKey>
+    public class Repository<TDbContext, TEntity, TPrimaryKey>
         : QueryRepository<TDbContext, TEntity, TPrimaryKey>
         where TPrimaryKey : IComparable
         where TDbContext : DbContext
         where TEntity : class, IEntity<TPrimaryKey>
     {
-        public CommandRepository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
-        public CommandRepository(TDbContext dbContext) : base(dbContext) { }
-
-        public virtual bool CheckIsExists(TEntity entity)
-        {
-            return GetAllQuery().Any(e => e.Id.Equals(entity.Id));
-        }
-
-        public virtual bool CheckIsExists(Func<TEntity, bool> predicate)
-        {
-            return GetAllQuery().Any(predicate);
-        }
+        public Repository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
+        public Repository(TDbContext dbContext) : base(dbContext) { }
 
         #region Async
 
-        public virtual int MaxAsync(Func<TEntity, int> predicate)
+        public virtual async Task<int> MaxAsync(Expression<Func<TEntity, int>> predicate)
         {
-            return GetAllQuery().Max(predicate);
+            return await GetAllQuery().MaxAsync(predicate);
         }
 
-        public virtual async Task CreateAsync(TEntity entity)
+        public virtual async Task CreateAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
                 Context.Entry(entity).State = EntityState.Added;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
-                HandleException(ex);
-                CloseUow();
+                await HandleException(ex);
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
-        public virtual async Task UpdateAsync(TEntity entity)
+        public virtual async Task UpdateAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
 
                 if (!CheckIsExists(entity))
                 {
-                    HandleException(new EntityNotFoundException(entity.Id.ToString()));
-                    CloseUow();
+                    await HandleException(new EntityNotFoundException(entity.Id.ToString()));
                     return;
                 }
 
                 Context.Entry(entity).State = EntityState.Modified;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
-                HandleException(ex);
+                await HandleException(ex);
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
@@ -95,7 +87,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                HandleException(ex);
+                await HandleException(ex);
             }
             finally
             {
@@ -103,101 +95,104 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(TPrimaryKey id)
+        public virtual async Task DeleteAsync(TPrimaryKey id, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
                 var entity = GetByIdAsync(id);
                 if (entity == null)
                 {
-                    HandleException(new EntityNotFoundException());
+                    await HandleException(new MixException(MixErrorStatus.NotFound, id));
                     return;
                 }
 
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
-                HandleException(ex);
+                await HandleException(ex);
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
-        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
                 var entity = await GetSingleAsync(predicate);
                 if (entity == null)
                 {
-                    HandleException(new EntityNotFoundException());
+                    await HandleException(new EntityNotFoundException());
                     return;
                 }
 
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
-                HandleException(ex);
+                await HandleException(ex);
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
-        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
 
                 await Context.Set<TEntity>().Where(predicate).ForEachAsync(
                     m => Context.Entry(m).State = EntityState.Deleted
                     );
+
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
-                HandleException(ex);
+                await HandleException(ex);
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
 
-        public virtual async Task DeleteAsync(TEntity entity)
+        public virtual async Task DeleteAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
             try
             {
-                BeginUow();
+                BeginUow(uowInfo);
 
                 if (!CheckIsExists(entity))
                 {
-                    HandleException(new EntityNotFoundException(entity.Id.ToString()));
-                    CloseUow();
+                    await HandleException(new EntityNotFoundException(entity.Id.ToString()));
                     return;
                 }
 
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
+                await CompleteUowAsync();
             }
             catch (Exception ex)
             {
-                HandleException(ex);
-                CloseUow();
+                await HandleException(ex);
             }
             finally
             {
-                CompleteUow();
+                await CloseUowAsync();
             }
         }
         #endregion

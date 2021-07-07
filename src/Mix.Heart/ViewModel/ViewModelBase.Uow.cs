@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
@@ -13,19 +15,19 @@ namespace Mix.Heart.ViewModel
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
         {
             _consumer ??= consumer;
-            _unitOfWorkInfo ??= uowInfo;
-            if (_unitOfWorkInfo != null)
+            UowInfo ??= uowInfo;
+            if (UowInfo != null)
             {
                 _isRoot = false;
-                if (_unitOfWorkInfo.ActiveTransaction == null)
+                if (UowInfo.ActiveTransaction == null)
                 {
 
-                    _unitOfWorkInfo.SetTransaction(
-                        _unitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? _unitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
+                    UowInfo.SetTransaction(
+                        UowInfo.ActiveDbContext.Database.CurrentTransaction
+                        ?? UowInfo.ActiveDbContext.Database.BeginTransaction());
                 }
-                _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
-                _repository.SetUowInfo(_unitOfWorkInfo);
+                Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(UowInfo);
+                Repository.SetUowInfo(UowInfo);
                 return;
             };
 
@@ -37,16 +39,16 @@ namespace Mix.Heart.ViewModel
         {
             _isRoot = true;
 
-            _unitOfWorkInfo = new UnitOfWorkInfo(InitDbContext());
-            _repository ??= new CommandRepository<TDbContext, TEntity, TPrimaryKey>(_unitOfWorkInfo);
-            _repository.SetUowInfo(_unitOfWorkInfo);
+            UowInfo = new UnitOfWorkInfo(InitDbContext());
+            Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(UowInfo);
+            Repository.SetUowInfo(UowInfo);
         }
 
-        protected virtual void CloseUow()
+        protected virtual async Task CloseUowAsync()
         {
             if (_isRoot)
             {
-                _unitOfWorkInfo.Close();
+                await UowInfo.CloseAsync();
             }
         }
 
@@ -54,7 +56,7 @@ namespace Mix.Heart.ViewModel
         {
             if (_isRoot)
             {
-                await _unitOfWorkInfo.CompleteAsync();
+                await UowInfo.CompleteAsync();
                 return;
             };
 
@@ -68,7 +70,7 @@ namespace Mix.Heart.ViewModel
 
             if (contextCtorInfo == null)
             {
-                throw new NullReferenceException();
+                HandleException(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
             }
 
             return (TDbContext)contextCtorInfo.Invoke(new object[] { });

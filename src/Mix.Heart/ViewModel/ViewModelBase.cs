@@ -4,6 +4,7 @@ using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Interfaces;
+using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -29,13 +30,13 @@ namespace Mix.Heart.ViewModel
         public Guid? ModifiedBy { get; set; }
         public int Priority { get; set; }
         public MixContentStatus Status { get; set; }
+        
         public bool IsValid { get; set; }
 
         [JsonIgnore]
-        public UnitOfWorkInfo _unitOfWorkInfo { get; set; }
-        [JsonIgnore]
         protected IMixMediator _consumer;
-
+        [JsonIgnore]
+        protected UnitOfWorkInfo UowInfo { get; set; }
         [JsonIgnore]
         public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
 
@@ -43,37 +44,33 @@ namespace Mix.Heart.ViewModel
 
         #region Contructors
 
-        public ViewModelBase()
+        public ViewModelBase(Repository<TDbContext, TEntity, TPrimaryKey> repository)
         {
-        }
-
-        public ViewModelBase(TDbContext context)
-        {
-            _unitOfWorkInfo ??= new UnitOfWorkInfo(context);
+            Repository = repository;
         }
 
         public ViewModelBase(TEntity entity)
         {
             ParseView(entity);
+            ExtendView();
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
         {
-            _unitOfWorkInfo = unitOfWorkInfo;
-            _repository.SetUowInfo(_unitOfWorkInfo);
+            UowInfo = unitOfWorkInfo;
         }
 
         #endregion
 
         #region Abstracts
 
-        protected abstract void InitEntityValues();
+        protected virtual void InitEntityValues() { }
         
         #endregion
 
         public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
         {
-            _repository.SetUowInfo(unitOfWorkInfo);
+            Repository.SetUowInfo(unitOfWorkInfo);
         }
 
         public virtual Task Validate()
@@ -84,7 +81,7 @@ namespace Mix.Heart.ViewModel
 
             if (!IsValid)
             {
-                throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+                HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
             }
             return Task.CompletedTask;
         }
@@ -102,17 +99,16 @@ namespace Mix.Heart.ViewModel
 
         protected void HandleErrors()
         {
-            throw new MixHttpResponseException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray());
+            HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
         }
 
-        protected void HandleException(Exception ex)
+        protected virtual Task HandleException(Exception ex)
         {
-            throw new MixHttpResponseException(MixErrorStatus.ServerError, ex.Message);
+            return Repository.HandleException(new MixException(MixErrorStatus.ServerError, ex.Message));
         }
 
-        public virtual Task ParseView(TEntity entity)
+        public virtual Task ExtendView()
         {
-            Mapping(entity);
             return Task.CompletedTask;
         }
 
@@ -125,7 +121,7 @@ namespace Mix.Heart.ViewModel
             return Task.FromResult(entity);
         }
 
-        public virtual void Mapping<TSource>(TSource sourceObject)
+        public virtual void ParseView<TSource>(TSource sourceObject)
             where TSource : TEntity
         {
             var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), GetType()));

@@ -9,20 +9,20 @@ namespace Mix.Heart.Repository
 {
     public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> where TDbContext : DbContext
     {
-        public UnitOfWorkInfo UnitOfWorkInfo { get; set; }
+        public UnitOfWorkInfo UowInfo { get; set; }
 
-        public virtual TDbContext Context { get; set; }
+        public virtual TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
 
         private bool _isRoot;
 
-        public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
-        {
-            UnitOfWorkInfo = unitOfWorkInfo;
-        }
-
         protected RepositoryBase(TDbContext dbContext)
         {
-            Context = dbContext;
+            UowInfo = new UnitOfWorkInfo(dbContext);
+        }
+
+        public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
+        {
+            UowInfo = unitOfWorkInfo;
         }
 
         public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
@@ -30,24 +30,22 @@ namespace Mix.Heart.Repository
             if (unitOfWorkInfo != null)
             {
                 _isRoot = false;
-                UnitOfWorkInfo = unitOfWorkInfo;
-                Context = (TDbContext)UnitOfWorkInfo.ActiveDbContext;
+                UowInfo = unitOfWorkInfo;
             };
         }
 
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
-            UnitOfWorkInfo ??= uowInfo;
-            if (UnitOfWorkInfo != null)
+            UowInfo ??= uowInfo;
+            if (UowInfo != null)
             {
                 _isRoot = false;
-                Context = (TDbContext)UnitOfWorkInfo.ActiveDbContext;
-                if (UnitOfWorkInfo.ActiveTransaction == null)
+                if (UowInfo.ActiveTransaction == null)
                 {
 
-                    UnitOfWorkInfo.SetTransaction(
-                        UnitOfWorkInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? UnitOfWorkInfo.ActiveDbContext.Database.BeginTransaction());
+                    UowInfo.SetTransaction(
+                        UowInfo.ActiveDbContext.Database.CurrentTransaction
+                        ?? UowInfo.ActiveDbContext.Database.BeginTransaction());
                 }
                 return;
             };
@@ -59,37 +57,15 @@ namespace Mix.Heart.Repository
         private void InitRootUow()
         {
             _isRoot = true;
-            Context ??= InitDbContext();
-            UnitOfWorkInfo = new UnitOfWorkInfo(Context);
-        }
-
-        protected virtual void CompleteUow()
-        {
-            if (!_isRoot)
-            {
-                return;
-            };
-
-            UnitOfWorkInfo.Complete();
-
-            _isRoot = false;
-
-            Console.WriteLine("Unit of work completed.");
-        }
-
-        protected virtual void CloseUow()
-        {
-            if (_isRoot)
-            {
-                UnitOfWorkInfo.Close();
-            }
+            var context = InitDbContext();
+            UowInfo = new UnitOfWorkInfo(context);
         }
 
         protected virtual async Task CloseUowAsync()
         {
             if (_isRoot)
             {
-                await UnitOfWorkInfo.CloseAsync();
+                await UowInfo.CloseAsync();
             }
         }
 
@@ -97,8 +73,8 @@ namespace Mix.Heart.Repository
         {
             if (_isRoot)
             {
-                await UnitOfWorkInfo.CompleteAsync();
-                UnitOfWorkInfo.Close();
+                await UowInfo.CompleteAsync();
+                UowInfo.Close();
                 return;
             };
 
@@ -112,16 +88,15 @@ namespace Mix.Heart.Repository
 
             if (contextCtorInfo == null)
             {
-                throw new NullReferenceException();
+                HandleException(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
             }
 
             return (TDbContext)contextCtorInfo.Invoke(new object[] { });
         }
 
-        protected void HandleException(Exception ex)
+        public Task HandleException(Exception ex)
         {
-            CloseUow();
-            throw new MixHttpResponseException(MixErrorStatus.Badrequest, ex.Message);
+            throw new MixException(MixErrorStatus.Badrequest, ex.Message);
         }
 
 
