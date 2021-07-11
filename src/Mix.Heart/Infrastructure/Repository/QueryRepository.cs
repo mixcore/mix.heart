@@ -49,6 +49,7 @@ namespace Mix.Heart.Repository
             var query = GetListQuery(predicate);
             paging.Total = query.Count();
             dynamic sortBy = GetLambda(paging.SortBy);
+
             switch (paging.SortDirection)
             {
                 case Enums.SortDirection.Asc:
@@ -58,8 +59,12 @@ namespace Mix.Heart.Repository
                     query = Queryable.OrderByDescending(query, sortBy);
                     break;
             }
-            query =
-                query.Skip(paging.PageIndex * paging.PageSize).Take(paging.PageSize);
+
+            if (paging.PageSize.HasValue)
+            {
+                query = query.Skip(paging.PageIndex * paging.PageSize.Value).Take(paging.PageSize.Value);
+            }
+
             return query;
         }
 
@@ -105,8 +110,20 @@ namespace Mix.Heart.Repository
             }
             throw new MixException(MixErrorStatus.NotFound, id);
         }
+        
+        public virtual async Task<TView> GetSingleViewAsync<TView>(Expression<Func<TEntity, bool>> predicate)
+            where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+        {
+            var entity = await GetSingleAsync(predicate);
+            if (entity != null)
+            {
+                return await BuildViewModel<TView>(entity);
+            }
+            throw new MixException(MixErrorStatus.NotFound, string.Empty);
+        }
 
-        public virtual async Task<List<TView>> GetListViewAsync<TView>(Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
+        public virtual async Task<List<TView>> GetListViewAsync<TView>(
+                Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
             where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         {
             BeginUow(uowInfo);
@@ -234,7 +251,7 @@ namespace Mix.Heart.Repository
             return result;
         }
 
-        private IViewModel<TPrimaryKey> GetCachedData(
+        private IViewModel GetCachedData(
             TEntity entity, QueryRepository<TDbContext, TEntity, TPrimaryKey> repository, string[] keys)
         {
             throw new NotImplementedException();

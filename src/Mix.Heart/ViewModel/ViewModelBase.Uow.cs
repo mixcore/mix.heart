@@ -18,7 +18,7 @@ namespace Mix.Heart.ViewModel
             UowInfo ??= uowInfo;
             if (UowInfo != null)
             {
-                _isRoot = false;
+                _isRoot = uowInfo == null;
                 if (UowInfo.ActiveTransaction == null)
                 {
 

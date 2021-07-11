@@ -5,7 +5,6 @@ using Mix.Heart.Exceptions;
 using Mix.Heart.Helpers;
 using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Model;
-using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -19,13 +18,29 @@ namespace Mix.Heart.ViewModel
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
     {
-        public static Repository<TDbContext, TEntity, TPrimaryKey> Repository { get; set; }
-        protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
-
-
+        
         #region Async
 
 
+        public async Task DeleteAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+        {
+            try
+            {
+                BeginUow(uowInfo, consumer);
+                await Repository.DeleteAsync(Id);
+                await PublishAsync(this, MixViewModelAction.Delete, true);
+                await CompleteUowAsync();
+            }
+            catch (Exception ex)
+            {
+                await HandleException(ex);
+            }
+            finally
+            {
+                await CloseUowAsync();
+            }
+        }
+        
         public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
         {
             try

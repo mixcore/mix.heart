@@ -17,15 +17,21 @@ namespace Mix.Heart.Exceptions
         public MixException(string message, Exception innerException) : base(message, innerException)
         {
         }
-        
+
         protected MixException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 
-        public MixException(MixErrorStatus status, params object[] messages) : base()
+        public MixException(MixErrorStatus status, params object[] messages) : base(string.Join('\n', messages))
         {
             Status = status;
             Value = messages;
+        }
+
+        public MixException(MixErrorStatus status, Exception ex) : base(ex.InnerException?.Message ?? ex.Message)
+        {
+            Status = status;
+            Value = ex.Data;
         }
 
         public MixErrorStatus Status { get; set; } = MixErrorStatus.ServerError;

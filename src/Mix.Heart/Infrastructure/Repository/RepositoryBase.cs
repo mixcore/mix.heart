@@ -18,11 +18,12 @@ namespace Mix.Heart.Repository
         protected RepositoryBase(TDbContext dbContext)
         {
             UowInfo = new UnitOfWorkInfo(dbContext);
+            _isRoot = true;
         }
-
         public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
         {
             UowInfo = unitOfWorkInfo;
+            _isRoot = false;
         }
 
         public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
@@ -37,9 +38,13 @@ namespace Mix.Heart.Repository
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
             UowInfo ??= uowInfo;
-            if (UowInfo != null)
+            if (uowInfo != null)
             {
                 _isRoot = false;
+            };
+
+            if (UowInfo != null)
+            {
                 if (UowInfo.ActiveTransaction == null)
                 {
 
@@ -48,7 +53,7 @@ namespace Mix.Heart.Repository
                         ?? UowInfo.ActiveDbContext.Database.BeginTransaction());
                 }
                 return;
-            };
+            }
 
             InitRootUow();
 
@@ -59,6 +64,7 @@ namespace Mix.Heart.Repository
             _isRoot = true;
             var context = InitDbContext();
             UowInfo = new UnitOfWorkInfo(context);
+          
         }
 
         protected virtual async Task CloseUowAsync()
@@ -96,7 +102,7 @@ namespace Mix.Heart.Repository
 
         public Task HandleException(Exception ex)
         {
-            throw new MixException(MixErrorStatus.Badrequest, ex.Message);
+            throw new MixException(MixErrorStatus.Badrequest, ex);
         }
 
 

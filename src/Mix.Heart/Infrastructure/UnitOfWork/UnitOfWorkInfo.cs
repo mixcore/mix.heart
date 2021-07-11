@@ -33,14 +33,16 @@ namespace Mix.Heart.UnitOfWork
             ActiveDbContext.Dispose();
             ActiveTransaction?.Dispose();
         }
-        
+
         /// <summary>
         /// TODO: implement multiple db context
         /// </summary>
         public async Task CloseAsync()
         {
-            await ActiveDbContext.DisposeAsync();
-            await ActiveTransaction.DisposeAsync();
+            if (ActiveDbContext != null)
+                await ActiveDbContext.DisposeAsync();
+            if (ActiveTransaction != null)
+                await ActiveTransaction.DisposeAsync();
         }
 
         /// <summary>
