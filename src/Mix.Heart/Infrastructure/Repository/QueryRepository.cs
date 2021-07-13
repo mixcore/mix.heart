@@ -128,7 +128,7 @@ namespace Mix.Heart.Repository
         {
             BeginUow(uowInfo);
             var query = GetListQuery(predicate);
-            return await ToListViewModelAsync<TView>(query);
+            return await ToListViewModelAsync<TView>(query, UowInfo);
         }
 
         public virtual async Task<PagingResponseModel<TView>> GetPagingViewAsync<TView>(
@@ -147,15 +147,16 @@ namespace Mix.Heart.Repository
         #region Helper
         #region Private methods
 
-        protected virtual Task<TView> BuildViewModel<TView>(TEntity entity)
+        protected virtual Task<TView> BuildViewModel<TView>(TEntity entity, UnitOfWorkInfo uowInfo = null)
             where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         {
-            ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity) });
-            return Task.FromResult((TView)classConstructor.Invoke(new object[] { entity }));
+            ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
+            return Task.FromResult((TView)classConstructor.Invoke(new object[] { entity, uowInfo }));
         }
 
         public async Task<List<TView>> ToListViewModelAsync<TView>(
            IQueryable<TEntity> source,
+           UnitOfWorkInfo uowInfo = null,
            bool isCache = false)
             where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         {
@@ -167,10 +168,10 @@ namespace Mix.Heart.Repository
                 var entities = await source.SelectMembers(members).ToListAsync();
 
                 List<TView> data = new List<TView>();
-                ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity) });
+                ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
                 foreach (var entity in entities)
                 {
-                    var view = await BuildViewModel<TView>(entity);
+                    var view = await BuildViewModel<TView>(entity, uowInfo);
                     data.Add(view);
                 }
 

@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
 {
-    public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> where TDbContext : DbContext
+    public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> , IDisposable
+        where TDbContext : DbContext
     {
         public UnitOfWorkInfo UowInfo { get; set; }
 
@@ -37,34 +38,20 @@ namespace Mix.Heart.Repository
 
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
-            UowInfo ??= uowInfo;
-            if (uowInfo != null)
+            SetUowInfo(uowInfo);
+            if(UowInfo == null)
             {
-                _isRoot = false;
-            };
-
-            if (UowInfo != null)
-            {
-                if (UowInfo.ActiveTransaction == null)
-                {
-
-                    UowInfo.SetTransaction(
-                        UowInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? UowInfo.ActiveDbContext.Database.BeginTransaction());
-                }
-                return;
+                InitRootUow();
             }
-
-            InitRootUow();
+            UowInfo.Begin();
 
         }
 
         private void InitRootUow()
         {
+            UowInfo ??= new UnitOfWorkInfo(InitDbContext());
             _isRoot = true;
-            var context = InitDbContext();
-            UowInfo = new UnitOfWorkInfo(context);
-          
+
         }
 
         protected virtual async Task CloseUowAsync()
@@ -105,6 +92,9 @@ namespace Mix.Heart.Repository
             throw new MixException(MixErrorStatus.Badrequest, ex);
         }
 
-
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+        }
     }
 }

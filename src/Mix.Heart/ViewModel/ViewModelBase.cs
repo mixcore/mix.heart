@@ -57,10 +57,11 @@ namespace Mix.Heart.ViewModel
             Repository = repository;
         }
 
-        public ViewModelBase(TEntity entity)
+        public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
+            SetUowInfo(uowInfo);
             ParseView(entity);
-            ExtendView();
+            ExpandView();
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
@@ -79,11 +80,6 @@ namespace Mix.Heart.ViewModel
         }
 
         #endregion
-
-        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
-        {
-            Repository.SetUowInfo(unitOfWorkInfo);
-        }
 
         public virtual Task Validate()
         {
@@ -109,7 +105,7 @@ namespace Mix.Heart.ViewModel
             return (TEntity)Activator.CreateInstance(classType);
         }
 
-        public virtual Task ExtendView()
+        public virtual Task ExpandView()
         {
             return Task.CompletedTask;
         }

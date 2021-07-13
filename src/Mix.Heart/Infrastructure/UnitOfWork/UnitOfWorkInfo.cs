@@ -25,6 +25,16 @@ namespace Mix.Heart.UnitOfWork
             ActiveTransaction = dbContextTransaction;
         }
 
+        public void Begin()
+        {
+            if (ActiveTransaction == null)
+            {
+                SetTransaction(
+                    ActiveDbContext.Database.CurrentTransaction
+                    ?? ActiveDbContext.Database.BeginTransaction());
+            }
+        }
+
         /// <summary>
         /// TODO: implement multiple db context
         /// </summary>
@@ -52,8 +62,6 @@ namespace Mix.Heart.UnitOfWork
         {
             ActiveDbContext.SaveChanges();
             ActiveTransaction.Commit();
-
-            Close();
         }
 
         /// <summary>
