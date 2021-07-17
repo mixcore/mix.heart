@@ -292,6 +292,7 @@ namespace Mix.Infrastructure.Repositories
         {
             if (srcPath.ToLower() != desPath.ToLower() && Directory.Exists(srcPath))
             {
+                Directory.CreateDirectory(desPath);
                 //Now Create all of the directories
                 foreach (string dirPath in Directory.GetDirectories(srcPath, "*", SearchOption.AllDirectories))
                 {
