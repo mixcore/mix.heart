@@ -113,9 +113,9 @@ namespace Mix.Heart.Infrastructure.ViewModels
 
                             result.IsSucceed = result.IsSucceed && cloneSubResult.IsSucceed && cloneSubResult.IsSucceed;
                         }
-                        UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                         _ = this.SendNotifyAsync(this, RepositoryAction.Clone, result.IsSucceed);
                     }
+                    UnitOfWorkHelper<TDbContext>.HandleTransaction(result.IsSucceed, isRoot, transaction);
                     return result;
                 }
                 else

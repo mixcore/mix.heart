@@ -503,10 +503,7 @@ namespace Mix.Infrastructure.Repositories
 
             try
             {
-                string fullPath = MixCommonHelper.GetFullPath(new string[] {
-                    "wwwroot",
-                    file.FileFolder
-                });
+                string fullPath = $"wwwroot/{file.FileFolder}";
                 if (!string.IsNullOrEmpty(file.Filename))
                 {
                     CreateDirectoryIfNotExist(fullPath);
@@ -526,22 +523,30 @@ namespace Mix.Infrastructure.Repositories
                     }
                     else
                     {
-                        // XL
-                        ResizeImage(file, "XL");
-                        // L
-                        ResizeImage(file, "L");
-                        // M
-                        ResizeImage(file, "M");
-                        // S
-                        ResizeImage(file, "S");
-                        // XS
-                        ResizeImage(file, "XS");
-                        // XXS
-                        ResizeImage(file, "XXS");
+                        if (IsImage(file.Extension))
+                        {
+                            // XL
+                            ResizeImage(file, "XL");
+                            // L
+                            ResizeImage(file, "L");
+                            // M
+                            ResizeImage(file, "M");
+                            // S
+                            ResizeImage(file, "S");
+                            // XS
+                            ResizeImage(file, "XS");
+                            // XXS
+                            ResizeImage(file, "XXS");
 
-                        ResizeImage(file);
+                            ResizeImage(file);
 
-                        return true;
+                            return true;
+                        }
+                        else
+                        {
+                            return SaveFile(file);
+                        }
+                        
                     }
                 }
                 else
@@ -555,9 +560,72 @@ namespace Mix.Infrastructure.Repositories
             }
         }
 
+        
+        public FileViewModel SaveWebFile(IFormFile file, string folder)
+        {
+            try
+            {
+                string fullPath = $"wwwroot/{folder}";
+                string ext = file.FileName[file.FileName.IndexOf('.')..];
+                var fileModel = new FileViewModel()
+                {
+                    Filename = file.FileName.Substring(0, file.FileName.LastIndexOf('.')),
+                    Extension = file.FileName.Substring(file.FileName.LastIndexOf('.')),
+                    FileFolder = folder,
+                    FileStream = GetBase64(file)
+                };
+                if (IsImage(ext))
+                {
+                    
+                    // XL
+                    ResizeImage(fileModel, "XL");
+                    // L
+                    ResizeImage(fileModel, "L");
+                    // M
+                    ResizeImage(fileModel, "M");
+                    // S
+                    ResizeImage(fileModel, "S");
+                    // XS
+                    ResizeImage(fileModel, "XS");
+                    // XXS
+                    ResizeImage(fileModel, "XXS");
+
+                    ResizeImage(fileModel);
+                }
+                else
+                {
+                    string filename = SaveFile(file, fullPath);
+                }
+                return fileModel;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private string GetBase64(IFormFile file)
+        {
+            using (var ms = new MemoryStream())
+            {
+                file.CopyTo(ms);
+                var fileBytes = ms.ToArray();
+                return Convert.ToBase64String(fileBytes);
+            }
+        }
+
+        private bool IsImage(string extension)
+        {
+            string[] exts = new string[] { ".img", ".png", ".jpg", ".jpeg" };
+            return exts.Contains(extension.ToLower());
+        }
+
+
         private void ResizeImage(FileViewModel file, string size = null)
         {
-            string base64 = file.FileStream.Split(',')[1];
+            string base64 = file.FileStream.IndexOf(',') >= 0 
+                    ? file.FileStream.Split(',')[1]
+                    : file.FileStream;
             byte[] bytes = Convert.FromBase64String(base64);
             JObject imageSizes = MixCommonHelper.GetWebConfig<JObject>(WebConfiguration.ImageSizes);
             string fullPath = MixCommonHelper.GetFullPath(new string[] {
@@ -663,28 +731,6 @@ namespace Mix.Infrastructure.Repositories
             catch
             {
                 return false;
-            }
-        }
-
-        public FileViewModel SaveWebFile(IFormFile file, string folder)
-        {
-            try
-            {
-                string fullPath = MixCommonHelper.GetFullPath(new string[] {
-                    "wwwroot",
-                    folder
-                });
-                string filename = SaveFile(file, fullPath);
-                return new FileViewModel()
-                {
-                    Filename = file.FileName.Substring(0, file.FileName.LastIndexOf('.')),
-                    Extension = file.FileName.Substring(file.FileName.LastIndexOf('.')),
-                    FileFolder = folder
-                };
-            }
-            catch
-            {
-                return null;
             }
         }
 
