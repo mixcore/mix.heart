@@ -16,6 +16,10 @@ namespace Mix.Heart.Repository
 
         private bool _isRoot;
 
+        public RepositoryBase()
+        {
+        }
+
         protected RepositoryBase(TDbContext dbContext)
         {
             UowInfo = new UnitOfWorkInfo(dbContext);
@@ -81,13 +85,18 @@ namespace Mix.Heart.Repository
 
             if (contextCtorInfo == null)
             {
-                HandleException(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
+                HandleExceptionAsync(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
             }
 
             return (TDbContext)contextCtorInfo.Invoke(new object[] { });
         }
 
-        public Task HandleException(Exception ex)
+        public Task HandleExceptionAsync(Exception ex)
+        {
+            throw new MixException(MixErrorStatus.Badrequest, ex);
+        }
+        
+        public void HandleException(Exception ex)
         {
             throw new MixException(MixErrorStatus.Badrequest, ex);
         }

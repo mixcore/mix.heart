@@ -26,7 +26,7 @@ namespace Mix.Heart.ViewModel
         public TPrimaryKey Id { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime? LastModified { get; set; }
-        public Guid CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
         public Guid? ModifiedBy { get; set; }
         public int Priority { get; set; }
         public MixContentStatus Status { get; set; }
@@ -40,7 +40,7 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
 
-        public static Repository<TDbContext, TEntity, TPrimaryKey> Repository { get; set; }
+        protected static Repository<TDbContext, TEntity, TPrimaryKey> Repository { get; set; }
         protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
 
         #endregion
@@ -61,7 +61,7 @@ namespace Mix.Heart.ViewModel
         {
             SetUowInfo(uowInfo);
             ParseView(entity);
-            ExpandView();
+            ExpandView(UowInfo);
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
@@ -81,7 +81,7 @@ namespace Mix.Heart.ViewModel
 
         #endregion
 
-        public virtual Task Validate()
+        public virtual async Task Validate()
         {
             var validateContext = new System.ComponentModel.DataAnnotations.ValidationContext(this, serviceProvider: null, items: null);
 
@@ -89,9 +89,8 @@ namespace Mix.Heart.ViewModel
 
             if (!IsValid)
             {
-                HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
+                await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
             }
-            return Task.CompletedTask;
         }
 
         public void SetConsumer(IMixMediator consumer)
@@ -105,7 +104,7 @@ namespace Mix.Heart.ViewModel
             return (TEntity)Activator.CreateInstance(classType);
         }
 
-        public virtual Task ExpandView()
+        public virtual Task ExpandView(UnitOfWorkInfo uowInfo)
         {
             return Task.CompletedTask;
         }
@@ -113,7 +112,7 @@ namespace Mix.Heart.ViewModel
         public virtual Task<TEntity> ParseEntity<T>(T view)
             where T : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         {
-            if (IsDefaultId())
+            if (IsDefaultId(Id))
             {
                 InitDefaultValues();
             }
@@ -142,20 +141,25 @@ namespace Mix.Heart.ViewModel
             return PublishAsync(sender, action, isSucceed, ex);
         }
 
-        protected bool IsDefaultId()
+        protected bool IsDefaultId(TPrimaryKey id)
         {
-            return (Id.GetType() == typeof(Guid) && Guid.Parse(Id.ToString()) == default)
-                || (Id.GetType() == typeof(int) && int.Parse(Id.ToString()) == default);
+            return (id.GetType() == typeof(Guid) && Guid.Parse(Id.ToString()) == default)
+                || (id.GetType() == typeof(int) && int.Parse(Id.ToString()) == default);
         }
 
         protected async Task HandleErrorsAsync()
         {
-            await HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
+            await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
         }
 
-        protected virtual async Task HandleException(Exception ex)
+        protected virtual async Task HandleExceptionAsync(Exception ex)
         {
-            await Repository.HandleException(ex);
+            await Repository.HandleExceptionAsync(ex);
+        }
+        
+        protected virtual void HandleException(Exception ex)
+        {
+            Repository.HandleException(ex);
         }
 
         protected void MapObject<TSource, TDestination>(TSource sourceObject, TDestination destObject)

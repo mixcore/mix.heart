@@ -40,7 +40,7 @@ namespace Mix.Heart.UnitOfWork
         /// </summary>
         public void Close()
         {
-            ActiveDbContext.Dispose();
+            //ActiveDbContext.Dispose();
             ActiveTransaction?.Dispose();
         }
 
@@ -49,8 +49,8 @@ namespace Mix.Heart.UnitOfWork
         /// </summary>
         public async Task CloseAsync()
         {
-            if (ActiveDbContext != null)
-                await ActiveDbContext.DisposeAsync();
+            //if (ActiveDbContext != null)
+            //    await ActiveDbContext.DisposeAsync();
             if (ActiveTransaction != null)
                 await ActiveTransaction.DisposeAsync();
         }

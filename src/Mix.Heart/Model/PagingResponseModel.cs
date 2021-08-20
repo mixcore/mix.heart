@@ -5,6 +5,10 @@ namespace Mix.Heart.Model
 {
     public class PagingResponseModel<T>
     {
+        public PagingResponseModel()
+        {
+
+        }
         public PagingResponseModel(IEnumerable<T> data, IPagingModel pagingData)
         {
             Items = data;

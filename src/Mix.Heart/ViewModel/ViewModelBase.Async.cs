@@ -27,20 +27,25 @@ namespace Mix.Heart.ViewModel
             try
             {
                 BeginUow(uowInfo, consumer);
-                await Repository.DeleteAsync(Id);
+                await DeleteHandlerAsync();
                 await PublishAsync(this, MixViewModelAction.Delete, true);
                 await CompleteUowAsync();
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
             }
             finally
             {
                 await CloseUowAsync();
             }
         }
-        
+
+        protected virtual async Task DeleteHandlerAsync()
+        {
+            await Repository.DeleteAsync(Id);
+        }
+
         public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
         {
             try
@@ -49,7 +54,7 @@ namespace Mix.Heart.ViewModel
                 await Validate();
                 if (!IsValid)
                 {
-                    await HandleException(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
+                    await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
                 }
                 var entity = await SaveHandlerAsync();
                 await PublishAsync(this, MixViewModelAction.Save, true);
@@ -58,7 +63,7 @@ namespace Mix.Heart.ViewModel
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
                 return default;
             }
             finally
@@ -82,7 +87,7 @@ namespace Mix.Heart.ViewModel
                     }
                     else
                     {
-                        await HandleException(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
+                        await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
                     }
                 }
                 await Validate();
@@ -93,7 +98,7 @@ namespace Mix.Heart.ViewModel
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
                 return default;
             }
             finally

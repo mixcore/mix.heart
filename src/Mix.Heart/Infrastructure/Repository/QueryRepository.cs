@@ -22,8 +22,15 @@ namespace Mix.Heart.Repository
         where TEntity : class, IEntity<TPrimaryKey>
         where TPrimaryKey : IComparable
     {
-        public QueryRepository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
         public QueryRepository(TDbContext dbContext) : base(dbContext) { }
+
+        public QueryRepository()
+        {
+        }
+
+        public QueryRepository(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
+        {
+        }
 
 
         #region IQueryable
@@ -36,11 +43,6 @@ namespace Mix.Heart.Repository
         public IQueryable<TEntity> GetListQuery(Expression<Func<TEntity, bool>> predicate)
         {
             return GetAllQuery().Where(predicate);
-        }
-
-        public async Task<TEntity> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await GetAllQuery().SingleOrDefaultAsync(predicate);
         }
 
         public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate,
@@ -70,7 +72,6 @@ namespace Mix.Heart.Repository
 
         #endregion
 
-        #region Entity Async
         public virtual bool CheckIsExists(TEntity entity)
         {
             return GetAllQuery().Any(e => e.Id.Equals(entity.Id));
@@ -79,6 +80,13 @@ namespace Mix.Heart.Repository
         public virtual bool CheckIsExists(Func<TEntity, bool> predicate)
         {
             return GetAllQuery().Any(predicate);
+        }
+
+        #region Entity Async
+
+        public async Task<TEntity> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await GetAllQuery().SingleOrDefaultAsync(predicate);
         }
 
         public virtual async Task<TEntity> GetByIdAsync(TPrimaryKey id)
@@ -98,6 +106,62 @@ namespace Mix.Heart.Repository
 
         #endregion
 
+        #region Entity Sync
+
+        public TEntity GetSingle(Expression<Func<TEntity, bool>> predicate)
+        {
+            try
+            {
+                return GetAllQuery().SingleOrDefault(predicate);
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+                return default;
+            }
+        }
+
+        public virtual TEntity GetById(TPrimaryKey id)
+        {
+            try
+            {
+                return Context.Set<TEntity>().Find(id);
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+                return default;
+            }
+        }
+
+        public virtual int Max(Func<TEntity, int> predicate)
+        {
+            try
+            {
+                return GetAllQuery().Max(predicate);
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+                return default;
+            }
+        }
+
+        public TEntity GetFirst(Expression<Func<TEntity, bool>> predicate)
+        {
+            try
+            {
+                return GetAllQuery().FirstOrDefault(predicate);
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+                return default;
+            }
+        }
+
+        #endregion
+
         #region View Async
 
         public virtual async Task<TView> GetSingleViewAsync<TView>(TPrimaryKey id)
@@ -110,16 +174,17 @@ namespace Mix.Heart.Repository
             }
             throw new MixException(MixErrorStatus.NotFound, id);
         }
-        
+
         public virtual async Task<TView> GetSingleViewAsync<TView>(Expression<Func<TEntity, bool>> predicate)
             where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         {
             var entity = await GetSingleAsync(predicate);
             if (entity != null)
             {
-                return await BuildViewModel<TView>(entity);
+                var result = await BuildViewModel<TView>(entity);
+                return result;
             }
-            throw new MixException(MixErrorStatus.NotFound, string.Empty);
+            return null;
         }
 
         public virtual async Task<List<TView>> GetListViewAsync<TView>(
@@ -128,7 +193,9 @@ namespace Mix.Heart.Repository
         {
             BeginUow(uowInfo);
             var query = GetListQuery(predicate);
-            return await ToListViewModelAsync<TView>(query, UowInfo);
+            var result = await ToListViewModelAsync<TView>(query);
+            await CloseUowAsync();
+            return result;
         }
 
         public virtual async Task<PagingResponseModel<TView>> GetPagingViewAsync<TView>(
@@ -156,7 +223,6 @@ namespace Mix.Heart.Repository
 
         public async Task<List<TView>> ToListViewModelAsync<TView>(
            IQueryable<TEntity> source,
-           UnitOfWorkInfo uowInfo = null,
            bool isCache = false)
             where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
         {
@@ -171,7 +237,7 @@ namespace Mix.Heart.Repository
                 ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
                 foreach (var entity in entities)
                 {
-                    var view = await BuildViewModel<TView>(entity, uowInfo);
+                    var view = await BuildViewModel<TView>(entity, UowInfo);
                     data.Add(view);
                 }
 
@@ -208,10 +274,10 @@ namespace Mix.Heart.Repository
                 var entities = await source.SelectMembers(members).ToListAsync();
 
                 List<TView> data = new List<TView>();
-                ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity) });
+                ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
                 foreach (var entity in entities)
                 {
-                    var view = (TView)classConstructor.Invoke(new object[] { entity });
+                    var view = (TView)classConstructor.Invoke(new object[] { entity, UowInfo });
                     data.Add(view);
                 }
 

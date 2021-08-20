@@ -2,7 +2,7 @@
 {
     public enum MixDatabaseProvider
     {
-        MSSQL,
+        SQLSERVER,
         MySQL,
         PostgreSQL,
         SQLITE
