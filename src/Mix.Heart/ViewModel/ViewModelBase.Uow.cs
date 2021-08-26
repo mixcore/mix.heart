@@ -15,33 +15,30 @@ namespace Mix.Heart.ViewModel
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
         {
             _consumer ??= consumer;
-            UowInfo ??= uowInfo;
-            if (UowInfo != null)
+            SetUowInfo(uowInfo);
+            if (UowInfo == null)
             {
-                _isRoot = false;
-                if (UowInfo.ActiveTransaction == null)
-                {
-
-                    UowInfo.SetTransaction(
-                        UowInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? UowInfo.ActiveDbContext.Database.BeginTransaction());
-                }
-                Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(UowInfo);
-                Repository.SetUowInfo(UowInfo);
-                return;
-            };
-
-            InitRootUow();
-
+                InitRootUow();
+            }
+            UowInfo.Begin();
+            Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(UowInfo);
+            Repository.SetUowInfo(UowInfo);
         }
+
+        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
+        {
+            if (unitOfWorkInfo != null)
+            {
+                UowInfo = unitOfWorkInfo;
+                _isRoot = false;
+            }
+        }
+
 
         private void InitRootUow()
         {
+            UowInfo ??= new UnitOfWorkInfo(InitDbContext());
             _isRoot = true;
-
-            UowInfo = new UnitOfWorkInfo(InitDbContext());
-            Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(UowInfo);
-            Repository.SetUowInfo(UowInfo);
         }
 
         protected virtual async Task CloseUowAsync()
@@ -70,7 +67,9 @@ namespace Mix.Heart.ViewModel
 
             if (contextCtorInfo == null)
             {
-                HandleException(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
+                throw new MixException(
+                        MixErrorStatus.ServerError, 
+                        $"{dbContextType}: Contructor Parameterless Notfound");
             }
 
             return (TDbContext)contextCtorInfo.Invoke(new object[] { });

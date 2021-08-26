@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
 using Mix.Heart.Model;
 using Newtonsoft.Json.Linq;
@@ -92,23 +93,23 @@ namespace Mix.Heart.Helpers
 
             FieldInfo fieldInfo = type.GetField(propertyName.ToTitleCase());
 
-            if (fieldInfo == null)
+            if (fieldInfo != null)
+            {
+                fieldPropertyType = fieldInfo.FieldType;
+                fieldPropertyExpression = Expression.Field(par, fieldInfo);
+            }
+            else
             {
                 PropertyInfo propertyInfo =
                     type.GetProperty(propertyName.ToTitleCase());
 
                 if (propertyInfo == null)
                 {
-                    throw new Exception();
+                    throw new MixException(MixErrorStatus.Badrequest, "Invalid Property Expression");
                 }
 
                 fieldPropertyType = propertyInfo.PropertyType;
                 fieldPropertyExpression = Expression.Property(par, propertyInfo);
-            }
-            else
-            {
-                fieldPropertyType = fieldInfo.FieldType;
-                fieldPropertyExpression = Expression.Field(par, fieldInfo);
             }
             object data2;
             if (fieldPropertyType.IsGenericType &&

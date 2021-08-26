@@ -20,6 +20,10 @@ namespace Mix.Heart.Repository
         public Repository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
         public Repository(TDbContext dbContext) : base(dbContext) { }
 
+        public Repository()
+        {
+        }
+
         #region Async
 
         public virtual async Task<int> MaxAsync(Expression<Func<TEntity, int>> predicate)
@@ -38,7 +42,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
             }
             finally
             {
@@ -54,7 +58,7 @@ namespace Mix.Heart.Repository
 
                 if (!CheckIsExists(entity))
                 {
-                    await HandleException(new EntityNotFoundException(entity.Id.ToString()));
+                    await HandleExceptionAsync(new EntityNotFoundException(entity.Id.ToString()));
                     return;
                 }
 
@@ -64,7 +68,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
             }
             finally
             {
@@ -87,7 +91,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
             }
             finally
             {
@@ -100,10 +104,10 @@ namespace Mix.Heart.Repository
             try
             {
                 BeginUow(uowInfo);
-                var entity = GetByIdAsync(id);
+                var entity = await GetByIdAsync(id);
                 if (entity == null)
                 {
-                    await HandleException(new MixException(MixErrorStatus.NotFound, id));
+                    await HandleExceptionAsync(new MixException(MixErrorStatus.NotFound, id));
                     return;
                 }
 
@@ -113,7 +117,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
             }
             finally
             {
@@ -129,7 +133,7 @@ namespace Mix.Heart.Repository
                 var entity = await GetSingleAsync(predicate);
                 if (entity == null)
                 {
-                    await HandleException(new EntityNotFoundException());
+                    await HandleExceptionAsync(new EntityNotFoundException());
                     return;
                 }
 
@@ -139,7 +143,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
             }
             finally
             {
@@ -162,7 +166,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
             }
             finally
             {
@@ -178,7 +182,7 @@ namespace Mix.Heart.Repository
 
                 if (!CheckIsExists(entity))
                 {
-                    await HandleException(new EntityNotFoundException(entity.Id.ToString()));
+                    await HandleExceptionAsync(new EntityNotFoundException(entity.Id.ToString()));
                     return;
                 }
 
@@ -188,7 +192,7 @@ namespace Mix.Heart.Repository
             }
             catch (Exception ex)
             {
-                await HandleException(ex);
+                await HandleExceptionAsync(ex);
             }
             finally
             {

@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
 {
-    public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> where TDbContext : DbContext
+    public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> , IDisposable
+        where TDbContext : DbContext
     {
         public UnitOfWorkInfo UowInfo { get; set; }
 
@@ -15,14 +16,19 @@ namespace Mix.Heart.Repository
 
         private bool _isRoot;
 
+        public RepositoryBase()
+        {
+        }
+
         protected RepositoryBase(TDbContext dbContext)
         {
             UowInfo = new UnitOfWorkInfo(dbContext);
+            _isRoot = true;
         }
-
         public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
         {
             UowInfo = unitOfWorkInfo;
+            _isRoot = false;
         }
 
         public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
@@ -36,29 +42,20 @@ namespace Mix.Heart.Repository
 
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
-            UowInfo ??= uowInfo;
-            if (UowInfo != null)
+            SetUowInfo(uowInfo);
+            if(UowInfo == null)
             {
-                _isRoot = false;
-                if (UowInfo.ActiveTransaction == null)
-                {
-
-                    UowInfo.SetTransaction(
-                        UowInfo.ActiveDbContext.Database.CurrentTransaction
-                        ?? UowInfo.ActiveDbContext.Database.BeginTransaction());
-                }
-                return;
-            };
-
-            InitRootUow();
+                InitRootUow();
+            }
+            UowInfo.Begin();
 
         }
 
         private void InitRootUow()
         {
+            UowInfo ??= new UnitOfWorkInfo(InitDbContext());
             _isRoot = true;
-            var context = InitDbContext();
-            UowInfo = new UnitOfWorkInfo(context);
+
         }
 
         protected virtual async Task CloseUowAsync()
@@ -88,17 +85,25 @@ namespace Mix.Heart.Repository
 
             if (contextCtorInfo == null)
             {
-                HandleException(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
+                HandleExceptionAsync(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
             }
 
             return (TDbContext)contextCtorInfo.Invoke(new object[] { });
         }
 
-        public Task HandleException(Exception ex)
+        public Task HandleExceptionAsync(Exception ex)
         {
-            throw new MixException(MixErrorStatus.Badrequest, ex.Message);
+            throw new MixException(MixErrorStatus.Badrequest, ex);
+        }
+        
+        public void HandleException(Exception ex)
+        {
+            throw new MixException(MixErrorStatus.Badrequest, ex);
         }
 
-
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+        }
     }
 }

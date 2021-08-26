@@ -25,22 +25,34 @@ namespace Mix.Heart.UnitOfWork
             ActiveTransaction = dbContextTransaction;
         }
 
+        public void Begin()
+        {
+            if (ActiveTransaction == null)
+            {
+                SetTransaction(
+                    ActiveDbContext.Database.CurrentTransaction
+                    ?? ActiveDbContext.Database.BeginTransaction());
+            }
+        }
+
         /// <summary>
         /// TODO: implement multiple db context
         /// </summary>
         public void Close()
         {
-            ActiveDbContext.Dispose();
+            //ActiveDbContext.Dispose();
             ActiveTransaction?.Dispose();
         }
-        
+
         /// <summary>
         /// TODO: implement multiple db context
         /// </summary>
         public async Task CloseAsync()
         {
-            await ActiveDbContext.DisposeAsync();
-            await ActiveTransaction.DisposeAsync();
+            //if (ActiveDbContext != null)
+            //    await ActiveDbContext.DisposeAsync();
+            if (ActiveTransaction != null)
+                await ActiveTransaction.DisposeAsync();
         }
 
         /// <summary>
@@ -50,8 +62,6 @@ namespace Mix.Heart.UnitOfWork
         {
             ActiveDbContext.SaveChanges();
             ActiveTransaction.Commit();
-
-            Close();
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ namespace Mix.Heart.Model
     {
         int PageIndex { get; set; }
 
-        int PageSize { get; set; }
+        int? PageSize { get; set; }
 
         int Total { get; set; }
 
