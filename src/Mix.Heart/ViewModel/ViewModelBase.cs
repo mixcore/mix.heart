@@ -143,8 +143,8 @@ namespace Mix.Heart.ViewModel
 
         protected bool IsDefaultId(TPrimaryKey id)
         {
-            return (id.GetType() == typeof(Guid) && Guid.Parse(Id.ToString()) == default)
-                || (id.GetType() == typeof(int) && int.Parse(Id.ToString()) == default);
+            return (id.GetType() == typeof(Guid) && Guid.Parse(id.ToString()) == Guid.Empty)
+                || (id.GetType() == typeof(int) && int.Parse(id.ToString()) == default);
         }
 
         protected async Task HandleErrorsAsync()
