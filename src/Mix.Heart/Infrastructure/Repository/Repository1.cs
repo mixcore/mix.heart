@@ -4,6 +4,7 @@ using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Exceptions;
 using Mix.Heart.UnitOfWork;
+using Mix.Heart.ViewModel;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -11,16 +12,17 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
 {
-    public class EntityRepository<TDbContext, TEntity, TPrimaryKey>
-        : QueryRepository<TDbContext, TEntity, TPrimaryKey>
+    public class Repository<TDbContext, TEntity, TPrimaryKey, TView>
+        : ViewQueryRepository<TDbContext, TEntity, TPrimaryKey, TView>
         where TPrimaryKey : IComparable
         where TDbContext : DbContext
         where TEntity : class, IEntity<TPrimaryKey>
+        where TView: ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
-        public EntityRepository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
-        public EntityRepository(TDbContext dbContext) : base(dbContext) { }
+        public Repository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
+        public Repository(TDbContext dbContext) : base(dbContext) { }
 
-        public EntityRepository()
+        public Repository()
         {
         }
 
@@ -56,7 +58,7 @@ namespace Mix.Heart.Repository
             {
                 BeginUow(uowInfo);
 
-                if (!CheckIsExists(entity))
+                if (!await CheckIsExistsAsync(entity))
                 {
                     await HandleExceptionAsync(new EntityNotFoundException(entity.Id.ToString()));
                     return;
@@ -82,7 +84,7 @@ namespace Mix.Heart.Repository
             {
                 BeginUow(uowInfo);
 
-                if (CheckIsExists(entity))
+                if (await CheckIsExistsAsync(entity))
                 {
                     await UpdateAsync(entity);
                 }
@@ -180,7 +182,7 @@ namespace Mix.Heart.Repository
             {
                 BeginUow(uowInfo);
 
-                if (!CheckIsExists(entity))
+                if (!await CheckIsExistsAsync(entity))
                 {
                     await HandleExceptionAsync(new EntityNotFoundException(entity.Id.ToString()));
                     return;

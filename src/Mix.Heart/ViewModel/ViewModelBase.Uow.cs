@@ -8,7 +8,7 @@ using Mix.Heart.UnitOfWork;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
         private bool _isRoot;
 
@@ -21,7 +21,7 @@ namespace Mix.Heart.ViewModel
                 InitRootUow();
             }
             UowInfo.Begin();
-            Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey>(UowInfo);
+            Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey, TView>(UowInfo);
             Repository.SetUowInfo(UowInfo);
         }
 

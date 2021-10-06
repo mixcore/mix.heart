@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Mix.Heart.Entities;
-using Mix.Heart.Enums;
+﻿using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Helpers;
 using Mix.Heart.Infrastructure.Interfaces;
@@ -13,10 +11,7 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
-        where TPrimaryKey : IComparable
-        where TEntity : class, IEntity<TPrimaryKey>
-        where TDbContext : DbContext
+    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
         
         #region Async
@@ -91,7 +86,7 @@ namespace Mix.Heart.ViewModel
                     }
                 }
                 await Validate();
-                var entity = await ParseEntity(this);
+                var entity = await ParseEntity();
                 await Repository.SaveAsync(entity);
                 await CompleteUowAsync();
                 return entity.Id;
@@ -107,20 +102,24 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        // Override this method if need
+        #region virtual methods
+
+        // Override this method
         protected virtual async Task<TEntity> SaveHandlerAsync()
         {
-            var entity = await ParseEntity(this);
+            var entity = await ParseEntity();
             await Repository.SaveAsync(entity);
             await SaveEntityRelationshipAsync(entity);
             return entity;
         }
 
-        // Override this method if need
+        // Override this method
         protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity)
         {
             return Task.CompletedTask;
         }
+
+        #endregion
 
         #endregion
     }

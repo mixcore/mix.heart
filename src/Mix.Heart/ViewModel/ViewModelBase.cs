@@ -15,11 +15,12 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
         : IViewModel, IMixMediator
         where TPrimaryKey : IComparable
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
+        where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
         #region Properties
 
@@ -40,7 +41,7 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
 
-        protected static Repository<TDbContext, TEntity, TPrimaryKey> Repository { get; set; }
+        protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
         protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
 
         #endregion
@@ -50,11 +51,6 @@ namespace Mix.Heart.ViewModel
         public ViewModelBase()
         {
 
-        }
-
-        public ViewModelBase(Repository<TDbContext, TEntity, TPrimaryKey> repository)
-        {
-            Repository = repository;
         }
 
         public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo = null)
@@ -80,6 +76,12 @@ namespace Mix.Heart.ViewModel
         }
 
         #endregion
+
+        // use for public
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo = null)
+        {
+            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo);
+        }
 
         public virtual async Task Validate()
         {
@@ -109,15 +111,14 @@ namespace Mix.Heart.ViewModel
             return Task.CompletedTask;
         }
 
-        public virtual Task<TEntity> ParseEntity<T>(T view)
-            where T : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+        public virtual Task<TEntity> ParseEntity()
         {
             if (IsDefaultId(Id))
             {
                 InitDefaultValues();
             }
             var entity = Activator.CreateInstance<TEntity>();
-            MapObject(view, entity);
+            MapObject(this, entity);
             return Task.FromResult(entity);
         }
 
@@ -156,7 +157,7 @@ namespace Mix.Heart.ViewModel
         {
             await Repository.HandleExceptionAsync(ex);
         }
-        
+
         protected virtual void HandleException(Exception ex)
         {
             Repository.HandleException(ex);
