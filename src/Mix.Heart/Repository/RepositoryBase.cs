@@ -27,8 +27,7 @@ namespace Mix.Heart.Repository
         }
         public RepositoryBase(UnitOfWorkInfo unitOfWorkInfo)
         {
-            UowInfo = unitOfWorkInfo;
-            _isRoot = false;
+            SetUowInfo(unitOfWorkInfo);
         }
 
         public virtual void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)

@@ -28,9 +28,9 @@ namespace Mix.Heart.ViewModel
         public DateTime CreatedDateTime { get; set; }
         public DateTime? LastModified { get; set; }
         public string CreatedBy { get; set; }
-        public Guid? ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
         public int Priority { get; set; }
-        public MixContentStatus Status { get; set; }
+        public MixContentStatus Status { get; set; } = MixContentStatus.Published;
 
         public bool IsValid { get; set; }
 
@@ -78,9 +78,15 @@ namespace Mix.Heart.ViewModel
         #endregion
 
         // use for public
-        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo = null)
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo)
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo);
+        }
+
+        // use for public
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRootRepository(TDbContext context)
+        {
+            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context);
         }
 
         public virtual async Task Validate()

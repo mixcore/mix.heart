@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
@@ -24,7 +25,6 @@ namespace Mix.Heart.Repository
         where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
         public ViewQueryRepository(TDbContext dbContext) : base(dbContext) { }
-
         public ViewQueryRepository()
         {
         }
@@ -33,17 +33,16 @@ namespace Mix.Heart.Repository
         {
         }
 
+        protected string[] SelectedMembers { get { return FilterSelectedFields(); } }
+        protected string[] KeyMembers { get { return ReflectionHelper.GetKeyMembers(Context, typeof(TEntity)); } }
+
+        protected DbSet<TEntity> Table => Context.Set<TEntity>();
 
         #region IQueryable
 
-        public IQueryable<TEntity> GetAllQuery()
-        {
-            return Context.Set<TEntity>().AsQueryable().AsNoTracking();
-        }
-
         public IQueryable<TEntity> GetListQuery(Expression<Func<TEntity, bool>> predicate)
         {
-            return GetAllQuery().Where(predicate);
+            return Table.Where(predicate);
         }
 
         public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate,
@@ -55,10 +54,10 @@ namespace Mix.Heart.Repository
 
             switch (paging.SortDirection)
             {
-                case Enums.SortDirection.Asc:
+                case SortDirection.Asc:
                     query = Queryable.OrderBy(query, sortBy);
                     break;
-                case Enums.SortDirection.Desc:
+                case SortDirection.Desc:
                     query = Queryable.OrderByDescending(query, sortBy);
                     break;
             }
@@ -73,25 +72,25 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TEntity> GetByIdAsync(TPrimaryKey id)
         {
-            return await Context.Set<TEntity>().FindAsync(id);
+            return await Table.SelectMembers(SelectedMembers).SingleAsync(m => m.Id.Equals(id));
         }
         #endregion
 
         public virtual async Task<bool> CheckIsExistsAsync(TEntity entity)
         {
-            return await GetAllQuery().AnyAsync(e => e.Id.Equals(entity.Id));
+            return await Table.AnyAsync(e => e.Id.Equals(entity.Id));
         }
 
         public virtual async Task<bool> CheckIsExistsAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            return await GetAllQuery().AnyAsync(predicate);
+            return await Table.AnyAsync(predicate);
         }
 
         #region View Async
 
         public virtual async Task<TView> GetSingleAsync(TPrimaryKey id)
         {
-            var entity = await Context.Set<TEntity>().FindAsync(id);
+            var entity = await GetByIdAsync(id);
             if (entity != null)
             {
                 return await BuildViewModel(entity);
@@ -101,7 +100,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            var entity = await GetAllQuery().SingleOrDefaultAsync(predicate);
+            var entity = await Table.SingleOrDefaultAsync(predicate);
             if (entity != null)
             {
                 var result = await BuildViewModel(entity);
@@ -134,6 +133,13 @@ namespace Mix.Heart.Repository
 
         #region Helper
         #region Private methods
+
+        private string[] FilterSelectedFields()
+        {
+            var viewProperties = typeof(TView).GetProperties();
+            var modelProperties = typeof(TEntity).GetProperties();
+            return viewProperties.Where(p => modelProperties.Any(m => m.Name == p.Name)).Select(p => p.Name).ToArray();
+        }
 
         protected virtual Task<TView> BuildViewModel(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
@@ -236,8 +242,8 @@ namespace Mix.Heart.Repository
         }
 
         private IViewModel GetCachedData(
-            TEntity entity, 
-            ViewQueryRepository<TDbContext, TEntity, TPrimaryKey, TView> repository, 
+            TEntity entity,
+            ViewQueryRepository<TDbContext, TEntity, TPrimaryKey, TView> repository,
             string[] keys)
         {
             throw new NotImplementedException();

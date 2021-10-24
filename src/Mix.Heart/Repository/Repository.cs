@@ -30,7 +30,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<int> MaxAsync(Expression<Func<TEntity, int>> predicate)
         {
-            return await GetAllQuery().MaxAsync(predicate);
+            return await Table.MaxAsync(predicate);
         }
 
         public virtual async Task CreateAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
@@ -132,14 +132,14 @@ namespace Mix.Heart.Repository
             try
             {
                 BeginUow(uowInfo);
-                var entity = await GetSingleAsync(predicate);
+                var entity = Context.Set<TEntity>().Single(predicate);
                 if (entity == null)
                 {
                     await HandleExceptionAsync(new EntityNotFoundException());
                     return;
                 }
 
-                Context.Entry(entity).State = EntityState.Deleted;
+                Context.Set<TEntity>().Remove(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
                 await CompleteUowAsync();
             }

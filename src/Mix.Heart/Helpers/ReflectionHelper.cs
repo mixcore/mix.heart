@@ -14,6 +14,32 @@ namespace Mix.Heart.Helpers
 {
     public class ReflectionHelper
     {
+        public static Expression<Func<TEntity, bool>> BuildExpressionByKeys<TEntity, TDbContext>(
+            TEntity model, TDbContext context)
+            where TDbContext: DbContext
+        {
+            Expression<Func<TEntity, bool>> predicate = null;
+            foreach (var item in context.Model.FindEntityType(typeof(TEntity)).FindPrimaryKey().Properties)
+            {
+                var pre = GetExpression<TEntity>(
+                        item.Name,
+                        GetPropertyValue<TEntity>(model, item.Name),
+                        ExpressionMethod.Eq);
+                predicate =
+                    predicate == null ? pre
+                    : predicate.AndAlso(pre);
+            }
+            return predicate;
+        }
+
+        public static string[] GetKeyMembers<TEntity>(TEntity model)
+            where TEntity: IModel
+        {
+            return model.FindEntityType(typeof(TEntity))
+                .FindPrimaryKey().Properties.Select(x => x.Name)
+                .ToArray();
+        }
+
         public static Type GetPropertyType(Type type, string name)
         {
             Type fieldPropertyType;
@@ -35,6 +61,19 @@ namespace Mix.Heart.Helpers
                 fieldPropertyType = fieldInfo.FieldType;
             }
             return fieldPropertyType;
+        }
+
+        public static object GetPropertyValue<T>(T data, string fieldName)
+        {
+            var prop = data.GetType().GetProperty(fieldName.ToTitleCase());
+            if (prop != null)
+            {
+                // System.ComponentModel.TypeConverter conv =
+                // System.ComponentModel.TypeDescriptor.GetConverter(prop.PropertyType);
+                // var obj = conv.ConvertFrom();
+                return prop.GetValue(data);
+            }
+            return default;
         }
 
         /// <summary>
@@ -66,24 +105,9 @@ namespace Mix.Heart.Helpers
             }
         }
 
-        public static object GetPropertyValue<T>(T data, string fieldName) where T
-            : class
-        {
-            var prop = data.GetType().GetProperty(fieldName.ToTitleCase());
-            if (prop != null)
-            {
-                // System.ComponentModel.TypeConverter conv =
-                // System.ComponentModel.TypeDescriptor.GetConverter(prop.PropertyType);
-                // var obj = conv.ConvertFrom();
-                return prop.GetValue(data);
-            }
-            return default;
-        }
-
         public static Expression<Func<T, bool>>
         GetExpression<T>(string propertyName, object propertyValue,
-                         ExpressionMethod kind, string name = "model") where T
-            : class
+                         ExpressionMethod kind, string name = "model")
         {
             Type type = typeof(T);
             var par = Expression.Parameter(type, name);
