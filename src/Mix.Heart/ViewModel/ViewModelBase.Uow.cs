@@ -35,7 +35,7 @@ namespace Mix.Heart.ViewModel
         }
 
 
-        private void InitRootUow()
+        protected virtual void InitRootUow()
         {
             UowInfo ??= new UnitOfWorkInfo(InitDbContext());
             _isRoot = true;
@@ -60,7 +60,7 @@ namespace Mix.Heart.ViewModel
             _isRoot = false;
         }
 
-        private TDbContext InitDbContext()
+        protected virtual TDbContext InitDbContext()
         {
             var dbContextType = typeof(TDbContext);
             var contextCtorInfo = dbContextType.GetConstructor(new Type[] { });

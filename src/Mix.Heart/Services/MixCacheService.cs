@@ -4,12 +4,11 @@ using Mix.Heart.Entities.Cache;
 using Mix.Heart.Enums;
 using Mix.Heart.Model;
 using Mix.Heart.Models;
-using Mix.Heart.ViewModel;
+using Mix.Heart.Repository;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Services
@@ -19,41 +18,26 @@ namespace Mix.Heart.Services
         private readonly IConfiguration _configuration;
         private readonly MixFileService _fileService;
         private readonly MixHeartConfigurationModel _configs;
+        private readonly EntityRepository<MixCacheDbContext, MixCache, string> _repository;
 
-        public MixCacheService(IConfiguration configuration, MixFileService fileService)
+        public MixCacheService(
+            IConfiguration configuration,
+            MixFileService fileService,
+            EntityRepository<MixCacheDbContext, MixCache, string> repository)
         {
             _configuration = configuration;
             _fileService = fileService;
             _configs = JObject.Parse(
                         _configuration.GetSection("MixHeart").Value)
                         .ToObject<MixHeartConfigurationModel>();
+            _repository = repository;
         }
 
         static MixCacheService()
-        {            
-        }
-
-        public MixCacheDbContext GetCacheDbContext()
         {
-            switch (_configs.DbProvider)
-            {
-                case MixCacheDbProvider.SQLSERVER:
-                    return new MsSqlCacheDbContext(_configuration);
-
-                case MixCacheDbProvider.MYSQL:
-                    return new MySqlCacheDbContext(_configuration);
-
-                case MixCacheDbProvider.SQLITE:
-                    return new SqliteCacheDbContext(_configuration);
-
-                case MixCacheDbProvider.POSGRES:
-                    return new PostgresCacheDbContext(_configuration);
-
-                default:
-                    return null;
-            }
         }
 
+       
         private bool SaveJson<T>(string key, T value, string folder)
         {
             try
@@ -76,12 +60,12 @@ namespace Mix.Heart.Services
             }
         }
 
-       
+
         public Task<T> GetAsync<T>(string key, string folder = null)
         {
             try
             {
-                switch (_configs.Mode)
+                switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
                         return GetFromDatabaseAsync<T>(key, folder);
@@ -125,24 +109,22 @@ namespace Mix.Heart.Services
         {
             try
             {
-                using (var ctx = new MixCacheDbContext(_configuration))
+                string id = $"{folder}/{key}";
+                var cache = await _repository.GetByIdAsync(id);
+                if (cache != null)
                 {
-                    var cache = await ctx.MixCache.FirstOrDefaultAsync(m => m.Id == $"{folder}/{key}");
-                    if (cache != null)
+                    try
                     {
-                        try
-                        {
-                            JObject jobj = JObject.Parse(cache.Value);
-                            return jobj.ToObject<T>();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Write(ex);
-                            return default;
-                        }
+                        JObject jobj = JObject.Parse(cache.Value);
+                        return jobj.ToObject<T>();
                     }
-                    return default;
+                    catch (Exception ex)
+                    {
+                        Console.Write(ex);
+                        return default;
+                    }
                 }
+                return default;
             }
             catch (Exception ex)
             {
@@ -156,48 +138,44 @@ namespace Mix.Heart.Services
         {
             if (value != null)
             {
-                switch (_configs.Mode)
+                switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
                         await SaveDatabaseAsync(key, value, folder);
                         break;
                     case MixCacheMode.JSON:
                     default:
-                         SaveJson(key, value, folder);
+                        SaveJson(key, value, folder);
                         break;
                 }
             }
             return true;
         }
 
-        private static async Task<bool> SaveDatabaseAsync<T>(string key, T value, string folder)
+        private async Task<bool> SaveDatabaseAsync<T>(string key, T value, string folder)
         {
             if (value != null)
             {
                 var jobj = JObject.FromObject(value);
 
-                var cache = new MixCacheViewModel()
+                var cache = new MixCache()
                 {
                     Id = $"{folder}/{key}",
                     Value = jobj.ToString(Formatting.None),
                     CreatedDateTime = DateTime.UtcNow
                 };
 
-                await cache.SaveAsync();
+                await _repository.SaveAsync(cache);
             }
             return true;
         }
 
         public async Task RemoveCacheAsync()
         {
-            switch (_configs.Mode)
+            switch (_configs.CacheMode)
             {
                 case MixCacheMode.DATABASE:
-                    using (var ctx = new MixCacheDbContext(_configuration))
-                    {
-                        ctx.MixCache.RemoveRange(ctx.MixCache);
-                        await ctx.SaveChangesAsync();
-                    }
+                    await _repository.DeleteManyAsync(m => true);
                     break;
                 case MixCacheMode.JSON:
                 default:
@@ -206,21 +184,18 @@ namespace Mix.Heart.Services
             }
         }
 
-        public Task RemoveCacheAsync(string folder)
+        public async Task RemoveCacheAsync(string folder)
         {
-            switch (_configs.Mode)
+            switch (_configs.CacheMode)
             {
                 case MixCacheMode.DATABASE:
-                    using (var ctx = new MixCacheDbContext(_configuration))
-                    {
-                        ctx.MixCache.RemoveRange(ctx.MixCache.Where(m => EF.Functions.Like(m.Id, $"%{folder}%")));
-                        ctx.SaveChangesAsync();
-                        return Task.CompletedTask;
-                    }
+                    await _repository.DeleteManyAsync(m => EF.Functions.Like(m.Id, $"%{folder}%"));
+                    break;
                 case MixCacheMode.JSON:
                 default:
-                    return Task.FromResult(_fileService.DeleteFolder(
-                        $"{_configs.CacheFolder}/{folder}"));
+                    _fileService.DeleteFolder(
+                        $"{_configs.CacheFolder}/{folder}");
+                    break;
             }
         }
 
