@@ -56,6 +56,7 @@ namespace Mix.Heart.ViewModel
         public ViewModelBase(TDbContext context)
         {
             UowInfo = new UnitOfWorkInfo(context);
+            _isRoot = true;
         }
 
         public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo = null)
