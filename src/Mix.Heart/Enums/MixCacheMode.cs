@@ -1,8 +1,8 @@
 ﻿namespace Mix.Heart.Enums
 {
-    public enum MixCacheMode
-    {
-        JSON,
-        DATABASE,
-    }
+public enum MixCacheMode
+{
+    JSON,
+    DATABASE,
+}
 }

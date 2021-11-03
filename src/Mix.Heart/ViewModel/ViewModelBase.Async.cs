@@ -11,116 +11,116 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
+public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
+{
+
+    #region Async
+
+
+    public async Task DeleteAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
     {
-        
-        #region Async
-
-
-        public async Task DeleteAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+        try
         {
-            try
-            {
-                BeginUow(uowInfo, consumer);
-                await DeleteHandlerAsync();
-                await PublishAsync(this, MixViewModelAction.Delete, true);
-                await CompleteUowAsync();
-            }
-            catch (Exception ex)
-            {
-                await HandleExceptionAsync(ex);
-            }
-            finally
-            {
-                await CloseUowAsync();
-            }
+            BeginUow(uowInfo, consumer);
+            await DeleteHandlerAsync();
+            await PublishAsync(this, MixViewModelAction.Delete, true);
+            await CompleteUowAsync();
         }
-
-        protected virtual async Task DeleteHandlerAsync()
+        catch (Exception ex)
         {
-            await Repository.DeleteAsync(Id);
+            await HandleExceptionAsync(ex);
         }
-
-        public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+        finally
         {
-            try
+            await CloseUowAsync();
+        }
+    }
+
+    protected virtual async Task DeleteHandlerAsync()
+    {
+        await Repository.DeleteAsync(Id);
+    }
+
+    public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+    {
+        try
+        {
+            BeginUow(uowInfo, consumer);
+            await Validate();
+            if (!IsValid)
             {
-                BeginUow(uowInfo, consumer);
-                await Validate();
-                if (!IsValid)
+                await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
+            }
+            var entity = await SaveHandlerAsync();
+            await PublishAsync(this, MixViewModelAction.Save, true);
+            await CompleteUowAsync();
+            return entity.Id;
+        }
+        catch (Exception ex)
+        {
+            await HandleExceptionAsync(ex);
+            return default;
+        }
+        finally
+        {
+            await CloseUowAsync();
+        }
+    }
+
+    public async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties, UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+    {
+        try
+        {
+            BeginUow(uowInfo, consumer);
+            foreach (var property in properties)
+            {
+                // check if field name is exist
+                var lamda = ReflectionHelper.GetLambda<TEntity>(property.PropertyName);
+                if (lamda != null)
                 {
-                    await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
+                    ReflectionHelper.SetPropertyValue(this, property);
                 }
-                var entity = await SaveHandlerAsync();
-                await PublishAsync(this, MixViewModelAction.Save, true);
-                await CompleteUowAsync();
-                return entity.Id;
-            }
-            catch (Exception ex)
-            {
-                await HandleExceptionAsync(ex);
-                return default;
-            }
-            finally
-            {
-                await CloseUowAsync();
-            }
-        }
-
-        public async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties, UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
-        {
-            try
-            {
-                BeginUow(uowInfo, consumer);
-                foreach (var property in properties)
+                else
                 {
-                    // check if field name is exist
-                    var lamda = ReflectionHelper.GetLambda<TEntity>(property.PropertyName);
-                    if (lamda != null)
-                    {
-                        ReflectionHelper.SetPropertyValue(this, property);
-                    }
-                    else
-                    {
-                        await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
-                    }
+                    await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
                 }
-                await Validate();
-                var entity = await ParseEntity();
-                await Repository.SaveAsync(entity);
-                await CompleteUowAsync();
-                return entity.Id;
             }
-            catch (Exception ex)
-            {
-                await HandleExceptionAsync(ex);
-                return default;
-            }
-            finally
-            {
-                await CloseUowAsync();
-            }
-        }
-
-        #region virtual methods
-
-        // Override this method
-        protected virtual async Task<TEntity> SaveHandlerAsync()
-        {
+            await Validate();
             var entity = await ParseEntity();
             await Repository.SaveAsync(entity);
-            await SaveEntityRelationshipAsync(entity);
-            return entity;
+            await CompleteUowAsync();
+            return entity.Id;
         }
-
-        // Override this method
-        protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity)
+        catch (Exception ex)
         {
-            return Task.CompletedTask;
+            await HandleExceptionAsync(ex);
+            return default;
         }
-
-        #endregion
-
-        #endregion
+        finally
+        {
+            await CloseUowAsync();
+        }
     }
+
+    #region virtual methods
+
+    // Override this method
+    protected virtual async Task<TEntity> SaveHandlerAsync()
+    {
+        var entity = await ParseEntity();
+        await Repository.SaveAsync(entity);
+        await SaveEntityRelationshipAsync(entity);
+        return entity;
+    }
+
+    // Override this method
+    protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity)
+    {
+        return Task.CompletedTask;
+    }
+
+    #endregion
+
+    #endregion
+}
 }

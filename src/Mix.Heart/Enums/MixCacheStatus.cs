@@ -1,8 +1,8 @@
 ﻿namespace Mix.Heart.Enums
 {
-    public enum MixCacheStatus
-    {
-        Published,
-        Deleted
-    }
+public enum MixCacheStatus
+{
+    Published,
+    Deleted
+}
 }

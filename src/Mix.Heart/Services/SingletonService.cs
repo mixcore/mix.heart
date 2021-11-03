@@ -2,36 +2,36 @@
 
 namespace Mix.Heart.Services
 {
-    public class SingletonService<T>
-        where T: class
+public class SingletonService<T>
+    where T: class
+{
+    /// <summary>
+    /// The synchronize root
+    /// </summary>
+    protected static readonly object syncRoot = new object();
+
+    /// <summary>
+    /// The instance
+    /// </summary>
+    private static T instance;
+
+    public static T Instance
     {
-        /// <summary>
-        /// The synchronize root
-        /// </summary>
-        protected static readonly object syncRoot = new object();
-
-        /// <summary>
-        /// The instance
-        /// </summary>
-        private static T instance;
-
-        public static T Instance
+        get
         {
-            get
+            if (instance == null)
             {
-                if (instance == null)
+                lock (syncRoot)
                 {
-                    lock (syncRoot)
+                    if (instance == null)
                     {
-                        if (instance == null)
-                        {
-                            instance = (T)Activator.CreateInstance(typeof(T));
-                        }
+                        instance = (T)Activator.CreateInstance(typeof(T));
                     }
                 }
-
-                return instance;
             }
+
+            return instance;
         }
     }
+}
 }
