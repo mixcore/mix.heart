@@ -107,6 +107,11 @@ namespace Mix.Heart.ViewModel
             }
         }
 
+        public void SetDbContext(TDbContext context)
+        {
+            UowInfo = new UnitOfWorkInfo(context);
+        }
+
         public void SetConsumer(IMixMediator consumer)
         {
             _consumer = consumer;
