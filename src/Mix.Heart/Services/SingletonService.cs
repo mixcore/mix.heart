@@ -1,10 +1,8 @@
 ﻿using System;
 
-namespace Mix.Heart.Services
-{
-public class SingletonService<T>
-    where T: class
-{
+namespace Mix.Heart.Services {
+  public class SingletonService<T>
+      where T : class {
     /// <summary>
     /// The synchronize root
     /// </summary>
@@ -15,23 +13,18 @@ public class SingletonService<T>
     /// </summary>
     private static T instance;
 
-    public static T Instance
-    {
-        get
-        {
-            if (instance == null)
-            {
-                lock (syncRoot)
-                {
-                    if (instance == null)
-                    {
-                        instance = (T)Activator.CreateInstance(typeof(T));
-                    }
-                }
+    public static T Instance {
+      get {
+        if (instance == null) {
+          lock (syncRoot) {
+            if (instance == null) {
+              instance = (T)Activator.CreateInstance(typeof(T));
             }
-
-            return instance;
+          }
         }
+
+        return instance;
+      }
     }
-}
+  }
 }
