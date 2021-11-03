@@ -15,11 +15,12 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
         : IViewModel, IMixMediator
         where TPrimaryKey : IComparable
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
+        where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
         #region Properties
 
@@ -27,9 +28,9 @@ namespace Mix.Heart.ViewModel
         public DateTime CreatedDateTime { get; set; }
         public DateTime? LastModified { get; set; }
         public string CreatedBy { get; set; }
-        public Guid? ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
         public int Priority { get; set; }
-        public MixContentStatus Status { get; set; }
+        public MixContentStatus Status { get; set; } = MixContentStatus.Published;
 
         public bool IsValid { get; set; }
 
@@ -40,7 +41,7 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
 
-        protected static Repository<TDbContext, TEntity, TPrimaryKey> Repository { get; set; }
+        protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
         protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
 
         #endregion
@@ -51,10 +52,11 @@ namespace Mix.Heart.ViewModel
         {
 
         }
-
-        public ViewModelBase(Repository<TDbContext, TEntity, TPrimaryKey> repository)
+        
+        public ViewModelBase(TDbContext context)
         {
-            Repository = repository;
+            UowInfo = new UnitOfWorkInfo(context);
+            _isRoot = true;
         }
 
         public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo = null)
@@ -81,6 +83,18 @@ namespace Mix.Heart.ViewModel
 
         #endregion
 
+        // use for public
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo)
+        {
+            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo);
+        }
+
+        // use for public
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRootRepository(TDbContext context)
+        {
+            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context);
+        }
+
         public virtual async Task Validate()
         {
             var validateContext = new System.ComponentModel.DataAnnotations.ValidationContext(this, serviceProvider: null, items: null);
@@ -91,6 +105,11 @@ namespace Mix.Heart.ViewModel
             {
                 await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
             }
+        }
+
+        public void SetDbContext(TDbContext context)
+        {
+            UowInfo = new UnitOfWorkInfo(context);
         }
 
         public void SetConsumer(IMixMediator consumer)
@@ -109,15 +128,14 @@ namespace Mix.Heart.ViewModel
             return Task.CompletedTask;
         }
 
-        public virtual Task<TEntity> ParseEntity<T>(T view)
-            where T : ViewModelBase<TDbContext, TEntity, TPrimaryKey>
+        public virtual Task<TEntity> ParseEntity()
         {
             if (IsDefaultId(Id))
             {
                 InitDefaultValues();
             }
             var entity = Activator.CreateInstance<TEntity>();
-            MapObject(view, entity);
+            MapObject(this, entity);
             return Task.FromResult(entity);
         }
 
@@ -156,7 +174,7 @@ namespace Mix.Heart.ViewModel
         {
             await Repository.HandleExceptionAsync(ex);
         }
-        
+
         protected virtual void HandleException(Exception ex)
         {
             Repository.HandleException(ex);

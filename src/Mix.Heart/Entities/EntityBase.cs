@@ -10,7 +10,7 @@ namespace Mix.Heart.Entities
         public DateTime CreatedDateTime { get; set; }
         public DateTime? LastModified { get; set; }
         public string CreatedBy { get; set; }
-        public Guid? ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
         public int Priority { get; set; }
         public MixContentStatus Status { get; set; }
     }

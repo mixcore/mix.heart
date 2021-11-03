@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Mix.Heart.Entities;
 using Mix.Heart.Repository;
-using Mix.Heart.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Mix.Heart.Extensions
 {
@@ -13,7 +11,7 @@ namespace Mix.Heart.Extensions
         public static IServiceCollection AddRepositories(this IServiceCollection services, IEnumerable<Type> entities, Type dbContextType)
         {
             var queryRepo = typeof(QueryRepository<,,>);
-            var commandRepo = typeof(Repository<,,>);
+            var commandRepo = typeof(EntityRepository<,,>);
             foreach (var candidate in entities)
             {
                 Type keyType = candidate.IsSubclassOf(typeof(EntityBase<int>)) ? typeof(int) : typeof(Guid);
