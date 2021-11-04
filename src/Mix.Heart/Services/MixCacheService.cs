@@ -35,47 +35,6 @@ namespace Mix.Heart.Services
         {
         }
 
-        #region MyRegion
-
-        //protected virtual async Task<TView> GetCachedDataAsync(TEntity model)
-        //{
-        //    if (model != null)
-        //    {
-        //        string key = GetCachedKey(model);
-        //        var data = await GetAsync<TView>(key);
-        //        if (data != null)
-        //        {
-        //            await data.ExpandView(UowInfo);
-        //            return data;
-        //        }
-        //        else
-        //        {
-        //            data = await GetSingleAsync(model.Id, false);
-        //            if (data != null)
-        //            {
-        //                await _cacheService.SetAsync(key, data);
-        //            }
-        //            return data;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
-
-        //protected string GetCachedKey(TEntity model)
-        //{
-        //    var result = string.Empty;
-        //    foreach (var key in KeyMembers)
-        //    {
-        //        result += $"_{ReflectionHelper.GetPropertyValue(model, key)}";
-        //    }
-        //    return result;
-        //}
-        #endregion
-
-
         private bool SaveJson<T>(string key, T value, Type dataType)
         {
             try
@@ -179,7 +138,7 @@ namespace Mix.Heart.Services
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
-                        await SaveDatabaseAsync(key, value, dataType.FullName);
+                        await SaveDatabaseAsync(key, value, dataType);
                         break;
                     case MixCacheMode.JSON:
                     default:
@@ -190,7 +149,7 @@ namespace Mix.Heart.Services
             return true;
         }
 
-        private async Task<bool> SaveDatabaseAsync<T>(string key, T value, string folder)
+        private async Task<bool> SaveDatabaseAsync<T>(string key, T value, Type dataType)
         {
             if (value != null)
             {
@@ -198,7 +157,7 @@ namespace Mix.Heart.Services
 
                 var cache = new MixCache()
                 {
-                    Id = $"{folder}/{key}",
+                    Id = $"{dataType.FullName}_{key}",
                     Value = jobj.ToString(Formatting.None),
                     CreatedDateTime = DateTime.UtcNow
                 };
@@ -222,29 +181,19 @@ namespace Mix.Heart.Services
             }
         }
 
-        public async Task RemoveCacheAsync(string folder)
+        public async Task RemoveCacheAsync(string key, Type dataType)
         {
             switch (_configs.CacheMode)
             {
                 case MixCacheMode.DATABASE:
-                    await _repository.DeleteManyAsync(m => EF.Functions.Like(m.Id, $"%{folder}%"));
+                    await _repository.DeleteAsync(m => m.Id == $"{dataType.FullName}_{key}");
                     break;
                 case MixCacheMode.JSON:
                 default:
-                    _fileService.DeleteFolder(
-                        $"{_configs.CacheFolder}/{folder}");
+                    _fileService.DeleteFile(
+                        $"{_configs.CacheFolder}/{dataType.FullName}/{key}.json");
                     break;
             }
-        }
-
-        public Task RemoveCacheAsync(Type type, string key = null)
-        {
-            string path = $"{_configs.CacheFolder}/{type.FullName}/";
-            if (!string.IsNullOrEmpty(key))
-            {
-                path += $"/{key}";
-            }
-            return Task.FromResult(_fileService.EmptyFolder(path));
         }
     }
 }

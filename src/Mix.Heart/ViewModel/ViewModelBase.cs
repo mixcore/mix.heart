@@ -5,6 +5,7 @@ using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Repository;
+using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -52,18 +53,18 @@ namespace Mix.Heart.ViewModel
         {
 
         }
-        
+
         public ViewModelBase(TDbContext context)
         {
             UowInfo = new UnitOfWorkInfo(context);
             _isRoot = true;
         }
 
-        public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo = null)
+        public ViewModelBase(TEntity entity, MixCacheService cacheService = null, UnitOfWorkInfo uowInfo = null)
         {
             SetUowInfo(uowInfo);
             ParseView(entity);
-            ExpandView(UowInfo);
+            ExpandView(cacheService, UowInfo);
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
@@ -121,12 +122,12 @@ namespace Mix.Heart.ViewModel
             return (TEntity)Activator.CreateInstance(classType);
         }
 
-        public virtual Task ExpandView(UnitOfWorkInfo uowInfo)
+        public virtual Task ExpandView(MixCacheService cacheService = null, UnitOfWorkInfo uowInfo = null)
         {
             return Task.CompletedTask;
         }
 
-        public virtual Task<TEntity> ParseEntity()
+        public virtual Task<TEntity> ParseEntity(MixCacheService cacheService = null)
         {
             if (IsDefaultId(Id))
             {

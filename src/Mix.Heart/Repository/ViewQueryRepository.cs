@@ -107,12 +107,12 @@ namespace Mix.Heart.Repository
         }
 
         public virtual async Task<List<TView>> GetListAsync(
-                Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
+                Expression<Func<TEntity, bool>> predicate,
+                MixCacheService cacheService = null,
+                UnitOfWorkInfo uowInfo = null)
         {
-            BeginUow(uowInfo);
             var query = GetListQuery(predicate);
-            var result = await ToListViewModelAsync(query);
-            await CloseUowAsync();
+            var result = await ToListViewModelAsync(query, cacheService);
             return result;
         }
 
@@ -148,13 +148,14 @@ namespace Mix.Heart.Repository
         }
 
         public async Task<List<TView>> ToListViewModelAsync(
-           IQueryable<TEntity> source)
+           IQueryable<TEntity> source,
+            MixCacheService cacheService = null)
         {
             try
             {
                 var entities = await source.SelectMembers(SelectedMembers).ToListAsync();
 
-                List<TView> data = await ParseEntitiesAsync(entities);
+                List<TView> data = await ParseEntitiesAsync(entities, cacheService);
 
                 return data;
             }
@@ -211,21 +212,23 @@ namespace Mix.Heart.Repository
 
             if (result == null)
             {
-                result = GetViewModel(entity);
+                result = GetViewModel(entity, cacheService);
+
                 if (result != null && cacheService != null)
                 {
                     await cacheService.SetAsync(entity.Id.ToString(), result, typeof(TView));
                 }
             }
+            await result.ExpandView(cacheService, UowInfo);
             return result;
 
         }
 
-        protected TView GetViewModel(TEntity entity)
+        protected TView GetViewModel(TEntity entity, MixCacheService cacheService = null)
         {
             ConstructorInfo classConstructor = typeof(TView).GetConstructor(
-                new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
-            return (TView)classConstructor.Invoke(new object[] { entity, UowInfo });
+                new Type[] { typeof(TEntity), typeof(MixCacheService), typeof(UnitOfWorkInfo) });
+            return (TView)classConstructor.Invoke(new object[] { entity, cacheService, UowInfo });
         }
 
         #endregion
