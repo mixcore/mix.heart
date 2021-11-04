@@ -17,7 +17,7 @@ namespace Mix.Heart.Services
     {
         private readonly IConfiguration _configuration;
         private readonly MixFileService _fileService;
-        private readonly MixHeartConfigurationModel _configs;
+        private readonly MixHeartConfigurationModel _configs = new MixHeartConfigurationModel();
         private readonly EntityRepository<MixCacheDbContext, MixCache, string> _repository;
 
         public MixCacheService(
@@ -27,9 +27,7 @@ namespace Mix.Heart.Services
         {
             _configuration = configuration;
             _fileService = fileService;
-            _configs = JObject.Parse(
-                        _configuration.GetSection("MixHeart").Value)
-                        .ToObject<MixHeartConfigurationModel>();
+            _configuration.GetSection("MixHeart").Bind(_configs);
             _repository = repository;
         }
 
@@ -37,8 +35,48 @@ namespace Mix.Heart.Services
         {
         }
 
-       
-        private bool SaveJson<T>(string key, T value, string folder)
+        #region MyRegion
+
+        //protected virtual async Task<TView> GetCachedDataAsync(TEntity model)
+        //{
+        //    if (model != null)
+        //    {
+        //        string key = GetCachedKey(model);
+        //        var data = await GetAsync<TView>(key);
+        //        if (data != null)
+        //        {
+        //            await data.ExpandView(UowInfo);
+        //            return data;
+        //        }
+        //        else
+        //        {
+        //            data = await GetSingleAsync(model.Id, false);
+        //            if (data != null)
+        //            {
+        //                await _cacheService.SetAsync(key, data);
+        //            }
+        //            return data;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return null;
+        //    }
+        //}
+
+        //protected string GetCachedKey(TEntity model)
+        //{
+        //    var result = string.Empty;
+        //    foreach (var key in KeyMembers)
+        //    {
+        //        result += $"_{ReflectionHelper.GetPropertyValue(model, key)}";
+        //    }
+        //    return result;
+        //}
+        #endregion
+
+
+        private bool SaveJson<T>(string key, T value, Type dataType)
         {
             try
             {
@@ -48,7 +86,7 @@ namespace Mix.Heart.Services
                 {
                     Filename = key.ToLower(),
                     Extension = ".json",
-                    FileFolder = $"{_configs.CacheFolder}/{folder}",
+                    FileFolder = $"{_configs.CacheFolder}/{dataType.FullName}",
                     Content = jobj.ToString(Formatting.None)
                 };
                 return MixFileService.Instance.SaveFile(cacheFile);
@@ -61,17 +99,17 @@ namespace Mix.Heart.Services
         }
 
 
-        public Task<T> GetAsync<T>(string key, string folder = null)
+        public Task<T> GetAsync<T>(string key, Type dataType)
         {
             try
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
-                        return GetFromDatabaseAsync<T>(key, folder);
+                        return GetFromDatabaseAsync<T>(key, dataType.FullName);
                     case MixCacheMode.JSON:
                     default:
-                        return Task.FromResult(GetFromJson<T>(key, folder));
+                        return Task.FromResult(GetFromJson<T>(key, dataType.FullName));
                 }
             }
             catch (Exception ex)
@@ -134,18 +172,18 @@ namespace Mix.Heart.Services
             }
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value, string folder = null)
+        public async Task<bool> SetAsync<T>(string key, T value, Type dataType)
         {
             if (value != null)
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
-                        await SaveDatabaseAsync(key, value, folder);
+                        await SaveDatabaseAsync(key, value, dataType.FullName);
                         break;
                     case MixCacheMode.JSON:
                     default:
-                        SaveJson(key, value, folder);
+                        SaveJson(key, value, dataType);
                         break;
                 }
             }

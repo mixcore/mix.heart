@@ -83,13 +83,11 @@ namespace Mix.Heart.ViewModel
 
         #endregion
 
-        // use for public
         public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo)
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo);
         }
 
-        // use for public
         public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRootRepository(TDbContext context)
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context);

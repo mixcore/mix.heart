@@ -22,10 +22,6 @@ namespace Mix.Heart.Repository
         public Repository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
         public Repository(TDbContext dbContext) : base(dbContext) { }
 
-        public Repository()
-        {
-        }
-
         #region Async
 
         public virtual async Task<int> MaxAsync(Expression<Func<TEntity, int>> predicate)

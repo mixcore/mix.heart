@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
 using Mix.Heart.Helpers;
 using Mix.Heart.Model;
+using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
 using Mix.Heart.ViewModel;
 using System;
@@ -24,10 +24,8 @@ namespace Mix.Heart.Repository
         where TPrimaryKey : IComparable
         where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
+
         public ViewQueryRepository(TDbContext dbContext) : base(dbContext) { }
-        public ViewQueryRepository()
-        {
-        }
 
         public ViewQueryRepository(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
         {
@@ -72,7 +70,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TEntity> GetByIdAsync(TPrimaryKey id)
         {
-            return await Table.SelectMembers(SelectedMembers).SingleAsync(m => m.Id.Equals(id));
+            return await Table.SelectMembers(SelectedMembers).SingleOrDefaultAsync(m => m.Id.Equals(id));
         }
         #endregion
 
@@ -88,23 +86,22 @@ namespace Mix.Heart.Repository
 
         #region View Async
 
-        public virtual async Task<TView> GetSingleAsync(TPrimaryKey id)
+        public virtual async Task<TView> GetSingleAsync(TPrimaryKey id, MixCacheService cacheService = null)
         {
             var entity = await GetByIdAsync(id);
             if (entity != null)
             {
-                return await BuildViewModel(entity);
+                return await ParseEntityAsync(entity, cacheService);
             }
             throw new MixException(MixErrorStatus.NotFound, id);
         }
 
-        public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate, MixCacheService cacheService = null)
         {
             var entity = await Table.SingleOrDefaultAsync(predicate);
             if (entity != null)
             {
-                var result = await BuildViewModel(entity);
-                return result;
+                return await ParseEntityAsync(entity, cacheService);
             }
             return null;
         }
@@ -120,11 +117,14 @@ namespace Mix.Heart.Repository
         }
 
         public virtual async Task<PagingResponseModel<TView>> GetPagingAsync(
-            Expression<Func<TEntity, bool>> predicate, IPagingModel paging, UnitOfWorkInfo uowInfo = null)
+            Expression<Func<TEntity, bool>> predicate,
+            IPagingModel paging,
+            MixCacheService cacheService = null,
+            UnitOfWorkInfo uowInfo = null)
         {
             BeginUow(uowInfo);
             var query = GetPagingQuery(predicate, paging);
-            return await ToPagingViewModelAsync(query, paging);
+            return await ToPagingViewModelAsync(query, paging, cacheService);
         }
 
         #endregion
@@ -148,34 +148,13 @@ namespace Mix.Heart.Repository
         }
 
         public async Task<List<TView>> ToListViewModelAsync(
-           IQueryable<TEntity> source,
-           bool isCache = false)
+           IQueryable<TEntity> source)
         {
             try
             {
-                var keys = ReflectionHelper.GetKeyMembers(Context, typeof(TEntity));
-                var members = isCache ? keys
-                                        : ReflectionHelper.FilterSelectedFields<TView, TEntity>();
-                var entities = await source.SelectMembers(members).ToListAsync();
+                var entities = await source.SelectMembers(SelectedMembers).ToListAsync();
 
-                List<TView> data = new List<TView>();
-                ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
-                foreach (var entity in entities)
-                {
-                    var view = await BuildViewModel(entity, UowInfo);
-                    data.Add(view);
-                }
-
-                // TODO: Handle cache service
-                //if (isCache)
-                //{
-                //    var lstView = GetListCachedData(entities, repository, keys);
-                //    result.Items = lstView;
-                //}
-                //else
-                //{
-                //    result.Items = ParseView(lsTEntity, context, transaction);
-                //}
+                List<TView> data = await ParseEntitiesAsync(entities);
 
                 return data;
             }
@@ -188,33 +167,12 @@ namespace Mix.Heart.Repository
         protected async Task<PagingResponseModel<TView>> ToPagingViewModelAsync(
             IQueryable<TEntity> source,
             IPagingModel pagingData,
-            bool isCache = false)
+            MixCacheService cacheService = null)
         {
             try
             {
-                var keys = ReflectionHelper.GetKeyMembers(Context, typeof(TEntity));
-                var members = isCache ? keys
-                                        : ReflectionHelper.FilterSelectedFields<TView, TEntity>();
-                var entities = await source.SelectMembers(members).ToListAsync();
-
-                List<TView> data = new List<TView>();
-                ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
-                foreach (var entity in entities)
-                {
-                    var view = (TView)classConstructor.Invoke(new object[] { entity, UowInfo });
-                    data.Add(view);
-                }
-
-                // TODO: Handle cache service
-                //if (isCache)
-                //{
-                //    var lstView = GetListCachedData(entities, repository, keys);
-                //    result.Items = lstView;
-                //}
-                //else
-                //{
-                //    result.Items = ParseView(lsTEntity, context, transaction);
-                //}
+                var entities = await GetEntities(source);
+                List<TView> data = await ParseEntitiesAsync(entities, cacheService);
 
                 return new PagingResponseModel<TView>(data, pagingData);
             }
@@ -224,30 +182,52 @@ namespace Mix.Heart.Repository
             }
         }
 
-        private List<TView> GetListCachedData(
-            List<TEntity> entities,
-            ViewQueryRepository<TDbContext, TEntity, TPrimaryKey, TView> repository,
-            params string[] keys)
+        protected async Task<List<TEntity>> GetEntities(IQueryable<TEntity> source)
         {
-            List<TView> result = new List<TView>();
+            return await source.SelectMembers(SelectedMembers).ToListAsync();
+        }
+
+
+
+        protected async Task<List<TView>> ParseEntitiesAsync(List<TEntity> entities, MixCacheService cacheService = null)
+        {
+            List<TView> data = new List<TView>();
+
             foreach (var entity in entities)
             {
-                TView data = (TView)GetCachedData(entity, repository, keys);
-                if (data != null)
+                var view = await ParseEntityAsync(entity, cacheService);
+                data.Add(view);
+            }
+            return data;
+        }
+
+        protected async Task<TView> ParseEntityAsync(TEntity entity, MixCacheService cacheService = null)
+        {
+            TView result = null;
+            if (cacheService != null)
+            {
+                result = await cacheService.GetAsync<TView>(entity.Id.ToString(), typeof(TView));
+            }
+
+            if (result == null)
+            {
+                result = GetViewModel(entity);
+                if (result != null && cacheService != null)
                 {
-                    result.Add(data);
+                    await cacheService.SetAsync(entity.Id.ToString(), result, typeof(TView));
                 }
             }
             return result;
+
         }
 
-        private IViewModel GetCachedData(
-            TEntity entity,
-            ViewQueryRepository<TDbContext, TEntity, TPrimaryKey, TView> repository,
-            string[] keys)
+        protected TView GetViewModel(TEntity entity)
         {
-            throw new NotImplementedException();
+            ConstructorInfo classConstructor = typeof(TView).GetConstructor(
+                new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
+            return (TView)classConstructor.Invoke(new object[] { entity, UowInfo });
         }
+
         #endregion
 
         protected LambdaExpression GetLambda(string propName,
