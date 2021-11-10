@@ -116,7 +116,8 @@ namespace Mix.Heart.Infrastructure.Repositories
             UnitOfWorkHelper<TDbContext>.InitTransaction(_context, _transaction, out TDbContext context, out IDbContextTransaction transaction, out bool isRoot);
             try
             {
-                TModel model = await context.Set<TModel>().AsNoTracking().SelectMembers(SelectedMembers).SingleOrDefaultAsync(predicate).ConfigureAwait(false);
+                TModel model = await context.Set<TModel>().AsNoTracking()
+                    .SelectMembers(SelectedMembers).SingleOrDefaultAsync(predicate).ConfigureAwait(false);
                 if (model != null)
                 {
                     context.Entry(model).State = EntityState.Detached;

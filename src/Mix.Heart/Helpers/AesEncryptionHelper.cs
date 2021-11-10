@@ -57,12 +57,19 @@ namespace Mix.Heart.Helpers
         {
             using (var aesAlg = Aes.Create())
             {
-                aesAlg.Mode = CipherMode.CBC;
-                aesAlg.Padding = PaddingMode.PKCS7;
-                using (var decryptor = aesAlg.CreateDecryptor(key, iv))
+                try
                 {
-                    byte[] encryptedBytes = Convert.FromBase64CharArray(cipherText.ToCharArray(), 0, cipherText.Length);
-                    return Encoding.UTF8.GetString(decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length));
+                    aesAlg.Mode = CipherMode.CBC;
+                    aesAlg.Padding = PaddingMode.PKCS7;
+                    using (var decryptor = aesAlg.CreateDecryptor(key, iv))
+                    {
+                        byte[] encryptedBytes = Convert.FromBase64CharArray(cipherText.ToCharArray(), 0, cipherText.Length);
+                        return Encoding.UTF8.GetString(decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length));
+                    }
+                }
+                catch
+                {
+                    return string.Empty;
                 }
             }
         }
