@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Mix.Heart.Enums;
 using Mix.Heart.Model;
-using Newtonsoft.Json.Linq;
 
 namespace Mix.Heart.Entities.Cache
 {
