@@ -1,4 +1,6 @@
-﻿namespace Mix.Heart.Models
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Mix.Heart.Models
 {
     public class FileModel
     {
@@ -37,6 +39,12 @@
 
         public FileModel()
         {
+        }
+        public FileModel(IFormFile file, string folder)
+        {
+            Filename = file.FileName[0..file.FileName.LastIndexOf('.')];
+            Extension = file.FileName[file.FileName.LastIndexOf('.')..];
+            FileFolder = folder;
         }
     }
 }
