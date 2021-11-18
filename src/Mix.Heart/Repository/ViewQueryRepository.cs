@@ -70,7 +70,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TEntity> GetByIdAsync(TPrimaryKey id)
         {
-            return await Table.SelectMembers(SelectedMembers).SingleOrDefaultAsync(m => m.Id.Equals(id));
+            return await Table.SelectMembers(SelectedMembers).AsNoTracking().SingleOrDefaultAsync(m => m.Id.Equals(id));
         }
         #endregion
 
@@ -98,7 +98,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate, MixCacheService cacheService = null)
         {
-            var entity = await Table.SingleOrDefaultAsync(predicate);
+            var entity = await Table.AsNoTracking().SingleOrDefaultAsync(predicate);
             if (entity != null)
             {
                 return await ParseEntityAsync(entity, cacheService);
@@ -153,7 +153,7 @@ namespace Mix.Heart.Repository
         {
             try
             {
-                var entities = await source.SelectMembers(SelectedMembers).ToListAsync();
+                var entities = await source.SelectMembers(SelectedMembers).AsNoTracking().ToListAsync();
 
                 List<TView> data = await ParseEntitiesAsync(entities, cacheService);
 
