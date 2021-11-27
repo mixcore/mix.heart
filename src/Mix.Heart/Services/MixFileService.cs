@@ -1,4 +1,5 @@
-﻿using Mix.Heart.Models;
+﻿using Microsoft.AspNetCore.Http;
+using Mix.Heart.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +21,6 @@ namespace Mix.Heart.Services
         }
 
         #region Read Files
-
         public FileModel GetFile(
             string name,
             string ext,
@@ -129,6 +129,36 @@ namespace Mix.Heart.Services
             catch
             {
                 return false;
+            }
+        }
+
+        public string SaveFile(IFormFile file, string fullPath)
+        {
+            try
+            {
+                if (file.Length > 0)
+                {
+                    CreateFolderIfNotExist(fullPath);
+                    string fileName = file.FileName;
+                    string fullPath2 = $"{fullPath}/{fileName}";
+                    if (File.Exists(fullPath2))
+                    {
+                        DeleteFile(fullPath2);
+                    }
+
+                    using (FileStream target = new FileStream(fullPath2, FileMode.Create))
+                    {
+                        file.CopyTo(target);
+                    }
+
+                    return fileName;
+                }
+
+                return string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
             }
         }
 

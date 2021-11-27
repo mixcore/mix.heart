@@ -3,11 +3,12 @@ using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.UnitOfWork;
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
 {
-    public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext> , IDisposable
+    public abstract class RepositoryBase<TDbContext> : IRepositoryBase<TDbContext>, IDisposable
         where TDbContext : DbContext
     {
         public UnitOfWorkInfo UowInfo { get; set; }
@@ -42,7 +43,7 @@ namespace Mix.Heart.Repository
         protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
         {
             SetUowInfo(uowInfo);
-            if(UowInfo == null)
+            if (UowInfo == null)
             {
                 InitRootUow();
             }
@@ -94,9 +95,17 @@ namespace Mix.Heart.Repository
         {
             throw new MixException(MixErrorStatus.Badrequest, ex);
         }
-        
-        public void HandleException(Exception ex)
+
+        public void HandleException(
+            Exception ex,
+            [CallerMemberName] string caller = null, // You must make these optional
+            [CallerFilePath] string filePath = null, // by providing a default value.
+            [CallerLineNumber] int lineNumber = 0)
         {
+            Console.WriteLine("Exception Details:");
+            Console.WriteLine(caller);
+            Console.WriteLine(filePath);
+            Console.WriteLine(lineNumber);
             throw new MixException(MixErrorStatus.Badrequest, ex);
         }
 
