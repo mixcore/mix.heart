@@ -205,7 +205,7 @@ namespace Mix.Heart.Repository
         protected async Task<TView> ParseEntityAsync(TEntity entity, MixCacheService cacheService = null)
         {
             TView result = null;
-            if (cacheService != null)
+            if (cacheService != null && cacheService.IsCacheEnabled)
             {
                 result = await cacheService.GetAsync<TView>(entity.Id.ToString(), typeof(TView));
             }

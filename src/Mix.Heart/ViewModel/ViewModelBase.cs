@@ -41,7 +41,7 @@ namespace Mix.Heart.ViewModel
         protected UnitOfWorkInfo UowInfo { get; set; }
         [JsonIgnore]
         public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
-
+        [JsonIgnore]
         protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
         protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
 
@@ -51,18 +51,20 @@ namespace Mix.Heart.ViewModel
 
         public ViewModelBase()
         {
-
+            Repository ??= GetRepository(UowInfo);
         }
 
         public ViewModelBase(TDbContext context)
         {
             UowInfo = new UnitOfWorkInfo(context);
+            Repository ??= GetRepository(UowInfo);
             _isRoot = true;
         }
 
         public ViewModelBase(TEntity entity, MixCacheService cacheService = null, UnitOfWorkInfo uowInfo = null)
         {
             SetUowInfo(uowInfo);
+            Repository ??= GetRepository(UowInfo);
             ParseView(entity);
             ExpandView(cacheService, UowInfo);
         }
@@ -70,6 +72,7 @@ namespace Mix.Heart.ViewModel
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
         {
             UowInfo = unitOfWorkInfo;
+            Repository ??= GetRepository(UowInfo);
         }
 
         #endregion

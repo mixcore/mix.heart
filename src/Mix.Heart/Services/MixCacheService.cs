@@ -18,7 +18,7 @@ namespace Mix.Heart.Services
         private readonly MixFileService _fileService;
         private readonly MixHeartConfigurationModel _configs = new MixHeartConfigurationModel();
         private readonly EntityRepository<MixCacheDbContext, MixCache, string> _repository;
-
+        public bool IsCacheEnabled { get => _configs.IsCache; }
         public MixCacheService(
             IConfiguration configuration,
             MixFileService fileService,
