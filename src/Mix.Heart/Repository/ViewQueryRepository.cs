@@ -105,6 +105,16 @@ namespace Mix.Heart.Repository
             }
             return null;
         }
+        
+        public virtual async Task<TView> GetFirstAsync(Expression<Func<TEntity, bool>> predicate, MixCacheService cacheService = null)
+        {
+            var entity = await Table.AsNoTracking().FirstOrDefaultAsync(predicate);
+            if (entity != null)
+            {
+                return await ParseEntityAsync(entity, cacheService);
+            }
+            return null;
+        }
 
         public virtual async Task<List<TView>> GetListAsync(
                 Expression<Func<TEntity, bool>> predicate,
