@@ -73,6 +73,59 @@ namespace Mix.Heart.Services
 
             return result ?? new FileModel() { FileFolder = FileFolder };
         }
+
+        public FileModel GetFile(
+           string fullName,
+           string FileFolder,
+           bool isCreate = false,
+           string defaultContent = null)
+        {
+            FileModel result = null;
+
+            string fullPath = $"{CurrentDirectory}/{FileFolder}/{fullName}";
+
+            FileInfo fileinfo = new FileInfo(fullPath);
+            string name = fullName[..fullName.LastIndexOf('.')];
+            string ext = fullName[fullName.LastIndexOf('.')..];
+            if (fileinfo.Exists)
+            {
+                try
+                {
+                    using (var stream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        using (StreamReader s = new StreamReader(stream))
+                        {
+                            result = new FileModel()
+                            {
+                                FileFolder = FileFolder,
+                                Filename = name,
+                                Extension = ext,
+                                Content = s.ReadToEnd()
+                            };
+                        }
+                    }
+                }
+                catch
+                {
+                    // File invalid
+                }
+            }
+            else if (isCreate)
+            {
+                CreateFolderIfNotExist(FileFolder);
+                fileinfo.Create();
+                result = new FileModel()
+                {
+                    FileFolder = FileFolder,
+                    Filename = name,
+                    Extension = ext,
+                    Content = defaultContent
+                };
+                SaveFile(result);
+            }
+
+            return result ?? new FileModel() { FileFolder = FileFolder };
+        }
         #endregion
 
         #region Create / Delete File or Folder
@@ -201,7 +254,20 @@ namespace Mix.Heart.Services
         #endregion
 
         #region Folder
-
+        public List<string> GetTopDirectories(string folder)
+        {
+            List<string> result = new List<string>();
+            if (Directory.Exists(folder))
+            {
+                foreach (string dirPath in Directory.GetDirectories(folder, "*",
+                    SearchOption.TopDirectoryOnly))
+                {
+                    DirectoryInfo path = new DirectoryInfo(dirPath);
+                    result.Add(path.Name);
+                }
+            }
+            return result;
+        }
         public bool CopyFolder(string srcPath, string desPath)
         {
             if (srcPath.ToLower() != desPath.ToLower() && Directory.Exists(srcPath))
