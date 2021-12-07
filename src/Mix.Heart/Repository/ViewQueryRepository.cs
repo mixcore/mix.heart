@@ -81,7 +81,13 @@ namespace Mix.Heart.Repository
         public void SetSelectedMembers(string[] selectMembers)
         {
             SelectedMembers = selectMembers;
-            CacheFilename = string.Join('-', selectMembers);
+            var properties = typeof(TView).GetProperties().Select(p => p.Name);
+            var arrIndex = properties
+            .Select((prop, index) => new { Property = prop, Index = index })
+            .Where(x => selectMembers.Any(m => m.ToLower() == x.Property.ToLower()))
+            .Select(x => x.Index.ToString())
+            .ToArray();
+            CacheFilename = string.Join('-', arrIndex);
         }
 
         public virtual async Task<bool> CheckIsExistsAsync(TEntity entity)
@@ -236,7 +242,15 @@ namespace Mix.Heart.Repository
 
                 if (result != null && cacheService != null)
                 {
-                    await cacheService.SetAsync(entity.Id.ToString(), result, typeof(TView), CacheFilename);
+                    if (CacheFilename == "full")
+                    {
+                        await cacheService.SetAsync(entity.Id.ToString(), result, typeof(TView), CacheFilename);
+                    }
+                    else
+                    {
+                        var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
+                        await cacheService.SetAsync(entity.Id.ToString(), obj, typeof(TView), CacheFilename);
+                    }
                 }
             }
             result.SetUowInfo(UowInfo);

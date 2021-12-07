@@ -5,7 +5,9 @@ using Mix.Heart.Model;
 using Mix.Heart.Models;
 using Mix.Heart.Repository;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -19,6 +21,7 @@ namespace Mix.Heart.Services
         private readonly MixHeartConfigurationModel _configs = new MixHeartConfigurationModel();
         private readonly EntityRepository<MixCacheDbContext, MixCache, string> _repository;
         public bool IsCacheEnabled { get => _configs.IsCache; }
+        protected JsonSerializer serializer;
         public MixCacheService(
             IConfiguration configuration,
             MixFileService fileService,
@@ -28,6 +31,13 @@ namespace Mix.Heart.Services
             _fileService = fileService;
             _configuration.GetSection("MixHeart").Bind(_configs);
             _repository = repository;
+            serializer = new JsonSerializer()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            serializer.Converters.Add(new StringEnumConverter());
         }
 
         static MixCacheService()
@@ -38,7 +48,7 @@ namespace Mix.Heart.Services
         {
             try
             {
-                var jobj = JObject.FromObject(value);
+                var jobj = JObject.FromObject(value, serializer);
 
                 var cacheFile = new FileModel()
                 {
