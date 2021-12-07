@@ -25,16 +25,20 @@ namespace Mix.Heart.Repository
         where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
 
-        public ViewQueryRepository(TDbContext dbContext) : base(dbContext) { }
+        public ViewQueryRepository(TDbContext dbContext) : base(dbContext)
+        {
+            SelectedMembers = FilterSelectedFields();
+        }
 
         public ViewQueryRepository(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
         {
+            SelectedMembers = FilterSelectedFields();
         }
-
-        protected string[] SelectedMembers { get { return FilterSelectedFields(); } }
+        public string CacheFilename { get; private set; } = "full";
+        public string[] SelectedMembers { get; private set; }
         protected string[] KeyMembers { get { return ReflectionHelper.GetKeyMembers(Context, typeof(TEntity)); } }
 
-        protected DbSet<TEntity> Table => Context.Set<TEntity>();
+        protected DbSet<TEntity> Table => Context?.Set<TEntity>();
 
         #region IQueryable
 
@@ -74,6 +78,12 @@ namespace Mix.Heart.Repository
         }
         #endregion
 
+        public void SetSelectedMembers(string[] selectMembers)
+        {
+            SelectedMembers = selectMembers;
+            CacheFilename = string.Join('-', selectMembers);
+        }
+
         public virtual async Task<bool> CheckIsExistsAsync(TEntity entity)
         {
             return await Table.AnyAsync(e => e.Id.Equals(entity.Id));
@@ -105,7 +115,7 @@ namespace Mix.Heart.Repository
             }
             return null;
         }
-        
+
         public virtual async Task<TView> GetFirstAsync(Expression<Func<TEntity, bool>> predicate, MixCacheService cacheService = null)
         {
             var entity = await Table.AsNoTracking().FirstOrDefaultAsync(predicate);
@@ -217,7 +227,7 @@ namespace Mix.Heart.Repository
             TView result = null;
             if (cacheService != null && cacheService.IsCacheEnabled)
             {
-                result = await cacheService.GetAsync<TView>(entity.Id.ToString(), typeof(TView));
+                result = await cacheService.GetAsync<TView>(entity.Id.ToString(), typeof(TView), CacheFilename);
             }
 
             if (result == null)
@@ -226,10 +236,11 @@ namespace Mix.Heart.Repository
 
                 if (result != null && cacheService != null)
                 {
-                    await cacheService.SetAsync(entity.Id.ToString(), result, typeof(TView));
+                    await cacheService.SetAsync(entity.Id.ToString(), result, typeof(TView), CacheFilename);
                 }
             }
-            await result.ExpandView(cacheService, UowInfo);
+            result.SetUowInfo(UowInfo);
+            await result.ExpandView(cacheService);
             return result;
 
         }

@@ -4,6 +4,10 @@ using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
 using Mix.Heart.Model;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -13,11 +17,17 @@ namespace Mix.Heart.Helpers
 {
     public class ReflectionHelper
     {
+        static JsonSerializer serializer = new JsonSerializer()
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
+        };
         public static Expression<Func<TEntity, bool>> BuildExpressionByKeys<TEntity, TDbContext>(
             TEntity model, TDbContext context)
-            where TDbContext: DbContext
+            where TDbContext : DbContext
         {
+            
             Expression<Func<TEntity, bool>> predicate = null;
+           
             foreach (var item in context.Model.FindEntityType(typeof(TEntity)).FindPrimaryKey().Properties)
             {
                 var pre = GetExpression<TEntity>(
@@ -32,11 +42,20 @@ namespace Mix.Heart.Helpers
         }
 
         public static string[] GetKeyMembers<TEntity>(TEntity model)
-            where TEntity: IModel
+            where TEntity : IModel
         {
             return model.FindEntityType(typeof(TEntity))
                 .FindPrimaryKey().Properties.Select(x => x.Name)
                 .ToArray();
+        }
+
+        public static object GetMembers<TEntity>(TEntity model, string[] selectMembers)
+           where TEntity : class
+        {
+            serializer.Converters.Add(new StringEnumConverter());
+            var result = JObject.FromObject(model, serializer).Properties()
+                            .Where(p => selectMembers.Any(m=> m.ToLower() == p.Name.ToLower()));
+            return new JObject() { result };
         }
 
         public static Type GetPropertyType(Type type, string name)
@@ -211,7 +230,7 @@ namespace Mix.Heart.Helpers
         }
 
         public static string[] GetKeyMembers<TDbContext>(TDbContext context, Type entityType)
-            where TDbContext: DbContext
+            where TDbContext : DbContext
 
         {
             return context.Model.FindEntityType(entityType)

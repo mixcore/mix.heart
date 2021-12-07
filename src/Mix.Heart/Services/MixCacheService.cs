@@ -34,7 +34,7 @@ namespace Mix.Heart.Services
         {
         }
 
-        private bool SaveJson<T>(string key, T value, Type dataType)
+        private bool SaveJson<T>(string key, T value, Type dataType, string filename)
         {
             try
             {
@@ -42,9 +42,9 @@ namespace Mix.Heart.Services
 
                 var cacheFile = new FileModel()
                 {
-                    Filename = key.ToLower(),
+                    Filename = filename.ToLower(),
                     Extension = ".json",
-                    FileFolder = $"{_configs.CacheFolder}/{dataType.FullName}",
+                    FileFolder = $"{_configs.CacheFolder}/{dataType.FullName}/{key.ToLower()}",
                     Content = jobj.ToString(Formatting.None)
                 };
                 return MixFileService.Instance.SaveFile(cacheFile);
@@ -57,17 +57,17 @@ namespace Mix.Heart.Services
         }
 
 
-        public Task<T> GetAsync<T>(string key, Type dataType)
+        public Task<T> GetAsync<T>(string key, Type dataType, string filename)
         {
             try
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
-                        return GetFromDatabaseAsync<T>(key, dataType.FullName);
+                        return GetFromDatabaseAsync<T>(key, dataType.FullName, filename);
                     case MixCacheMode.JSON:
                     default:
-                        return Task.FromResult(GetFromJson<T>(key, dataType.FullName));
+                        return Task.FromResult(GetFromJson<T>(key, dataType.FullName, filename));
                 }
             }
             catch (Exception ex)
@@ -78,9 +78,9 @@ namespace Mix.Heart.Services
             }
         }
 
-        private T GetFromJson<T>(string key, string folder = null)
+        private T GetFromJson<T>(string key, string folder, string filename)
         {
-            string filePath = $"{_configs.CacheFolder}/{folder}/{key}.json";
+            string filePath = $"{_configs.CacheFolder}/{folder}/{key}/{filename}.json";
             if (File.Exists(filePath))
             {
                 using (StreamReader file = File.OpenText(filePath))
@@ -101,11 +101,11 @@ namespace Mix.Heart.Services
             return default;
         }
 
-        private async Task<T> GetFromDatabaseAsync<T>(string key, string folder)
+        private async Task<T> GetFromDatabaseAsync<T>(string key, string folder, string filename)
         {
             try
             {
-                string id = $"{folder}/{key}";
+                string id = $"{folder}/{key}/{filename}";
                 var cache = await _repository.GetByIdAsync(id);
                 if (cache != null)
                 {
@@ -130,25 +130,25 @@ namespace Mix.Heart.Services
             }
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value, Type dataType)
+        public async Task<bool> SetAsync<T>(string key, T value, Type dataType, string filename)
         {
             if (value != null)
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
-                        await SaveDatabaseAsync(key, value, dataType);
+                        await SaveDatabaseAsync(key, value, dataType, filename);
                         break;
                     case MixCacheMode.JSON:
                     default:
-                        SaveJson(key, value, dataType);
+                        SaveJson(key, value, dataType, filename);
                         break;
                 }
             }
             return true;
         }
 
-        private async Task<bool> SaveDatabaseAsync<T>(string key, T value, Type dataType)
+        private async Task<bool> SaveDatabaseAsync<T>(string key, T value, Type dataType, string filename)
         {
             if (value != null)
             {
@@ -156,7 +156,7 @@ namespace Mix.Heart.Services
 
                 var cache = new MixCache()
                 {
-                    Id = $"{dataType.FullName}_{key}",
+                    Id = $"{dataType.FullName}_{key}_{filename}",
                     Value = jobj.ToString(Formatting.None),
                     CreatedDateTime = DateTime.UtcNow
                 };
@@ -189,8 +189,8 @@ namespace Mix.Heart.Services
                     break;
                 case MixCacheMode.JSON:
                 default:
-                    _fileService.DeleteFile(
-                        $"{_configs.CacheFolder}/{dataType.FullName}/{key}.json");
+                    _fileService.DeleteFolder(
+                        $"{_configs.CacheFolder}/{dataType.FullName}/{key}");
                     break;
             }
         }

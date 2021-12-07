@@ -33,6 +33,7 @@ namespace Mix.Heart.ViewModel
         public int Priority { get; set; }
         public MixContentStatus Status { get; set; } = MixContentStatus.Published;
 
+        [JsonIgnore]
         public bool IsValid { get; set; }
 
         [JsonIgnore]
@@ -66,7 +67,7 @@ namespace Mix.Heart.ViewModel
             SetUowInfo(uowInfo);
             Repository ??= GetRepository(UowInfo);
             ParseView(entity);
-            ExpandView(cacheService, UowInfo);
+            ExpandView(cacheService);
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
@@ -125,7 +126,7 @@ namespace Mix.Heart.ViewModel
             return (TEntity)Activator.CreateInstance(classType);
         }
 
-        public virtual Task ExpandView(MixCacheService cacheService = null, UnitOfWorkInfo uowInfo = null)
+        public virtual Task ExpandView(MixCacheService cacheService = null)
         {
             return Task.CompletedTask;
         }
