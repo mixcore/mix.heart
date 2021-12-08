@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
-using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Repository;
 using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
@@ -17,7 +16,7 @@ using System.Threading.Tasks;
 namespace Mix.Heart.ViewModel
 {
     public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
-        : IViewModel, IMixMediator
+        : IViewModel
         where TPrimaryKey : IComparable
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
@@ -36,8 +35,6 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         public bool IsValid { get; set; }
 
-        [JsonIgnore]
-        protected IMixMediator _consumer;
         [JsonIgnore]
         protected UnitOfWorkInfo UowInfo { get; set; }
         [JsonIgnore]
@@ -115,11 +112,6 @@ namespace Mix.Heart.ViewModel
             UowInfo = new UnitOfWorkInfo(context);
         }
 
-        public void SetConsumer(IMixMediator consumer)
-        {
-            _consumer = consumer;
-        }
-
         public virtual TEntity InitModel()
         {
             Type classType = typeof(TEntity);
@@ -150,19 +142,7 @@ namespace Mix.Heart.ViewModel
             mapper.Map(sourceObject, this);
         }
 
-        public Task PublishAsync(object sender, MixViewModelAction action, bool isSucceed, Exception ex = null)
-        {
-            return _consumer != null
-               ? _consumer.ConsumeAsync(sender, action, isSucceed)
-               : Task.CompletedTask;
-        }
-
-        public virtual Task ConsumeAsync(object sender, MixViewModelAction action, bool isSucceed, Exception ex = null)
-        {
-            return PublishAsync(sender, action, isSucceed, ex);
-        }
-
-        protected bool IsDefaultId(TPrimaryKey id)
+        public bool IsDefaultId(TPrimaryKey id)
         {
             return (id.GetType() == typeof(Guid) && Guid.Parse(id.ToString()) == Guid.Empty)
                 || (id.GetType() == typeof(int) && int.Parse(id.ToString()) == default);

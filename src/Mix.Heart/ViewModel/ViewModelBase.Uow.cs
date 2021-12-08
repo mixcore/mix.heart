@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
-using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 
@@ -12,10 +11,8 @@ namespace Mix.Heart.ViewModel
     {
         private bool _isRoot;
 
-        protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+        protected virtual void BeginUow()
         {
-            _consumer ??= consumer;
-            SetUowInfo(uowInfo);
             if (UowInfo == null)
             {
                 InitRootUow();

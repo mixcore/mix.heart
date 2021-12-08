@@ -134,8 +134,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<List<TView>> GetListAsync(
                 Expression<Func<TEntity, bool>> predicate,
-                MixCacheService cacheService = null,
-                UnitOfWorkInfo uowInfo = null)
+                MixCacheService cacheService = null)
         {
             var query = GetListQuery(predicate);
             var result = await ToListViewModelAsync(query, cacheService);

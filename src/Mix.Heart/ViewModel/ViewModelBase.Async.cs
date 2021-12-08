@@ -1,9 +1,7 @@
 ﻿using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Helpers;
-using Mix.Heart.Infrastructure.Interfaces;
 using Mix.Heart.Model;
-using Mix.Heart.UnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,13 +15,12 @@ namespace Mix.Heart.ViewModel
         #region Async
 
 
-        public async Task DeleteAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+        public async Task DeleteAsync()
         {
             try
             {
-                BeginUow(uowInfo, consumer);
+                BeginUow();
                 await DeleteHandlerAsync();
-                await PublishAsync(this, MixViewModelAction.Delete, true);
                 await CompleteUowAsync();
             }
             catch (Exception ex)
@@ -41,18 +38,17 @@ namespace Mix.Heart.ViewModel
             await Repository.DeleteAsync(Id);
         }
 
-        public async Task<TPrimaryKey> SaveAsync(UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+        public async Task<TPrimaryKey> SaveAsync()
         {
             try
             {
-                BeginUow(uowInfo, consumer);
+                BeginUow();
                 await Validate();
                 if (!IsValid)
                 {
                     await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
                 }
                 var entity = await SaveHandlerAsync();
-                await PublishAsync(this, MixViewModelAction.Save, true);
                 await CompleteUowAsync();
                 return entity.Id;
             }
@@ -67,11 +63,11 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        public async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties, UnitOfWorkInfo uowInfo = null, IMixMediator consumer = null)
+        public async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties)
         {
             try
             {
-                BeginUow(uowInfo, consumer);
+                BeginUow();
                 foreach (var property in properties)
                 {
                     // check if field name is exist
