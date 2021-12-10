@@ -13,8 +13,6 @@ namespace Mix.Example.Application.WrappingView
 
         protected override void SaveGroupView(UnitOfWorkInfo uowInfo)
         {
-            Store.Save(false, uowInfo);
-            Category.Save(false, uowInfo);
         }
     }
 }

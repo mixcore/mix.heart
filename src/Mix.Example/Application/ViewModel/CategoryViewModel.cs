@@ -2,12 +2,11 @@
 using System.Threading.Tasks;
 using Mix.Example.Infrastructure;
 using Mix.Example.Infrastructure.MixEntities;
-using Mix.Heart.Repository;
 using Mix.Heart.ViewModel;
 
 namespace Mix.Example.Application.ViewModel
 {
-    public class CategoryViewModel : ViewModelBase<MixDbContext, CategoryEntity, Guid>
+    public class CategoryViewModel : ViewModelBase<MixDbContext, CategoryEntity, Guid, CategoryViewModel>
     {
         public CategoryViewModel(CategoryEntity entity) : base(entity)
         {
@@ -19,10 +18,9 @@ namespace Mix.Example.Application.ViewModel
 
         public ProductViewModel Product { get; set; }
 
-        protected override async Task SaveEntityRelationshipAsync(CategoryEntity parentEntity)
+        protected override Task SaveEntityRelationshipAsync(CategoryEntity parentEntity)
         {
-            Product.CategoryId = parentEntity.Id;
-            await Product.SaveAsync(_unitOfWorkInfo);
+            return Task.CompletedTask;
         }
     }
 }

@@ -25,7 +25,6 @@ namespace Mix.Example
 
             services.AddMixDbContext(Configuration);
             services.AddExternalDbContext(Configuration);
-            services.AddRepositories(Assembly.GetExecutingAssembly(), typeof(MixDbContext));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

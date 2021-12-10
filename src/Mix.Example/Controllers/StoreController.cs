@@ -17,7 +17,6 @@ namespace Mix.Example.Controllers
         [HttpPost("save")]
         public void SaveSync([FromBody] StoreViewModel storeVm)
         {
-            storeVm.Save();
         }
     }
 }
