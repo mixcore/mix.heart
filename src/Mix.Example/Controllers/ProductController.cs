@@ -2,9 +2,9 @@
 
 namespace Mix.Example.Controllers
 {
-    [ApiController]
-    [Route("products")]
-    public class ProductController : ControllerBase
-    {
-    }
+[ApiController]
+[Route("products")]
+public class ProductController : ControllerBase
+{
+}
 }

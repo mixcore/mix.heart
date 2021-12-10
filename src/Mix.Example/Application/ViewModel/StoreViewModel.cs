@@ -5,14 +5,26 @@ using System;
 
 namespace Mix.Example.Application.ViewModel
 {
-    public class StoreViewModel : ViewModelBase<MixDbContext, StoreEntity, Guid, StoreViewModel>
-    {
-        public string Name { get; set; }
-
-        public string Description { get; set; }
-
-        public string Address { get; set; }
-
-        public string Country { get; set; }
+public class StoreViewModel : ViewModelBase<MixDbContext, StoreEntity, Guid, StoreViewModel>
+{
+    public string Name {
+        get;
+        set;
     }
+
+    public string Description {
+        get;
+        set;
+    }
+
+    public string Address {
+        get;
+        set;
+    }
+
+    public string Country {
+        get;
+        set;
+    }
+}
 }

@@ -4,19 +4,19 @@ using Mix.Example.Application.WrappingView;
 
 namespace Mix.Example.Controllers
 {
-    [ApiController]
-    [Route("stores")]
-    public class StoreController : ControllerBase
+[ApiController]
+[Route("stores")]
+public class StoreController : ControllerBase
+{
+    [HttpPost("wrap")]
+    public void WrapSync([FromBody] WrappingStoreView wrappingView)
     {
-        [HttpPost("wrap")]
-        public void WrapSync([FromBody] WrappingStoreView wrappingView)
-        {
-            wrappingView.Execute();
-        }
-
-        [HttpPost("save")]
-        public void SaveSync([FromBody] StoreViewModel storeVm)
-        {
-        }
+        wrappingView.Execute();
     }
+
+    [HttpPost("save")]
+    public void SaveSync([FromBody] StoreViewModel storeVm)
+    {
+    }
+}
 }

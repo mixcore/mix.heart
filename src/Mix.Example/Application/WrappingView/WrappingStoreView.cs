@@ -5,14 +5,20 @@ using Mix.Heart.ViewModel;
 
 namespace Mix.Example.Application.WrappingView
 {
-    public class WrappingStoreView : WrappingViewBase<MixDbContext>
-    {
-        public StoreViewModel Store { get; set; }
-
-        public CategoryViewModel Category { get; set; }
-
-        protected override void SaveGroupView(UnitOfWorkInfo uowInfo)
-        {
-        }
+public class WrappingStoreView : WrappingViewBase<MixDbContext>
+{
+    public StoreViewModel Store {
+        get;
+        set;
     }
+
+    public CategoryViewModel Category {
+        get;
+        set;
+    }
+
+    protected override void SaveGroupView(UnitOfWorkInfo uowInfo)
+    {
+    }
+}
 }
