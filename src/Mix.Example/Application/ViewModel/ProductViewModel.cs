@@ -5,17 +5,12 @@ using System.Threading.Tasks;
 using Mix.Example.Dto;
 using Mix.Example.Infrastructure;
 using Mix.Example.Infrastructure.MixEntities;
-using Mix.Heart.Repository;
 using Mix.Heart.ViewModel;
 
 namespace Mix.Example.Application.ViewModel
 {
-    public class ProductViewModel : ViewModelBase<MixDbContext, ProductEntity, Guid>
+    public class ProductViewModel : ViewModelBase<MixDbContext, ProductEntity, Guid, ProductViewModel>
     {
-        public ProductViewModel(CommandRepository<MixDbContext, ProductEntity, Guid> repository) : base(repository)
-        {
-        }
-
         public ProductViewModel(SaveProductDto dto) : base(dto)
         {
             MappDto(dto);
@@ -43,14 +38,9 @@ namespace Mix.Example.Application.ViewModel
             }
         }
 
-        protected override async Task SaveEntityRelationshipAsync(ProductEntity parentEntity)
+        protected override Task SaveEntityRelationshipAsync(ProductEntity parentEntity)
         {
-            // TODO: Save view list need to improve
-            foreach (var detail in ProductDetails)
-            {
-                detail.ProductId = parentEntity.Id;
-                await detail.SaveAsync(_unitOfWorkInfo);
-            }
+            return Task.CompletedTask;
         }
     }
 }
