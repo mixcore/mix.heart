@@ -31,11 +31,11 @@ namespace Mix.Heart.Repository
             return await GetAllQuery().MaxAsync(predicate);
         }
 
-        public virtual async Task CreateAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
+        public virtual async Task CreateAsync(TEntity entity)
         {
             try
             {
-                BeginUow(uowInfo);
+                BeginUow();
                 Context.Entry(entity).State = EntityState.Added;
                 await Context.SaveChangesAsync();
                 await CompleteUowAsync();
@@ -50,11 +50,11 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task UpdateAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
+        public virtual async Task UpdateAsync(TEntity entity)
         {
             try
             {
-                BeginUow(uowInfo);
+                BeginUow();
 
                 if (!CheckIsExists(entity))
                 {
@@ -76,11 +76,11 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task SaveAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
+        public virtual async Task SaveAsync(TEntity entity)
         {
             try
             {
-                BeginUow(uowInfo);
+                BeginUow();
 
                 if (CheckIsExists(entity))
                 {
@@ -99,11 +99,11 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(TPrimaryKey id, UnitOfWorkInfo uowInfo = null)
+        public virtual async Task DeleteAsync(TPrimaryKey id)
         {
             try
             {
-                BeginUow(uowInfo);
+                BeginUow();
                 var entity = await GetByIdAsync(id);
                 if (entity == null)
                 {
@@ -125,11 +125,11 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
+        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
         {
             try
             {
-                BeginUow(uowInfo);
+                BeginUow();
                 var entity = await GetSingleAsync(predicate);
                 if (entity == null)
                 {
@@ -151,11 +151,11 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, UnitOfWorkInfo uowInfo = null)
+        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate)
         {
             try
             {
-                BeginUow(uowInfo);
+                BeginUow();
 
                 await Context.Set<TEntity>().Where(predicate).ForEachAsync(
                     m => Context.Entry(m).State = EntityState.Deleted
@@ -174,11 +174,11 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(TEntity entity, UnitOfWorkInfo uowInfo = null)
+        public virtual async Task DeleteAsync(TEntity entity)
         {
             try
             {
-                BeginUow(uowInfo);
+                BeginUow();
 
                 if (!CheckIsExists(entity))
                 {

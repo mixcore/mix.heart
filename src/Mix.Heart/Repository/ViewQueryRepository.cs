@@ -144,10 +144,9 @@ namespace Mix.Heart.Repository
         public virtual async Task<PagingResponseModel<TView>> GetPagingAsync(
             Expression<Func<TEntity, bool>> predicate,
             IPagingModel paging,
-            MixCacheService cacheService = null,
-            UnitOfWorkInfo uowInfo = null)
+            MixCacheService cacheService = null)
         {
-            BeginUow(uowInfo);
+            BeginUow();
             var query = GetPagingQuery(predicate, paging);
             return await ToPagingViewModelAsync(query, paging, cacheService);
         }
@@ -166,10 +165,10 @@ namespace Mix.Heart.Repository
             return viewProperties.Where(p => modelProperties.Any(m => m.Name == p.Name)).Select(p => p.Name).ToArray();
         }
 
-        protected virtual Task<TView> BuildViewModel(TEntity entity, UnitOfWorkInfo uowInfo = null)
+        protected virtual Task<TView> BuildViewModel(TEntity entity)
         {
             ConstructorInfo classConstructor = typeof(TView).GetConstructor(new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
-            return Task.FromResult((TView)classConstructor.Invoke(new object[] { entity, uowInfo }));
+            return Task.FromResult((TView)classConstructor.Invoke(new object[] { entity, UowInfo }));
         }
 
         public async Task<List<TView>> ToListViewModelAsync(

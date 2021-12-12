@@ -40,9 +40,8 @@ namespace Mix.Heart.Repository
             };
         }
 
-        protected virtual void BeginUow(UnitOfWorkInfo uowInfo = null)
+        protected virtual void BeginUow()
         {
-            SetUowInfo(uowInfo);
             if (UowInfo == null)
             {
                 InitRootUow();
