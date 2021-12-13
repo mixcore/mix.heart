@@ -1,13 +1,11 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.EntityFrameworkCore.Extensions;
 
 namespace Mix.Heart.Entities.Cache
 {
-    public partial class MsSqlCacheDbContext: MixCacheDbContext
+    public partial class MsSqlCacheDbContext : MixCacheDbContext
     {
-        public MsSqlCacheDbContext(IConfiguration configuration):base(configuration)
+        public MsSqlCacheDbContext() : base()
         {
 
         }

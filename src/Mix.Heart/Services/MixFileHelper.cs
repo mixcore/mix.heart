@@ -8,20 +8,20 @@ using System.Linq;
 
 namespace Mix.Heart.Services
 {
-    public class MixFileService: SingletonService<MixFileService>
+    public static class MixFileHelper
     {
-        public string CurrentDirectory { get; set; }
+        public static string CurrentDirectory { get; set; }
 
         /// <summary>
         /// Prevents a default instance of the <see cref="MixFileRepository"/> class from being created.
         /// </summary>
-        public MixFileService()
+        static MixFileHelper()
         {
             CurrentDirectory = Environment.CurrentDirectory;
         }
 
         #region Read Files
-        public FileModel GetFile(
+        public static FileModel GetFile(
             string name,
             string ext,
             string FileFolder,
@@ -74,7 +74,7 @@ namespace Mix.Heart.Services
             return result ?? new FileModel() { FileFolder = FileFolder };
         }
 
-        public FileModel GetFile(
+        public static FileModel GetFile(
            string fullName,
            string FileFolder,
            bool isCreate = false,
@@ -132,7 +132,7 @@ namespace Mix.Heart.Services
 
         #region File
 
-        public bool SaveFile(FileModel file)
+        public static bool SaveFile(FileModel file)
         {
             try
             {
@@ -185,7 +185,7 @@ namespace Mix.Heart.Services
             }
         }
 
-        public string SaveFile(IFormFile file, string fullPath)
+        public static string SaveFile(IFormFile file, string fullPath)
         {
             try
             {
@@ -215,7 +215,7 @@ namespace Mix.Heart.Services
             }
         }
 
-        public bool DeleteFile(string filePath)
+        public static bool DeleteFile(string filePath)
         {
             if (File.Exists(filePath))
             {
@@ -227,7 +227,7 @@ namespace Mix.Heart.Services
             return true;
         }
 
-        public List<FileModel> GetTopFiles(string folder)
+        public static List<FileModel> GetTopFiles(string folder)
         {
             List<FileModel> result = new List<FileModel>();
             if (Directory.Exists(folder))
@@ -254,7 +254,7 @@ namespace Mix.Heart.Services
         #endregion
 
         #region Folder
-        public List<string> GetTopDirectories(string folder)
+        public static List<string> GetTopDirectories(string folder)
         {
             List<string> result = new List<string>();
             if (Directory.Exists(folder))
@@ -268,7 +268,7 @@ namespace Mix.Heart.Services
             }
             return result;
         }
-        public bool CopyFolder(string srcPath, string desPath)
+        public static bool CopyFolder(string srcPath, string desPath)
         {
             if (srcPath.ToLower() != desPath.ToLower() && Directory.Exists(srcPath))
             {
@@ -289,7 +289,7 @@ namespace Mix.Heart.Services
             return true;
         }
 
-        public bool DeleteFolder(string folderPath)
+        public static bool DeleteFolder(string folderPath)
         {
             if (Directory.Exists(folderPath))
             {
@@ -299,14 +299,14 @@ namespace Mix.Heart.Services
             return false;
         }
 
-        public bool EmptyFolder(string folderPath)
+        public static bool EmptyFolder(string folderPath)
         {
             DeleteFolder(folderPath);
             CreateFolderIfNotExist(folderPath);
             return true;
         }
 
-        public void CreateFolderIfNotExist(string fullPath)
+        public static void CreateFolderIfNotExist(string fullPath)
         {
             if (!string.IsNullOrEmpty(fullPath) && !Directory.Exists(fullPath))
             {
@@ -314,7 +314,7 @@ namespace Mix.Heart.Services
             }
         }
 
-        public List<string> GetTopFolders(string folder)
+        public static List<string> GetTopFolders(string folder)
         {
             List<string> result = new List<string>();
             if (Directory.Exists(folder))
@@ -329,7 +329,7 @@ namespace Mix.Heart.Services
             return result;
         }
 
-        public string ZipFolder(string tmpPath, string outputPath, string fileName)
+        public static string ZipFolder(string tmpPath, string outputPath, string fileName)
         {
             try
             {
@@ -359,7 +359,7 @@ namespace Mix.Heart.Services
             }
         }
 
-        public void UnZipFile(string filePath, string webFolder)
+        public static void UnZipFile(string filePath, string webFolder)
         {
             try
             {

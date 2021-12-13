@@ -27,13 +27,16 @@ namespace Mix.Heart.Repository
 
         public ViewQueryRepository(TDbContext dbContext) : base(dbContext)
         {
+            cacheService = new();
             SelectedMembers = FilterSelectedFields();
         }
 
         public ViewQueryRepository(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
         {
+            cacheService = new();
             SelectedMembers = FilterSelectedFields();
         }
+        private MixCacheService cacheService { get; set; }
         public string CacheFilename { get; private set; } = "full";
         public string[] SelectedMembers { get; private set; }
         protected string[] KeyMembers { get { return ReflectionHelper.GetKeyMembers(Context, typeof(TEntity)); } }
@@ -102,32 +105,32 @@ namespace Mix.Heart.Repository
 
         #region View Async
 
-        public virtual async Task<TView> GetSingleAsync(TPrimaryKey id, MixCacheService cacheService = null)
+        public virtual async Task<TView> GetSingleAsync(TPrimaryKey id)
         {
             var entity = await GetByIdAsync(id);
             if (entity != null)
             {
-                return await ParseEntityAsync(entity, cacheService);
+                return await ParseEntityAsync(entity);
             }
             throw new MixException(MixErrorStatus.NotFound, id);
         }
 
-        public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate, MixCacheService cacheService = null)
+        public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
         {
             var entity = await Table.AsNoTracking().SingleOrDefaultAsync(predicate);
             if (entity != null)
             {
-                return await ParseEntityAsync(entity, cacheService);
+                return await ParseEntityAsync(entity);
             }
             return null;
         }
 
-        public virtual async Task<TView> GetFirstAsync(Expression<Func<TEntity, bool>> predicate, MixCacheService cacheService = null)
+        public virtual async Task<TView> GetFirstAsync(Expression<Func<TEntity, bool>> predicate)
         {
             var entity = await Table.AsNoTracking().FirstOrDefaultAsync(predicate);
             if (entity != null)
             {
-                return await ParseEntityAsync(entity, cacheService);
+                return await ParseEntityAsync(entity);
             }
             return null;
         }
@@ -137,7 +140,7 @@ namespace Mix.Heart.Repository
                 MixCacheService cacheService = null)
         {
             var query = GetListQuery(predicate);
-            var result = await ToListViewModelAsync(query, cacheService);
+            var result = await ToListViewModelAsync(query);
             return result;
         }
 
@@ -148,7 +151,7 @@ namespace Mix.Heart.Repository
         {
             BeginUow();
             var query = GetPagingQuery(predicate, paging);
-            return await ToPagingViewModelAsync(query, paging, cacheService);
+            return await ToPagingViewModelAsync(query, paging);
         }
 
         #endregion
@@ -179,7 +182,7 @@ namespace Mix.Heart.Repository
             {
                 var entities = await source.SelectMembers(SelectedMembers).AsNoTracking().ToListAsync();
 
-                List<TView> data = await ParseEntitiesAsync(entities, cacheService);
+                List<TView> data = await ParseEntitiesAsync(entities);
 
                 return data;
             }
@@ -197,7 +200,7 @@ namespace Mix.Heart.Repository
             try
             {
                 var entities = await GetEntities(source);
-                List<TView> data = await ParseEntitiesAsync(entities, cacheService);
+                List<TView> data = await ParseEntitiesAsync(entities);
 
                 return new PagingResponseModel<TView>(data, pagingData);
             }
@@ -214,40 +217,40 @@ namespace Mix.Heart.Repository
 
 
 
-        protected async Task<List<TView>> ParseEntitiesAsync(List<TEntity> entities, MixCacheService cacheService = null)
+        protected async Task<List<TView>> ParseEntitiesAsync(List<TEntity> entities)
         {
             List<TView> data = new List<TView>();
 
             foreach (var entity in entities)
             {
-                var view = await ParseEntityAsync(entity, cacheService);
+                var view = await ParseEntityAsync(entity);
                 data.Add(view);
             }
             return data;
         }
 
-        protected async Task<TView> ParseEntityAsync(TEntity entity, MixCacheService cacheService = null)
+        protected async Task<TView> ParseEntityAsync(TEntity entity)
         {
             TView result = null;
             if (cacheService != null && cacheService.IsCacheEnabled)
             {
-                result = await cacheService.GetAsync<TView>(entity.Id.ToString(), typeof(TView), CacheFilename);
+                result = await cacheService.GetAsync<TView>($"{entity.Id}/{typeof(TView).FullName}", typeof(TEntity), CacheFilename);
             }
 
             if (result == null)
             {
-                result = GetViewModel(entity, cacheService);
+                result = GetViewModel(entity);
 
                 if (result != null && cacheService != null)
                 {
                     if (CacheFilename == "full")
                     {
-                        await cacheService.SetAsync(entity.Id.ToString(), result, typeof(TView), CacheFilename);
+                        await cacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", result, typeof(TEntity), CacheFilename);
                     }
                     else
                     {
                         var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
-                        await cacheService.SetAsync(entity.Id.ToString(), obj, typeof(TView), CacheFilename);
+                        await cacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", obj, typeof(TEntity), CacheFilename);
                     }
                 }
             }
@@ -257,7 +260,7 @@ namespace Mix.Heart.Repository
 
         }
 
-        protected TView GetViewModel(TEntity entity, MixCacheService cacheService = null)
+        protected TView GetViewModel(TEntity entity)
         {
             ConstructorInfo classConstructor = typeof(TView).GetConstructor(
                 new Type[] { typeof(TEntity), typeof(MixCacheService), typeof(UnitOfWorkInfo) });

@@ -7,7 +7,7 @@ namespace Mix.Heart.Entities.Cache
 {
     public partial class MySqlCacheDbContext : MixCacheDbContext
     {
-        public MySqlCacheDbContext(IConfiguration configuration) : base(configuration)
+        public MySqlCacheDbContext() : base()
         {
 
         }

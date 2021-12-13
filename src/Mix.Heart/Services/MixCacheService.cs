@@ -4,6 +4,7 @@ using Mix.Heart.Enums;
 using Mix.Heart.Model;
 using Mix.Heart.Models;
 using Mix.Heart.Repository;
+using Mix.Shared.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -16,21 +17,17 @@ namespace Mix.Heart.Services
 {
     public class MixCacheService
     {
-        private readonly IConfiguration _configuration;
-        private readonly MixFileService _fileService;
         private readonly MixHeartConfigurationModel _configs = new MixHeartConfigurationModel();
         private readonly EntityRepository<MixCacheDbContext, MixCache, string> _repository;
         public bool IsCacheEnabled { get => _configs.IsCache; }
         protected JsonSerializer serializer;
-        public MixCacheService(
-            IConfiguration configuration,
-            MixFileService fileService,
-            EntityRepository<MixCacheDbContext, MixCache, string> repository)
+        public MixCacheService()
         {
-            _configuration = configuration;
-            _fileService = fileService;
-            _configuration.GetSection("MixHeart").Bind(_configs);
-            _repository = repository;
+            _configs = MixHeartConfigService.Instance.AppSettings;
+            if (_configs.CacheMode == MixCacheMode.DATABASE)
+            {
+                _repository = new();
+            }
             serializer = new JsonSerializer()
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -38,10 +35,6 @@ namespace Mix.Heart.Services
                 NullValueHandling = NullValueHandling.Ignore
             };
             serializer.Converters.Add(new StringEnumConverter());
-        }
-
-        static MixCacheService()
-        {
         }
 
         private bool SaveJson<T>(string key, T value, Type dataType, string filename)
@@ -57,7 +50,7 @@ namespace Mix.Heart.Services
                     FileFolder = $"{_configs.CacheFolder}/{dataType.FullName}/{key.ToLower()}",
                     Content = jobj.ToString(Formatting.None)
                 };
-                return MixFileService.Instance.SaveFile(cacheFile);
+                return MixFileHelper.SaveFile(cacheFile);
             }
             catch (Exception ex)
             {
@@ -185,7 +178,7 @@ namespace Mix.Heart.Services
                     break;
                 case MixCacheMode.JSON:
                 default:
-                    _fileService.EmptyFolder(_configs.CacheFolder);
+                    MixFileHelper.EmptyFolder(_configs.CacheFolder);
                     break;
             }
         }
@@ -199,7 +192,7 @@ namespace Mix.Heart.Services
                     break;
                 case MixCacheMode.JSON:
                 default:
-                    _fileService.DeleteFolder(
+                    MixFileHelper.DeleteFolder(
                         $"{_configs.CacheFolder}/{dataType.FullName}/{key}");
                     break;
             }
