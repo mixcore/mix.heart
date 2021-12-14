@@ -36,7 +36,7 @@ namespace Mix.Heart.Repository
             cacheService = new();
             SelectedMembers = FilterSelectedFields();
         }
-        private MixCacheService cacheService { get; set; }
+        protected MixCacheService cacheService { get; set; }
         public string CacheFilename { get; private set; } = "full";
         public string[] SelectedMembers { get; private set; }
         protected string[] KeyMembers { get { return ReflectionHelper.GetKeyMembers(Context, typeof(TEntity)); } }

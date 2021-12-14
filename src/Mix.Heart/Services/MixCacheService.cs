@@ -183,7 +183,7 @@ namespace Mix.Heart.Services
             }
         }
 
-        public async Task RemoveCacheAsync(string key, Type dataType)
+        public async Task RemoveCacheAsync(object key, Type dataType)
         {
             switch (_configs.CacheMode)
             {
