@@ -11,9 +11,7 @@ namespace Mix.Heart.ViewModel
 {
     public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
-        
         #region Async
-
 
         public async Task DeleteAsync()
         {

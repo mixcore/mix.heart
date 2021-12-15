@@ -1,17 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
-using Mix.Heart.Enums;
-using Mix.Heart.Exceptions;
-using Mix.Heart.Extensions;
-using Mix.Heart.Helpers;
 using Mix.Heart.Model;
 using Mix.Heart.UnitOfWork;
-using Mix.Heart.ViewModel;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
@@ -164,8 +157,7 @@ namespace Mix.Heart.Repository
 
         #region Helper
 
-        protected LambdaExpression GetLambda(string propName,
-                                             bool isGetDefault = true)
+        protected LambdaExpression GetLambda(string propName, bool isGetDefault = true)
         {
             var parameter = Expression.Parameter(typeof(TEntity));
             var type = typeof(TEntity);

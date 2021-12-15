@@ -1,5 +1,4 @@
-﻿using Mix.Heart.Model;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Mix.Heart.Model
 {

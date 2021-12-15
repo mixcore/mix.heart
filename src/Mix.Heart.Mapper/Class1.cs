@@ -1,3 +1,0 @@
-﻿namespace Mix.Heart.Mapper
-{
-}

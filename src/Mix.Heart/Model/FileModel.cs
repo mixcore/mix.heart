@@ -36,10 +36,10 @@ namespace Mix.Heart.Models
 
         #endregion
 
-
         public FileModel()
         {
         }
+
         public FileModel(IFormFile file, string folder)
         {
             Filename = file.FileName[0..file.FileName.LastIndexOf('.')];

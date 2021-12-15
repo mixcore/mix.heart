@@ -6,8 +6,7 @@ namespace Mix.Heart.Entities
     {
     }
 
-    public class Entity<TPrimaryKey> : IEntity<TPrimaryKey>
-        where TPrimaryKey : IComparable
+    public class Entity<TPrimaryKey> : IEntity<TPrimaryKey> where TPrimaryKey : IComparable
     {
         public TPrimaryKey Id { get; set; }
     }

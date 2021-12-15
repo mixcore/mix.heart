@@ -1,6 +1,5 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Mix.Heart.EntityFrameworkCore.Extensions;
 
 namespace Mix.Heart.Entities.Cache
