@@ -1,7 +1,4 @@
 ﻿using Mix.Heart.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Mix.Heart.Model
 {
@@ -15,7 +12,6 @@ namespace Mix.Heart.Model
         public ConnectionStrings ConnectionStrings { get; set; }
         public MixHeartConfigurationModel()
         {
-
         }
     }
 

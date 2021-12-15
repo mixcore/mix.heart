@@ -1,16 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Mix.Heart.Entities;
-using Mix.Heart.Exceptions;
-using Mix.Heart.Helpers;
-using Mix.Heart.Model;
-using Mix.Heart.Repository;
-using Mix.Heart.ViewModel;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Mix.Heart.Extensions
 {

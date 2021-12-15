@@ -63,7 +63,7 @@ namespace Mix.Heart.Repository
                 Context.Entry(entity).State = EntityState.Modified;
                 await Context.SaveChangesAsync();
                 await CompleteUowAsync();
-                await cacheService.RemoveCacheAsync(entity.Id, typeof(TEntity));
+                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity));
             }
             catch (Exception ex)
             {
@@ -113,7 +113,7 @@ namespace Mix.Heart.Repository
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
                 await CompleteUowAsync();
-                await cacheService.RemoveCacheAsync(id, typeof(TEntity));
+                await CacheService.RemoveCacheAsync(id, typeof(TEntity));
             }
             catch (Exception ex)
             {
@@ -140,7 +140,7 @@ namespace Mix.Heart.Repository
                 Context.Set<TEntity>().Remove(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
                 await CompleteUowAsync();
-                await cacheService.RemoveCacheAsync(entity.Id, typeof(TEntity));
+                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity));
             }
             catch (Exception ex)
             {
@@ -190,7 +190,7 @@ namespace Mix.Heart.Repository
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync();
                 await CompleteUowAsync();
-                await cacheService.RemoveCacheAsync(entity.Id, typeof(TEntity));
+                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity));
             }
             catch (Exception ex)
             {

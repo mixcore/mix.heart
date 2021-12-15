@@ -7,7 +7,7 @@ namespace Mix.Heart.Entities.Cache
 {
     public partial class MixCacheDbContext: DbContext
     {
-        private MixHeartConfigurationModel _configs;
+        private readonly MixHeartConfigurationModel _configs;
 
         public MixCacheDbContext()
         {
