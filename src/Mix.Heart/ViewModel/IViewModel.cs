@@ -1,6 +1,3 @@
-﻿namespace Mix.Heart.ViewModel
-{
-public interface IViewModel
-{
-}
+﻿namespace Mix.Heart.ViewModel {
+  public interface IViewModel {}
 }
