@@ -2,18 +2,24 @@
 
 namespace Mix.Heart.Model
 {
-    public class PagingResponseModel<T>
+public class PagingResponseModel<T>
+{
+    public PagingResponseModel()
     {
-        public PagingResponseModel()
-        {
 
-        }
-        public PagingResponseModel(IEnumerable<T> data, IPagingModel pagingData)
-        {
-            Items = data;
-            PagingData = pagingData;
-        }
-        public IEnumerable<T> Items { get; set; }
-        public IPagingModel PagingData { get; set; }
     }
+    public PagingResponseModel(IEnumerable<T> data, IPagingModel pagingData)
+    {
+        Items = data;
+        PagingData = pagingData;
+    }
+    public IEnumerable<T> Items {
+        get;
+        set;
+    }
+    public IPagingModel PagingData {
+        get;
+        set;
+    }
+}
 }
