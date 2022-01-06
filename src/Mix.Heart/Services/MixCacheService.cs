@@ -16,10 +16,42 @@ namespace Mix.Heart.Services
 {
     public class MixCacheService
     {
-        private readonly MixHeartConfigurationModel _configs = new MixHeartConfigurationModel();
+        private readonly MixHeartConfigurationModel _configs;
         private readonly EntityRepository<MixCacheDbContext, MixCache, string> _repository;
         public bool IsCacheEnabled { get => _configs.IsCache; }
         protected JsonSerializer serializer;
+        #region Instance
+
+        /// <summary>
+        /// The synchronize root
+        /// </summary>
+        protected static readonly object syncRoot = new object();
+
+        /// <summary>
+        /// The instance
+        /// </summary>
+        private static MixCacheService instance;
+
+        public static MixCacheService Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (syncRoot)
+                    {
+                        if (instance == null)
+                        {
+                            instance = new();
+                        }
+                    }
+                }
+
+                return instance;
+            }
+        }
+
+        #endregion
         public MixCacheService()
         {
             _configs = MixHeartConfigService.Instance.AppSettings;

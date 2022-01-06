@@ -44,9 +44,6 @@ namespace Mix.Shared.Services
         {
         }
         
-        public bool IsCache => AppSettings.IsCache;
-
-
         public MixCacheDbProvider DatabaseProvider
         {
             get => AppSettings.DatabaseProvider;

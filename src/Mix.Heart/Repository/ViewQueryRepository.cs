@@ -32,7 +32,7 @@ namespace Mix.Heart.Repository
 
         public ViewQueryRepository(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
         {
-            CacheService = new();
+            CacheService = MixCacheService.Instance;
             SelectedMembers = FilterSelectedFields();
         }
 
@@ -137,9 +137,7 @@ namespace Mix.Heart.Repository
             return null;
         }
 
-        public virtual async Task<List<TView>> GetListAsync(
-                Expression<Func<TEntity, bool>> predicate,
-                MixCacheService cacheService = null)
+        public virtual async Task<List<TView>> GetListAsync(Expression<Func<TEntity, bool>> predicate)
         {
             var query = GetListQuery(predicate);
             var result = await ToListViewModelAsync(query);
@@ -174,9 +172,7 @@ namespace Mix.Heart.Repository
             return Task.FromResult((TView)classConstructor.Invoke(new object[] { entity, UowInfo }));
         }
 
-        public async Task<List<TView>> ToListViewModelAsync(
-           IQueryable<TEntity> source,
-            MixCacheService cacheService = null)
+        public async Task<List<TView>> ToListViewModelAsync(IQueryable<TEntity> source)
         {
             try
             {
@@ -253,7 +249,7 @@ namespace Mix.Heart.Repository
                 }
             }
             result.SetUowInfo(UowInfo);
-            await result.ExpandView(CacheService);
+            await result.ExpandView();
             return result;
 
         }
@@ -262,7 +258,7 @@ namespace Mix.Heart.Repository
         {
             ConstructorInfo classConstructor = typeof(TView).GetConstructor(
                 new Type[] { typeof(TEntity), typeof(MixCacheService), typeof(UnitOfWorkInfo) });
-            return (TView)classConstructor.Invoke(new object[] { entity, CacheService, UowInfo });
+            return (TView)classConstructor.Invoke(new object[] { entity, UowInfo });
         }
 
         #endregion

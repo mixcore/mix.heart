@@ -59,12 +59,12 @@ namespace Mix.Heart.ViewModel
             _isRoot = true;
         }
 
-        public ViewModelBase(TEntity entity, MixCacheService cacheService = null, UnitOfWorkInfo uowInfo = null)
+        public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
             SetUowInfo(uowInfo);
             Repository ??= GetRepository(UowInfo);
             ParseView(entity);
-            ExpandView(cacheService);
+            ExpandView();
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
@@ -118,19 +118,21 @@ namespace Mix.Heart.ViewModel
             return (TEntity)Activator.CreateInstance(classType);
         }
 
-        public virtual Task ExpandView(MixCacheService cacheService = null)
+        public virtual Task ExpandView()
         {
             return Task.CompletedTask;
         }
 
-        public virtual Task<TEntity> ParseEntity(MixCacheService cacheService = null)
+        public virtual Task<TEntity> ParseEntity()
         {
             if (IsDefaultId(Id))
             {
                 InitDefaultValues();
             }
             var entity = Activator.CreateInstance<TEntity>();
-            MapObject(this, entity);
+            var config = new MapperConfiguration(cfg => cfg.CreateMap(GetType(), typeof(TEntity)));
+            var mapper = new Mapper(config);
+            mapper.Map(this, entity);
             return Task.FromResult(entity);
         }
 
@@ -161,41 +163,6 @@ namespace Mix.Heart.ViewModel
         protected virtual void HandleException(Exception ex)
         {
             Repository.HandleException(ex);
-        }
-
-        protected void MapObject<TSource, TDestination>(TSource sourceObject, TDestination destObject)
-            where TSource : class
-            where TDestination : class
-        {
-            var sourceType = sourceObject.GetType();
-            var destType = destObject.GetType();
-
-            var sourceProperties = sourceType.GetProperties();
-            var destProperties = destType.GetProperties();
-
-            var commonProperties =
-                from sourceProperty in sourceProperties
-                join destProperty in destProperties
-                    on new
-                    {
-                        sourceProperty.Name,
-                        sourceProperty.PropertyType
-                    }
-                    equals new
-                    {
-                        destProperty.Name,
-                        destProperty.PropertyType
-                    }
-                select new
-                {
-                    SourceProperty = sourceProperty,
-                    DestProperty = destProperty
-                };
-
-            foreach (var property in commonProperties)
-            {
-                property.DestProperty.SetValue(destObject, property.SourceProperty.GetValue(sourceObject));
-            }
         }
     }
 }
