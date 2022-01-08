@@ -257,7 +257,7 @@ namespace Mix.Heart.Repository
         protected TView GetViewModel(TEntity entity)
         {
             ConstructorInfo classConstructor = typeof(TView).GetConstructor(
-                new Type[] { typeof(TEntity), typeof(MixCacheService), typeof(UnitOfWorkInfo) });
+                new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
             return (TView)classConstructor.Invoke(new object[] { entity, UowInfo });
         }
 
