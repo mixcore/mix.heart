@@ -146,8 +146,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<PagingResponseModel<TView>> GetPagingAsync(
             Expression<Func<TEntity, bool>> predicate,
-            IPagingModel paging,
-            MixCacheService cacheService = null)
+            IPagingModel paging)
         {
             BeginUow();
             var query = GetPagingQuery(predicate, paging);

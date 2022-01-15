@@ -2,18 +2,18 @@
 
 namespace Mix.Heart.Model
 {
-    public interface IPagingModel
+    public class IPagingModel
     {
-        int PageIndex { get; set; }
+        public int PageIndex { get; set; }
 
-        int? PageSize { get; set; }
+        public int? PageSize { get; set; }
 
-        int Total { get; set; }
+        public int Total { get; set; }
 
-        int TotalPage { get; set; }
+        public int TotalPage { get; set; }
 
-        string SortBy { get; set; }
+        public string SortBy { get; set; }
 
-        SortDirection SortDirection { get; set; }
+        public SortDirection SortDirection { get; set; }
     }
 }
