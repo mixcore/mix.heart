@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
-using Mix.Heart.Model;
+using Mix.Heart.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -25,9 +25,9 @@ namespace Mix.Heart.Helpers
             TEntity model, TDbContext context)
             where TDbContext : DbContext
         {
-            
+
             Expression<Func<TEntity, bool>> predicate = null;
-           
+
             foreach (var item in context.Model.FindEntityType(typeof(TEntity)).FindPrimaryKey().Properties)
             {
                 var pre = GetExpression<TEntity>(
@@ -54,7 +54,7 @@ namespace Mix.Heart.Helpers
         {
             serializer.Converters.Add(new StringEnumConverter());
             var result = JObject.FromObject(model, serializer).Properties()
-                            .Where(p => selectMembers.Any(m=> m.ToLower() == p.Name.ToLower()));
+                            .Where(p => selectMembers.Any(m => m.ToLower() == p.Name.ToLower()));
             return new JObject() { result };
         }
 

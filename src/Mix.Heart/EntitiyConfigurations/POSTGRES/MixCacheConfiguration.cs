@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Mix.Heart.Enums;
 using Mix.Heart.Entities.Cache;
+using Mix.Heart.Enums;
 
 namespace Mix.Heart.Infrastructure.EntityConfigurations.POSTGRES
 {

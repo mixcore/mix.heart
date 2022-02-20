@@ -17,7 +17,7 @@ namespace Mix.Heart.Repository
         where TPrimaryKey : IComparable
         where TDbContext : DbContext
         where TEntity : class, IEntity<TPrimaryKey>
-        where TView: ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
+        where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
         public Repository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
         public Repository(TDbContext dbContext) : base(dbContext) { }

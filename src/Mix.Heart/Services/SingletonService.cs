@@ -3,7 +3,7 @@
 namespace Mix.Heart.Services
 {
     public class SingletonService<T>
-        where T: class
+        where T : class
     {
         /// <summary>
         /// The synchronize root

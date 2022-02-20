@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
-using Mix.Heart.Model;
+using Mix.Heart.Models;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Linq;

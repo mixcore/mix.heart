@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Threading.Tasks;
 
 namespace Mix.Heart.UnitOfWork
 {

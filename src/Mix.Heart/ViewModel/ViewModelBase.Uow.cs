@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using Mix.Heart.Enums;
+﻿using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
+using System;
+using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
@@ -65,7 +65,7 @@ namespace Mix.Heart.ViewModel
             if (contextCtorInfo == null)
             {
                 throw new MixException(
-                        MixErrorStatus.ServerError, 
+                        MixErrorStatus.ServerError,
                         $"{dbContextType}: Contructor Parameterless Notfound");
             }
 

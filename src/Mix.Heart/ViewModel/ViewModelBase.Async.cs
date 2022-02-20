@@ -1,7 +1,7 @@
 ﻿using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Helpers;
-using Mix.Heart.Model;
+using Mix.Heart.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

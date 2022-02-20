@@ -1,6 +1,5 @@
 ﻿using Mix.Heart.Entities.Cache;
 using Mix.Heart.Enums;
-using Mix.Heart.Model;
 using Mix.Heart.Models;
 using Mix.Heart.Repository;
 using Mix.Shared.Services;

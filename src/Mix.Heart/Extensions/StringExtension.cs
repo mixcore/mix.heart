@@ -42,8 +42,8 @@ namespace Mix.Heart.Extensions
 
         public static string ToSEOString(this string str, char replaceChar = '-')
         {
-            return !string.IsNullOrEmpty(str) 
-                ? WhiteSpaceToHyphen(ConvertToUnSign(DeleteSpecialCharaters(str)), replaceChar) 
+            return !string.IsNullOrEmpty(str)
+                ? WhiteSpaceToHyphen(ConvertToUnSign(DeleteSpecialCharaters(str)), replaceChar)
                 : str;
         }
 

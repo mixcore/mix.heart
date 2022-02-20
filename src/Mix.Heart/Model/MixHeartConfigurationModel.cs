@@ -1,6 +1,6 @@
 ﻿using Mix.Heart.Enums;
 
-namespace Mix.Heart.Model
+namespace Mix.Heart.Models
 {
     public class MixHeartConfigurationModel
     {

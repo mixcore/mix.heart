@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Enums;
-using Mix.Heart.Model;
+using Mix.Heart.Models;
 using Mix.Shared.Services;
 
 namespace Mix.Heart.Entities.Cache
 {
-    public partial class MixCacheDbContext: DbContext
+    public partial class MixCacheDbContext : DbContext
     {
         private readonly MixHeartConfigurationModel _configs;
 
@@ -19,7 +19,7 @@ namespace Mix.Heart.Entities.Cache
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //string cnn = MixCommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheConnectionString);
-            
+
             if (!string.IsNullOrEmpty(_configs.ConnectionString))
             {
                 switch (_configs.DatabaseProvider)

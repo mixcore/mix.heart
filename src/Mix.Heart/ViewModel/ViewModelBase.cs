@@ -4,7 +4,6 @@ using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Repository;
-using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Collections.Generic;

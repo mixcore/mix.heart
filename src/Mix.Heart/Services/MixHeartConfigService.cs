@@ -1,6 +1,6 @@
 ﻿using Mix.Heart.Constants;
 using Mix.Heart.Enums;
-using Mix.Heart.Model;
+using Mix.Heart.Models;
 using Mix.Heart.Services;
 
 namespace Mix.Shared.Services
@@ -43,7 +43,7 @@ namespace Mix.Shared.Services
             : base(MixHeartConstants.ConfigFilePath)
         {
         }
-        
+
         public MixCacheDbProvider DatabaseProvider
         {
             get => AppSettings.DatabaseProvider;

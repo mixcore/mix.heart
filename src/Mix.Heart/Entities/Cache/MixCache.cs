@@ -3,7 +3,7 @@ using System;
 
 namespace Mix.Heart.Entities.Cache
 {
-    public class MixCache: Entity<string>
+    public class MixCache : Entity<string>
     {
         public string Value { get; set; }
         public DateTime? ExpiredDateTime { get; set; }
