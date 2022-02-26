@@ -39,7 +39,7 @@ namespace Mix.Heart.Repository
         }
 
         public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate,
-                       IPagingModel paging)
+                       PagingModel paging)
         {
             var query = GetListQuery(predicate);
             paging.Total = query.Count();

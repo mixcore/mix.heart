@@ -8,12 +8,12 @@ namespace Mix.Heart.Models
         {
 
         }
-        public PagingResponseModel(IEnumerable<T> data, IPagingModel pagingData)
+        public PagingResponseModel(IEnumerable<T> data, PagingModel pagingData)
         {
             Items = data;
             PagingData = pagingData;
         }
         public IEnumerable<T> Items { get; set; }
-        public IPagingModel PagingData { get; set; }
+        public PagingModel PagingData { get; set; }
     }
 }

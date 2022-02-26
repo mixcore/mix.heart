@@ -53,7 +53,7 @@ namespace Mix.Heart.Repository
             return Table.Where(predicate);
         }
 
-        public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate, IPagingModel paging)
+        public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate, PagingModel paging)
         {
             var query = GetListQuery(predicate);
             paging.Total = query.Count();
@@ -146,7 +146,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<PagingResponseModel<TView>> GetPagingAsync(
             Expression<Func<TEntity, bool>> predicate,
-            IPagingModel paging)
+            PagingModel paging)
         {
             BeginUow();
             var query = GetPagingQuery(predicate, paging);
@@ -189,7 +189,7 @@ namespace Mix.Heart.Repository
 
         protected async Task<PagingResponseModel<TView>> ToPagingViewModelAsync(
             IQueryable<TEntity> source,
-            IPagingModel pagingData,
+            PagingModel pagingData,
             MixCacheService cacheService = null)
         {
             try

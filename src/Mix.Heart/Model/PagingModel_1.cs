@@ -2,7 +2,7 @@
 
 namespace Mix.Heart.Models
 {
-    public class IPagingModel
+    public class PagingModel
     {
         public int PageIndex { get; set; }
 
