@@ -63,7 +63,6 @@ namespace Mix.Heart.ViewModel
             SetUowInfo(uowInfo);
             Repository ??= GetRepository(UowInfo);
             ParseView(entity);
-            ExpandView();
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
@@ -83,6 +82,11 @@ namespace Mix.Heart.ViewModel
         }
 
         #endregion
+
+        public virtual Task ExpandView()
+        {
+            return Task.CompletedTask;
+        }
 
         public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo)
         {
@@ -117,10 +121,7 @@ namespace Mix.Heart.ViewModel
             return (TEntity)Activator.CreateInstance(classType);
         }
 
-        public virtual Task ExpandView()
-        {
-            return Task.CompletedTask;
-        }
+       
 
         public virtual Task<TEntity> ParseEntity()
         {
