@@ -103,7 +103,7 @@ namespace Mix.Heart.Repository
             try
             {
                 BeginUow();
-                var entity = await GetByIdAsync(id);
+                var entity = await GetEntityByIdAsync(id);
                 if (entity == null)
                 {
                     await HandleExceptionAsync(new MixException(MixErrorStatus.NotFound, id));

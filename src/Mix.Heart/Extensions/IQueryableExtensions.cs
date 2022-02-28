@@ -10,8 +10,9 @@ namespace Mix.Heart.Extensions
         {
             var parameter = Expression.Parameter(typeof(TEntity), "model");
             var bindings = memberNames
-                .Select(name => Expression.PropertyOrField(parameter, name))
-                .Select(member => Expression.Bind(member.Member, member));
+                .Select(name => Expression.Property(parameter, name))
+                .Select(member => Expression.Bind(member.Member, member))
+                ;
             var body = Expression.MemberInit(Expression.New(typeof(TEntity)), bindings);
             var selector = Expression.Lambda<Func<TEntity, TEntity>>(body, parameter);
             return source.Select(selector);

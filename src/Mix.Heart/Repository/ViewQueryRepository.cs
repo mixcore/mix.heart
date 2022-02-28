@@ -50,7 +50,7 @@ namespace Mix.Heart.Repository
 
         public IQueryable<TEntity> GetListQuery(Expression<Func<TEntity, bool>> predicate)
         {
-            return Table.Where(predicate);
+            return Table.AsNoTracking().Where(predicate);
         }
 
         public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate, PagingModel paging)
@@ -77,7 +77,7 @@ namespace Mix.Heart.Repository
             return query;
         }
 
-        public virtual async Task<TEntity> GetByIdAsync(TPrimaryKey id)
+        public virtual async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)
         {
             return await Table.SelectMembers(SelectedMembers).AsNoTracking().SingleOrDefaultAsync(m => m.Id.Equals(id));
         }
@@ -109,30 +109,43 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TView> GetSingleAsync(TPrimaryKey id)
         {
-            var entity = await GetByIdAsync(id);
-            if (entity != null)
+
+            if (CacheService != null && CacheService.IsCacheEnabled)
             {
-                return await ParseEntityAsync(entity);
+                TView result = await CacheService.GetAsync<TView>($"{id}/{typeof(TView).FullName}", typeof(TEntity), CacheFilename);
+                if (result != null)
+                {
+                    result.SetUowInfo(UowInfo);
+                    await result.ExpandView();
+                    return result;
+                }
+            }
+            else
+            {
+                var entity = await GetEntityByIdAsync(id);
+                return await GetSingleViewAsync(entity);
             }
             throw new MixException(MixErrorStatus.NotFound, id);
         }
 
         public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            var entity = await Table.AsNoTracking().SingleOrDefaultAsync(predicate);
+            var entity = await Table.AsNoTracking().SelectMembers(KeyMembers).SingleOrDefaultAsync(predicate);
             if (entity != null)
             {
-                return await ParseEntityAsync(entity);
+                return await GetSingleAsync(entity.Id);
             }
             return null;
         }
 
         public virtual async Task<TView> GetFirstAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            var entity = await Table.AsNoTracking().FirstOrDefaultAsync(predicate);
+            var entity = await Table.AsNoTracking().Where(predicate)
+                .SelectMembers(SelectedMembers)
+                .FirstOrDefaultAsync();
             if (entity != null)
             {
-                return await ParseEntityAsync(entity);
+                return await GetSingleAsync(entity.Id);
             }
             return null;
         }
@@ -175,7 +188,7 @@ namespace Mix.Heart.Repository
         {
             try
             {
-                var entities = await source.SelectMembers(SelectedMembers).AsNoTracking().ToListAsync();
+                var entities = await source.SelectMembers(KeyMembers).AsNoTracking().ToListAsync();
 
                 List<TView> data = await ParseEntitiesAsync(entities);
 
@@ -207,7 +220,7 @@ namespace Mix.Heart.Repository
 
         protected async Task<List<TEntity>> GetEntities(IQueryable<TEntity> source)
         {
-            return await source.SelectMembers(SelectedMembers).ToListAsync();
+            return await source.SelectMembers(KeyMembers).ToListAsync();
         }
 
         protected async Task<List<TView>> ParseEntitiesAsync(List<TEntity> entities)
@@ -216,35 +229,26 @@ namespace Mix.Heart.Repository
 
             foreach (var entity in entities)
             {
-                var view = await ParseEntityAsync(entity);
+                var view = await GetSingleAsync(entity.Id);
                 data.Add(view);
             }
             return data;
         }
 
-        protected async Task<TView> ParseEntityAsync(TEntity entity)
+        protected async Task<TView> GetSingleViewAsync(TEntity entity)
         {
-            TView result = null;
-            if (CacheService != null && CacheService.IsCacheEnabled)
-            {
-                result = await CacheService.GetAsync<TView>($"{entity.Id}/{typeof(TView).FullName}", typeof(TEntity), CacheFilename);
-            }
+            TView result = GetViewModel(entity);
 
-            if (result == null)
+            if (result != null && CacheService != null)
             {
-                result = GetViewModel(entity);
-
-                if (result != null && CacheService != null)
+                if (CacheFilename == "full")
                 {
-                    if (CacheFilename == "full")
-                    {
-                        await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", result, typeof(TEntity), CacheFilename);
-                    }
-                    else
-                    {
-                        var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
-                        await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", obj, typeof(TEntity), CacheFilename);
-                    }
+                    await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", result, typeof(TEntity), CacheFilename);
+                }
+                else
+                {
+                    var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
+                    await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", obj, typeof(TEntity), CacheFilename);
                 }
             }
             result.SetUowInfo(UowInfo);
