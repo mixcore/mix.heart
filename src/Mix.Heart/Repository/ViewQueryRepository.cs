@@ -120,17 +120,16 @@ namespace Mix.Heart.Repository
                     return result;
                 }
             }
-            else
-            {
-                var entity = await GetEntityByIdAsync(id);
-                return await GetSingleViewAsync(entity);
-            }
-            throw new MixException(MixErrorStatus.NotFound, id);
+            var entity = await GetEntityByIdAsync(id);
+            return await GetSingleViewAsync(entity);
         }
 
         public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            var entity = await Table.AsNoTracking().SelectMembers(KeyMembers).SingleOrDefaultAsync(predicate);
+            var entity = await Table.AsNoTracking()
+                            .Where(predicate)
+                            .SelectMembers(KeyMembers)
+                            .SingleOrDefaultAsync();
             if (entity != null)
             {
                 return await GetSingleAsync(entity.Id);
