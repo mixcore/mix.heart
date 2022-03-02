@@ -236,24 +236,28 @@ namespace Mix.Heart.Repository
 
         protected async Task<TView> GetSingleViewAsync(TEntity entity)
         {
-            TView result = GetViewModel(entity);
-
-            if (result != null && CacheService != null)
+            if (entity != null)
             {
-                if (CacheFilename == "full")
-                {
-                    await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", result, typeof(TEntity), CacheFilename);
-                }
-                else
-                {
-                    var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
-                    await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", obj, typeof(TEntity), CacheFilename);
-                }
-            }
-            result.SetUowInfo(UowInfo);
-            await result.ExpandView();
-            return result;
 
+                TView result = GetViewModel(entity);
+
+                if (result != null && CacheService != null)
+                {
+                    if (CacheFilename == "full")
+                    {
+                        await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", result, typeof(TEntity), CacheFilename);
+                    }
+                    else
+                    {
+                        var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
+                        await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", obj, typeof(TEntity), CacheFilename);
+                    }
+                }
+                result.SetUowInfo(UowInfo);
+                await result.ExpandView();
+                return result;
+            }
+            return default;
         }
 
         protected TView GetViewModel(TEntity entity)
