@@ -61,14 +61,12 @@ namespace Mix.Heart.ViewModel
         public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
             SetUowInfo(uowInfo);
-            Repository ??= GetRepository(UowInfo);
             ParseView(entity);
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
         {
-            UowInfo = unitOfWorkInfo;
-            Repository ??= GetRepository(UowInfo);
+            SetUowInfo(unitOfWorkInfo);
         }
 
         #endregion

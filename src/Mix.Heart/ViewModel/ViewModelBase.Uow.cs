@@ -28,6 +28,7 @@ namespace Mix.Heart.ViewModel
             {
                 UowInfo = unitOfWorkInfo;
                 _isRoot = false;
+                Repository ??= GetRepository(UowInfo);
             }
         }
 
