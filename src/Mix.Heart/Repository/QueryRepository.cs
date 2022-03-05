@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
+using Mix.Heart.Exceptions;
 using Mix.Heart.Models;
 using Mix.Heart.UnitOfWork;
 using System;
@@ -76,6 +77,13 @@ namespace Mix.Heart.Repository
         }
 
         #region Entity Async
+
+        public async Task<PagingResponseModel<TEntity>> GetPagingEntitiesAsync(Expression<Func<TEntity, bool>> predicate,
+                      PagingModel paging)
+        {
+            var source = GetPagingQuery(predicate, paging);
+            return await ToPagingEntityAsync(source, paging);
+        }
 
         public async Task<TEntity> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
         {
@@ -156,7 +164,21 @@ namespace Mix.Heart.Repository
         #endregion
 
         #region Helper
+        protected async Task<PagingResponseModel<TEntity>> ToPagingEntityAsync(
+           IQueryable<TEntity> source,
+           PagingModel pagingData)
+        {
+            try
+            {
+                var entities = await source.ToListAsync();
 
+                return new PagingResponseModel<TEntity>(entities, pagingData);
+            }
+            catch (Exception ex)
+            {
+                throw new MixException(ex.Message);
+            }
+        }
         protected LambdaExpression GetLambda(string propName, bool isGetDefault = true)
         {
             var parameter = Expression.Parameter(typeof(TEntity));
