@@ -17,5 +17,6 @@ namespace Mix.Heart.Entities
         public string ModifiedBy { get; set; }
         public int Priority { get; set; }
         public MixContentStatus Status { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

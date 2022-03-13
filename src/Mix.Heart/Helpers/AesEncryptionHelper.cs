@@ -66,10 +66,10 @@ namespace Mix.Heart.Helpers
                 encryptedBytes, 0, encryptedBytes.Length));
         }
 
-        public static string GenerateCombinedKeys(int iKeySize)
+        public static string GenerateCombinedKeys()
         {
             using var aesEncryption = Aes.Create();
-            aesEncryption.BlockSize = iKeySize;
+            aesEncryption.BlockSize = 128;
             aesEncryption.Mode = CipherMode.CBC;
             aesEncryption.Padding = PaddingMode.PKCS7;
             aesEncryption.GenerateIV();

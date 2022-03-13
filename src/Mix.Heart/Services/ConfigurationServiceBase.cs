@@ -1,4 +1,5 @@
 ﻿using Mix.Heart.Constants;
+using Mix.Heart.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -11,6 +12,8 @@ namespace Mix.Heart.Services
     {
         private string filePath;
         private JObject _obj;
+        protected bool _isEncrypt;
+        public string AesKey { get; set; }
         public T AppSettings { get; set; }
         protected string FilePath { get => filePath; set => filePath = value; }
 
@@ -19,6 +22,13 @@ namespace Mix.Heart.Services
         public ConfigurationServiceBase(string filePath)
         {
             FilePath = filePath;
+            LoadAppSettings();
+            WatchFile();
+        }
+        public ConfigurationServiceBase(string filePath, bool isEncrypt)
+        {
+            FilePath = filePath;
+            _isEncrypt = isEncrypt;
             LoadAppSettings();
             WatchFile();
         }
@@ -65,6 +75,10 @@ namespace Mix.Heart.Services
             if (settings != null)
             {
                 settings.Content = JObject.FromObject(AppSettings).ToString(Formatting.None);
+                if (_isEncrypt)
+                {
+                    settings.Content = AesEncryptionHelper.EncryptString(settings.Content, AesKey);
+                }
                 return MixFileHelper.SaveFile(settings);
             }
             else
@@ -91,6 +105,12 @@ namespace Mix.Heart.Services
         {
             var settings = MixFileHelper.GetFile(FilePath, MixFileExtensions.Json, string.Empty, true);
             string content = string.IsNullOrWhiteSpace(settings.Content) ? "{}" : settings.Content;
+            
+            if (_isEncrypt &&  !content.StartsWith('{'))
+            {
+                content = AesEncryptionHelper.DecryptString(content, AesKey);
+            }
+            
             _obj = JObject.Parse(content);
             AppSettings = _obj.ToObject<T>();
         }
