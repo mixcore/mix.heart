@@ -81,6 +81,11 @@ namespace Mix.Heart.Helpers
             return fieldPropertyType;
         }
 
+        public static bool HasProperty(Type type, string propertyName)
+        {
+            return type.GetProperty(propertyName.ToTitleCase()) != null;
+        }
+
         public static object GetPropertyValue<T>(T data, string fieldName)
         {
             var prop = data.GetType().GetProperty(fieldName.ToTitleCase());
