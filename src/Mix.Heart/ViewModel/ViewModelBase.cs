@@ -119,7 +119,7 @@ namespace Mix.Heart.ViewModel
             return (TEntity)Activator.CreateInstance(classType);
         }
 
-       
+
 
         public virtual Task<TEntity> ParseEntity()
         {

@@ -105,12 +105,12 @@ namespace Mix.Heart.Services
         {
             var settings = MixFileHelper.GetFile(FilePath, MixFileExtensions.Json, string.Empty, true);
             string content = string.IsNullOrWhiteSpace(settings.Content) ? "{}" : settings.Content;
-            
-            if (_isEncrypt &&  !content.StartsWith('{'))
+
+            if (_isEncrypt && !content.StartsWith('{'))
             {
                 content = AesEncryptionHelper.DecryptString(content, AesKey);
             }
-            
+
             _obj = JObject.Parse(content);
             AppSettings = _obj.ToObject<T>();
         }
