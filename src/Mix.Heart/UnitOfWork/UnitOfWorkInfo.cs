@@ -62,6 +62,8 @@ namespace Mix.Heart.UnitOfWork
         {
             ActiveDbContext.SaveChanges();
             ActiveTransaction.Commit();
+            ActiveTransaction.Dispose();
+            ActiveTransaction = null;
         }
 
         /// <summary>
@@ -71,6 +73,8 @@ namespace Mix.Heart.UnitOfWork
         {
             await ActiveDbContext.SaveChangesAsync();
             await ActiveTransaction.CommitAsync();
+            await ActiveTransaction.DisposeAsync();
+            ActiveTransaction = null;
         }
     }
 }
