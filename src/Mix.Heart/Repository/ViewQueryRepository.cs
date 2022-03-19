@@ -79,7 +79,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)
         {
-            return await Table.SelectMembers(SelectedMembers).AsNoTracking().SingleOrDefaultAsync(m => m.Id.Equals(id));
+            return await Table.Where(m => m.Id.Equals(id)).SelectMembers(SelectedMembers).AsNoTracking().SingleOrDefaultAsync();
         }
         #endregion
 

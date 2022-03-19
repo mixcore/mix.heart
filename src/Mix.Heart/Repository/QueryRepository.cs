@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
 using Mix.Heart.Exceptions;
+using Mix.Heart.Helpers;
 using Mix.Heart.Models;
+using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Linq;
@@ -16,14 +18,31 @@ namespace Mix.Heart.Repository
         where TEntity : class, IEntity<TPrimaryKey>
         where TPrimaryKey : IComparable
     {
+
+        #region Properties
+
+        protected MixCacheService CacheService { get; set; }
+
+        public string CacheFilename { get; protected set; } = "full";
+
+        public string[] SelectedMembers { get; protected set; }
+
+        protected string[] KeyMembers { get { return ReflectionHelper.GetKeyMembers(Context, typeof(TEntity)); } }
+
+        protected DbSet<TEntity> Table => Context?.Set<TEntity>();
+
+        #endregion
+
         public QueryRepository(TDbContext dbContext) : base(dbContext) { }
 
         public QueryRepository()
         {
+            SelectedMembers = FilterSelectedFields();
         }
 
         public QueryRepository(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
         {
+            SelectedMembers = FilterSelectedFields();
         }
 
 
@@ -164,6 +183,12 @@ namespace Mix.Heart.Repository
         #endregion
 
         #region Helper
+        private string[] FilterSelectedFields()
+        {
+            var properties = typeof(TEntity).GetProperties();
+            return properties.Where(p => p.PropertyType.IsValueType).Select(p => p.Name).ToArray();
+        }
+
         protected async Task<PagingResponseModel<TEntity>> ToPagingEntityAsync(
            IQueryable<TEntity> source,
            PagingModel pagingData)

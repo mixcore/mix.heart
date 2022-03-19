@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
@@ -21,6 +22,14 @@ namespace Mix.Heart.Helpers
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
+
+        public static void Mapping<TSource, TDest>(TSource sourceObject, TDest destObject)
+        {
+            var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TDest)));
+            var mapper = new Mapper(config);
+            mapper.Map(sourceObject, destObject);
+        }
+
         public static Expression<Func<TEntity, bool>> BuildExpressionByKeys<TEntity, TDbContext>(
             TEntity model, TDbContext context)
             where TDbContext : DbContext
