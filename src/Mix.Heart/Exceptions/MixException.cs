@@ -37,5 +37,6 @@ namespace Mix.Heart.Exceptions
         public MixErrorStatus Status { get; set; } = MixErrorStatus.ServerError;
 
         public object Value { get; set; }
+        public string[] Errors { get => Message?.Split('\n') ?? new string[] { }; }
     }
 }
