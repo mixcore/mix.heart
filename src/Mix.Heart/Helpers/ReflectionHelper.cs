@@ -10,6 +10,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -22,6 +23,13 @@ namespace Mix.Heart.Helpers
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
+
+        public static Dictionary<string, string> ConverObjectToDictinary(object someObject)
+        {
+            return someObject.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .ToDictionary(prop => prop.Name, prop => prop.GetValue(someObject, null)?.ToString());
+        }
 
         public static void Mapping<TSource, TDest>(TSource sourceObject, TDest destObject)
         {
