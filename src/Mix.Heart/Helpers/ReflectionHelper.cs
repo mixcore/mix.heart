@@ -24,6 +24,11 @@ namespace Mix.Heart.Helpers
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
+        public static JObject ParseObject<T>(T obj)
+        {
+            return JObject.FromObject(obj, serializer);
+        }
+
         public static Dictionary<string, string> ConverObjectToDictinary(object someObject)
         {
             return someObject.GetType()

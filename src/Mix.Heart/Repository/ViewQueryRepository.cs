@@ -259,7 +259,7 @@ namespace Mix.Heart.Repository
             }
             return default;
         }
-
+            
         protected TView GetViewModel(TEntity entity)
         {
             ConstructorInfo classConstructor = typeof(TView).GetConstructor(
@@ -273,7 +273,7 @@ namespace Mix.Heart.Repository
         {
             var parameter = Expression.Parameter(typeof(TEntity));
             var type = typeof(TEntity);
-            var prop = Array.Find(type.GetProperties(), p => p.Name == propName);
+            var prop = Array.Find(type.GetProperties(), p => p.Name == propName.ToTitleCase());
             if (prop == null && isGetDefault)
             {
                 propName = "Id";
