@@ -74,19 +74,20 @@ namespace Mix.Heart.Services
             return result ?? new FileModel() { FileFolder = FileFolder };
         }
 
-        public static FileModel GetFile(
+        public static FileModel GetFileByFullName(
            string fullName,
-           string FileFolder,
            bool isCreate = false,
            string defaultContent = null)
         {
             FileModel result = null;
 
-            string fullPath = $"{CurrentDirectory}/{FileFolder}/{fullName}";
+            string fullPath = $"{CurrentDirectory}/{fullName}";
 
             FileInfo fileinfo = new FileInfo(fullPath);
-            string name = fullName[..fullName.LastIndexOf('.')];
-            string ext = fullName[fullName.LastIndexOf('.')..];
+            string folder = fullName[..fullName.LastIndexOf('/')];
+            string filename = fullName[fullName.LastIndexOf('/')..];
+            string name = filename[..filename.LastIndexOf('.')];
+            string ext = filename[filename.LastIndexOf('.')..];
             if (fileinfo.Exists)
             {
                 try
@@ -97,7 +98,7 @@ namespace Mix.Heart.Services
                         {
                             result = new FileModel()
                             {
-                                FileFolder = FileFolder,
+                                FileFolder = folder,
                                 Filename = name,
                                 Extension = ext,
                                 Content = s.ReadToEnd()
@@ -112,11 +113,11 @@ namespace Mix.Heart.Services
             }
             else if (isCreate)
             {
-                CreateFolderIfNotExist(FileFolder);
+                CreateFolderIfNotExist(folder);
                 fileinfo.Create();
                 result = new FileModel()
                 {
-                    FileFolder = FileFolder,
+                    FileFolder = folder,
                     Filename = name,
                     Extension = ext,
                     Content = defaultContent
@@ -124,7 +125,7 @@ namespace Mix.Heart.Services
                 SaveFile(result);
             }
 
-            return result ?? new FileModel() { FileFolder = FileFolder };
+            return result ?? new FileModel() { FileFolder = folder };
         }
         #endregion
 
