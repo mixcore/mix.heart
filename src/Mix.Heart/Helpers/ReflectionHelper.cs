@@ -150,9 +150,11 @@ namespace Mix.Heart.Helpers
             }
         }
 
-        public static Expression<Func<T, bool>>
-        GetExpression<T>(string propertyName, object propertyValue,
-                         ExpressionMethod kind, string name = "model")
+        public static Expression<Func<T, bool>> GetExpression<T>(
+                        string propertyName, 
+                        object propertyValue,
+                        ExpressionMethod kind, 
+                        string name = "model")
         {
             Type type = typeof(T);
             var par = Expression.Parameter(type, name);
@@ -169,6 +171,7 @@ namespace Mix.Heart.Helpers
             }
             else
             {
+                
                 PropertyInfo propertyInfo =
                     type.GetProperty(propertyName.ToTitleCase());
 
