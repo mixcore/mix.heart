@@ -26,6 +26,7 @@ namespace Mix.Heart.Helpers
 
         public static JObject ParseObject<T>(T obj)
         {
+            serializer.Converters.Add(new StringEnumConverter());
             return JObject.FromObject(obj, serializer);
         }
 
