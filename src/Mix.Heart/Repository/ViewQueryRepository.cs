@@ -259,7 +259,7 @@ namespace Mix.Heart.Repository
             }
             return default;
         }
-            
+
         protected TView GetViewModel(TEntity entity)
         {
             ConstructorInfo classConstructor = typeof(TView).GetConstructor(
