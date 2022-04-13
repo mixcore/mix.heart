@@ -3,6 +3,7 @@
     public enum ExpressionMethod
     {
         Eq,
+        Ct,
         Lt,
         Gt,
         Lte,

@@ -204,44 +204,48 @@ namespace Mix.Heart.Helpers
             {
                 data2 = data2.ToString().Replace("'", "");
             }
-            BinaryExpression eq = null;
+            Expression expression = null;
             switch (kind)
             {
                 case ExpressionMethod.Eq:
-                    eq = Expression.Equal(fieldPropertyExpression,
+                    expression = Expression.Equal(fieldPropertyExpression,
                                           Expression.Constant(data2, fieldPropertyType));
                     break;
 
+                case ExpressionMethod.Ct:
+                    expression = GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
+                    break;
+
                 case ExpressionMethod.Lt:
-                    eq = Expression.LessThan(fieldPropertyExpression,
+                    expression = Expression.LessThan(fieldPropertyExpression,
                                              Expression.Constant(data2, fieldPropertyType));
                     break;
 
                 case ExpressionMethod.Gt:
-                    eq = Expression.GreaterThan(
+                    expression = Expression.GreaterThan(
                         fieldPropertyExpression,
                         Expression.Constant(data2, fieldPropertyType));
                     break;
 
                 case ExpressionMethod.Lte:
-                    eq = Expression.LessThanOrEqual(
+                    expression = Expression.LessThanOrEqual(
                         fieldPropertyExpression,
                         Expression.Constant(data2, fieldPropertyType));
                     break;
 
                 case ExpressionMethod.Gte:
-                    eq = Expression.GreaterThanOrEqual(
+                    expression = Expression.GreaterThanOrEqual(
                         fieldPropertyExpression,
                         Expression.Constant(data2, fieldPropertyType));
                     break;
 
                 case ExpressionMethod.And:
-                    eq = Expression.And(fieldPropertyExpression,
+                    expression = Expression.And(fieldPropertyExpression,
                                         Expression.Constant(data2, fieldPropertyType));
                     break;
 
                 case ExpressionMethod.Or:
-                    eq = Expression.Or(fieldPropertyExpression,
+                    expression = Expression.Or(fieldPropertyExpression,
                                        Expression.Constant(data2, fieldPropertyType));
                     break;
 
@@ -249,7 +253,14 @@ namespace Mix.Heart.Helpers
                     break;
             }
 
-            return Expression.Lambda<Func<T, bool>>(eq, par);
+            return Expression.Lambda<Func<T, bool>>(expression, par);
+        }
+
+        private static Expression GetStringContainsExpression(Expression fieldExpression, string propertyName, object propertyValue)
+        {
+            MethodInfo method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+            var someValue = Expression.Constant(propertyValue, typeof(string));
+            return Expression.Call(fieldExpression, method, someValue);
         }
 
         public static T InitModel<T>()

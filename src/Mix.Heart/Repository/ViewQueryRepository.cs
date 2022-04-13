@@ -87,10 +87,15 @@ namespace Mix.Heart.Repository
         {
             SelectedMembers = selectMembers;
             var properties = typeof(TView).GetProperties().Select(p => p.Name);
+            if (!SelectedMembers.Any(m=>m == "Id"))
+            {
+                SelectedMembers = SelectedMembers.Prepend("Id").ToArray();
+            }
             var arrIndex = properties
             .Select((prop, index) => new { Property = prop, Index = index })
             .Where(x => selectMembers.Any(m => m.ToLower() == x.Property.ToLower()))
-            .Select(x => x.Index.ToString())
+            .OrderBy(x=> x.Index)
+            .Select(x => x.Index)
             .ToArray();
             CacheFilename = string.Join('-', arrIndex);
         }
