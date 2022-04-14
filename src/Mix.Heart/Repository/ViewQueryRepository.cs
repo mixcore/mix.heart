@@ -85,16 +85,16 @@ namespace Mix.Heart.Repository
 
         public void SetSelectedMembers(string[] selectMembers)
         {
-            SelectedMembers = selectMembers;
             var properties = typeof(TView).GetProperties().Select(p => p.Name);
-            if (!SelectedMembers.Any(m=>m == "Id"))
+            SelectedMembers = SelectedMembers.Where(m => selectMembers.Contains(m.ToCamelCase())).ToArray();
+            if (!SelectedMembers.Any(m => m == "Id"))
             {
                 SelectedMembers = SelectedMembers.Prepend("Id").ToArray();
             }
             var arrIndex = properties
             .Select((prop, index) => new { Property = prop, Index = index })
-            .Where(x => selectMembers.Any(m => m.ToLower() == x.Property.ToLower()))
-            .OrderBy(x=> x.Index)
+            .Where(x => SelectedMembers.Any(m => m.ToLower() == x.Property.ToLower()))
+            .OrderBy(x => x.Index)
             .Select(x => x.Index)
             .ToArray();
             CacheFilename = string.Join('-', arrIndex);
@@ -120,8 +120,11 @@ namespace Mix.Heart.Repository
                 TView result = await CacheService.GetAsync<TView>($"{id}/{typeof(TView).FullName}", typeof(TEntity), CacheFilename);
                 if (result != null)
                 {
-                    result.SetUowInfo(UowInfo);
-                    await result.ExpandView();
+                    if (CacheFilename == "full")
+                    {
+                        result.SetUowInfo(UowInfo);
+                        await result.ExpandView();
+                    }
                     return result;
                 }
             }
@@ -250,6 +253,8 @@ namespace Mix.Heart.Repository
                 {
                     if (CacheFilename == "full")
                     {
+                        result.SetUowInfo(UowInfo);
+                        await result.ExpandView();
                         await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", result, typeof(TEntity), CacheFilename);
                     }
                     else
@@ -258,8 +263,7 @@ namespace Mix.Heart.Repository
                         await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", obj, typeof(TEntity), CacheFilename);
                     }
                 }
-                result.SetUowInfo(UowInfo);
-                await result.ExpandView();
+
                 return result;
             }
             return default;
