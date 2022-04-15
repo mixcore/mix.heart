@@ -258,9 +258,14 @@ namespace Mix.Heart.Helpers
 
         private static Expression GetStringContainsExpression(Expression fieldExpression, string propertyName, object propertyValue)
         {
-            MethodInfo method = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-            var someValue = Expression.Constant(propertyValue, typeof(string));
-            return Expression.Call(fieldExpression, method, someValue);
+            var likeMethod = typeof(DbFunctionsExtensions).GetMethod("Like",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                new[] { typeof(DbFunctions), typeof(string), typeof(string) },
+                null);
+            string pattern = $"%{propertyValue}%";
+            ConstantExpression likeConstant = Expression.Constant(pattern, typeof(string));
+            return Expression.Call(method: likeMethod, arguments: new[] { Expression.Property(null, typeof(EF), nameof(EF.Functions)), fieldExpression, likeConstant });
         }
 
         public static T InitModel<T>()
