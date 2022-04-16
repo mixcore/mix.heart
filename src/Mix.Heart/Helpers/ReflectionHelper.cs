@@ -19,14 +19,20 @@ namespace Mix.Heart.Helpers
 {
     public class ReflectionHelper
     {
-        static JsonSerializer serializer = new JsonSerializer()
+        static JsonSerializer serializer = InitSerializer();
+
+        private static JsonSerializer InitSerializer()
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
-        };
+            var serializer = new JsonSerializer()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            serializer.Converters.Add(new StringEnumConverter());
+            return serializer;
+        }
 
         public static JObject ParseObject<T>(T obj)
         {
-            serializer.Converters.Add(new StringEnumConverter());
             return JObject.FromObject(obj, serializer);
         }
 
