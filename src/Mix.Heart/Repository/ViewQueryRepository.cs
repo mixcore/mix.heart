@@ -164,6 +164,14 @@ namespace Mix.Heart.Repository
             return result;
         }
 
+        public virtual async Task<List<TView>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            BeginUow();
+            var query = Table.AsNoTracking().Where(predicate);
+            var entities = await GetEntities(query);
+            return await ParseEntitiesAsync(entities);
+        }
+        
         public virtual async Task<PagingResponseModel<TView>> GetPagingAsync(
             Expression<Func<TEntity, bool>> predicate,
             PagingModel paging)
