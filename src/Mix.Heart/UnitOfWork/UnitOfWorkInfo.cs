@@ -61,9 +61,12 @@ namespace Mix.Heart.UnitOfWork
         public void Complete()
         {
             ActiveDbContext.SaveChanges();
-            ActiveTransaction.Commit();
-            ActiveTransaction.Dispose();
-            ActiveTransaction = null;
+            if (ActiveTransaction != null)
+            {
+                ActiveTransaction?.Commit();
+                ActiveTransaction?.Dispose();
+                ActiveTransaction = null;
+            }
         }
 
         /// <summary>
@@ -72,9 +75,12 @@ namespace Mix.Heart.UnitOfWork
         public async Task CompleteAsync()
         {
             await ActiveDbContext.SaveChangesAsync();
-            await ActiveTransaction.CommitAsync();
-            await ActiveTransaction.DisposeAsync();
-            ActiveTransaction = null;
+            if (ActiveTransaction != null)
+            {
+                await ActiveTransaction.CommitAsync();
+                await ActiveTransaction.DisposeAsync();
+                ActiveTransaction = null;
+            }
         }
     }
 }
