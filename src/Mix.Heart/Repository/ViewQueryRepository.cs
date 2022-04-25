@@ -27,13 +27,13 @@ namespace Mix.Heart.Repository
         public ViewQueryRepository(TDbContext dbContext) : base(dbContext)
         {
             CacheService = new();
-            SelectedMembers = FilterSelectedFields();
+            SelectedMembers = typeof(TView).GetProperties().Select(m => m.Name).ToArray();
         }
 
         public ViewQueryRepository(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
         {
             CacheService = MixCacheService.Instance;
-            SelectedMembers = FilterSelectedFields();
+            SelectedMembers = typeof(TView).GetProperties().Select(m => m.Name).ToArray();
         }
 
         protected MixCacheService CacheService { get; set; }
@@ -55,8 +55,7 @@ namespace Mix.Heart.Repository
 
         public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate, PagingModel paging)
         {
-            var query = GetListQuery(predicate);
-            paging.Total = query.Count();
+            var query = GetListQuery(predicate);            
             dynamic sortBy = GetLambda(paging.SortBy);
 
             switch (paging.SortDirection)
@@ -69,9 +68,11 @@ namespace Mix.Heart.Repository
                     break;
             }
 
+            paging.Total = query.Count();
             if (paging.PageSize.HasValue)
             {
                 query = query.Skip(paging.PageIndex * paging.PageSize.Value).Take(paging.PageSize.Value);
+                paging.TotalPage = (int)Math.Ceiling((double)paging.Total / paging.PageSize.Value);
             }
 
             return query;
@@ -79,7 +80,8 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)
         {
-            return await Table.Where(m => m.Id.Equals(id)).SelectMembers(SelectedMembers).AsNoTracking().SingleOrDefaultAsync();
+
+            return await Table.Where(m => m.Id.Equals(id)).SelectMembers(FilterSelectedFields()).AsNoTracking().SingleOrDefaultAsync();
         }
         #endregion
 
@@ -148,7 +150,7 @@ namespace Mix.Heart.Repository
         public virtual async Task<TView> GetFirstAsync(Expression<Func<TEntity, bool>> predicate)
         {
             var entity = await Table.AsNoTracking().Where(predicate)
-                .SelectMembers(SelectedMembers)
+                .SelectMembers(FilterSelectedFields())
                 .FirstOrDefaultAsync();
             if (entity != null)
             {
@@ -171,7 +173,7 @@ namespace Mix.Heart.Repository
             var entities = await GetEntities(query);
             return await ParseEntitiesAsync(entities);
         }
-        
+
         public virtual async Task<PagingResponseModel<TView>> GetPagingAsync(
             Expression<Func<TEntity, bool>> predicate,
             PagingModel paging)
@@ -188,9 +190,8 @@ namespace Mix.Heart.Repository
 
         private string[] FilterSelectedFields()
         {
-            var viewProperties = typeof(TView).GetProperties();
             var modelProperties = typeof(TEntity).GetProperties();
-            return viewProperties.Where(p => modelProperties.Any(m => m.Name == p.Name)).Select(p => p.Name).ToArray();
+            return SelectedMembers.Where(p => modelProperties.Any(m => m.Name == p)).Select(p => p).ToArray();
         }
 
         protected virtual Task<TView> BuildViewModel(TEntity entity)
