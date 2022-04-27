@@ -31,6 +31,13 @@ namespace Mix.Heart.Helpers
             return serializer;
         }
 
+        public static void MapObject<TSource, TDest>(TSource source, TDest dest)
+        {
+            var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TDest)));
+            var mapper = new Mapper(config);
+            mapper.Map(source, dest);
+        }
+
         public static JObject ParseObject<T>(T obj)
         {
             return JObject.FromObject(obj, serializer);
