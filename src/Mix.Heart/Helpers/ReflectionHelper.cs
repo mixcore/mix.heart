@@ -68,7 +68,7 @@ namespace Mix.Heart.Helpers
             {
                 var pre = GetExpression<TEntity>(
                         item.Name,
-                        GetPropertyValue<TEntity>(model, item.Name),
+                        GetPropertyValue(model, item.Name),
                         ExpressionMethod.Eq);
                 predicate =
                     predicate == null ? pre
@@ -160,7 +160,12 @@ namespace Mix.Heart.Helpers
             var prop = data.GetType().GetProperty(propety.PropertyName.ToTitleCase());
             if (prop != null)
             {
-                prop.SetValue(data, propety.PropertyValue);
+                object val = propety.PropertyValue;
+                if (prop.PropertyType.BaseType == typeof(Enum))
+                {
+                    val = Enum.Parse(prop.PropertyType, propety.PropertyValue.ToString());
+                }
+                prop.SetValue(data, val);
             }
         }
 
@@ -210,7 +215,14 @@ namespace Mix.Heart.Helpers
             }
             else
             {
-                data2 = Convert.ChangeType(propertyValue, fieldPropertyType);
+                if (fieldPropertyType.BaseType == typeof(Enum))
+                {
+                    data2 = Enum.Parse(fieldPropertyType, propertyValue.ToString());
+                }
+                else
+                {
+                    data2 = Convert.ChangeType(propertyValue, fieldPropertyType);
+                }
             }
 
             if (fieldPropertyType == typeof(string))
