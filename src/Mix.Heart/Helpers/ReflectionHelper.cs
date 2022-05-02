@@ -210,8 +210,6 @@ namespace Mix.Heart.Helpers
                     System.ComponentModel.TypeDescriptor.GetConverter(
                         fieldPropertyType);
                 data2 = conv.ConvertFrom(propertyValue);
-                // data2 = Convert.ChangeType(constant.LiteralText,
-                // Nullable.GetUnderlyingType());
             }
             else
             {
