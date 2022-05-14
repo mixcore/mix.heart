@@ -13,14 +13,15 @@ namespace Mix.Heart.Infrastructure.EntityConfigurations.POSTGRES
             string valueType = "text";
             string dtType = "timestamp without time zone";
 
-            entity.ToTable("mix_cache");
-
             entity.HasIndex(e => e.ExpiredDateTime)
                 .HasDatabaseName("Index_ExpiresAtTime");
 
+            entity.Property(e => e.Keyword)
+                 .HasColumnType("varchar(400)")
+                 .IsRequired();
+
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnType("varchar(150)");
+                .ValueGeneratedOnAdd();
 
             entity.Property(e => e.CreatedBy)
                 .HasColumnType("varchar(50)")

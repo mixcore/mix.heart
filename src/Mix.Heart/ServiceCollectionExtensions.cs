@@ -1,6 +1,7 @@
 ﻿using Mix.Heart.Entities.Cache;
 using Mix.Heart.Repository;
 using Mix.Heart.Services;
+using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -10,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
 
             services.AddSingleton<MixCacheDbContext>();
-            services.AddSingleton<EntityRepository<MixCacheDbContext, MixCache, string>>();
+            services.AddSingleton<EntityRepository<MixCacheDbContext, MixCache, Guid>>();
             services.AddSingleton<MixCacheService>();
 
             return services;

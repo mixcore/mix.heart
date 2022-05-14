@@ -42,6 +42,22 @@ namespace Mix.Heart.Helpers
         {
             return JObject.FromObject(obj, serializer);
         }
+        public static JsonSerializer FormattingData()
+        {
+            var jsonSerializersettings = new JsonSerializer
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            return jsonSerializersettings;
+        }
+
+
+        public static JObject CamelCaseData(JObject jObject)
+        {
+            dynamic camelCaseData =
+            JsonConvert.DeserializeObject(jObject.ToString(), new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            return JObject.FromObject(camelCaseData, FormattingData());
+        }
 
         public static Dictionary<string, string> ConverObjectToDictinary(object someObject)
         {

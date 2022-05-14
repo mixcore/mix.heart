@@ -3,8 +3,9 @@ using System;
 
 namespace Mix.Heart.Entities.Cache
 {
-    public class MixCache : Entity<string>
+    public class MixCache : Entity<Guid>
     {
+        public string Keyword { get; set; }
         public string Value { get; set; }
         public DateTime? ExpiredDateTime { get; set; }
         public string ModifiedBy { get; set; }

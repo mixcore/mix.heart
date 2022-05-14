@@ -13,7 +13,7 @@ namespace Mix.Heart.Entities.Cache
         {
             modelBuilder.ApplyAllConfigurationsFromNamespace(
                 this.GetType().Assembly,
-                "Mix.Heart.Infrastructure.EntityConfigurations.MSSQL");
+                "Mix.Heart.Infrastructure.EntityConfigurations.MySQL");
             OnModelCreatingPartial(modelBuilder);
         }
 

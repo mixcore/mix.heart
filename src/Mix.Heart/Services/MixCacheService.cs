@@ -16,7 +16,7 @@ namespace Mix.Heart.Services
     public class MixCacheService
     {
         private readonly MixHeartConfigurationModel _configs;
-        private readonly EntityRepository<MixCacheDbContext, MixCache, string> _repository;
+        private readonly EntityRepository<MixCacheDbContext, MixCache, Guid> _repository;
         public bool IsCacheEnabled { get => _configs.IsCache; }
         protected JsonSerializer serializer;
         #region Instance
@@ -56,7 +56,7 @@ namespace Mix.Heart.Services
             _configs = MixHeartConfigService.Instance.AppSettings;
             if (_configs.CacheMode == MixCacheMode.DATABASE)
             {
-                _repository = new();
+                _repository = new(new MixCacheDbContext());
             }
             serializer = new JsonSerializer()
             {
@@ -138,8 +138,8 @@ namespace Mix.Heart.Services
         {
             try
             {
-                string id = $"{folder}/{key}/{filename}";
-                var cache = await _repository.GetByIdAsync(id);
+                string keyword = $"{folder}/{key}/{filename}";
+                var cache = await _repository.GetSingleAsync(m => m.Keyword == keyword);
                 if (cache != null)
                 {
                     try
@@ -189,7 +189,8 @@ namespace Mix.Heart.Services
 
                 var cache = new MixCache()
                 {
-                    Id = $"{dataType.FullName}_{key}_{filename}",
+                    Id = Guid.NewGuid(),
+                    Keyword = $"{dataType.FullName}_{key}_{filename}",
                     Value = jobj.ToString(Formatting.None),
                     CreatedDateTime = DateTime.UtcNow
                 };
@@ -218,7 +219,7 @@ namespace Mix.Heart.Services
             switch (_configs.CacheMode)
             {
                 case MixCacheMode.DATABASE:
-                    await _repository.DeleteAsync(m => m.Id == $"{dataType.FullName}_{key}");
+                    await _repository.DeleteAsync(m => m.Keyword == $"{dataType.FullName}_{key}");
                     break;
                 case MixCacheMode.JSON:
                 default:
