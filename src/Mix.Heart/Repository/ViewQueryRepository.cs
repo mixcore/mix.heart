@@ -55,7 +55,7 @@ namespace Mix.Heart.Repository
 
         public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate, PagingModel paging)
         {
-            var query = GetListQuery(predicate);            
+            var query = GetListQuery(predicate);
             dynamic sortBy = GetLambda(paging.SortBy);
 
             switch (paging.SortDirection)

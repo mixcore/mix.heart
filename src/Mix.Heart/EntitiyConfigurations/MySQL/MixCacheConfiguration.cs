@@ -33,7 +33,7 @@ namespace Mix.Heart.Infrastructure.EntityConfigurations.MySQL
 
             entity.Property(e => e.LastModified).HasColumnType(dtType).IsRequired(false);
 
-            
+
             entity.Property(e => e.ModifiedBy)
                 .HasColumnType("varchar(50)")
                 .IsRequired(false);
