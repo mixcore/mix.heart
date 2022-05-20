@@ -2,6 +2,7 @@
 using Mix.Heart.Enums;
 using Mix.Heart.Models;
 using Mix.Heart.Repository;
+using Mix.Heart.UnitOfWork;
 using Mix.Shared.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -19,44 +20,14 @@ namespace Mix.Heart.Services
         private readonly EntityRepository<MixCacheDbContext, MixCache, Guid> _repository;
         public bool IsCacheEnabled { get => _configs.IsCache; }
         protected JsonSerializer serializer;
-        #region Instance
-
-        /// <summary>
-        /// The synchronize root
-        /// </summary>
-        protected static readonly object syncRoot = new object();
-
-        /// <summary>
-        /// The instance
-        /// </summary>
-        private static MixCacheService instance;
-
-        public static MixCacheService Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (instance == null)
-                        {
-                            instance = new();
-                        }
-                    }
-                }
-
-                return instance;
-            }
-        }
-
-        #endregion
+        
         public MixCacheService()
         {
             _configs = MixHeartConfigService.Instance.AppSettings;
             if (_configs.CacheMode == MixCacheMode.DATABASE)
             {
-                _repository = new(new MixCacheDbContext());
+                var uow = new UnitOfWorkInfo(new MixCacheDbContext());
+                _repository = new(uow);
             }
             serializer = new JsonSerializer()
             {
@@ -196,6 +167,7 @@ namespace Mix.Heart.Services
                 };
 
                 await _repository.SaveAsync(cache);
+                await _repository.UowInfo.CompleteAsync();
             }
             return true;
         }

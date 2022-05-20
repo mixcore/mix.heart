@@ -32,7 +32,7 @@ namespace Mix.Heart.Repository
 
         public ViewQueryRepository(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
         {
-            CacheService = MixCacheService.Instance;
+            CacheService = new();
             SelectedMembers = typeof(TView).GetProperties().Select(m => m.Name).ToArray();
         }
 
