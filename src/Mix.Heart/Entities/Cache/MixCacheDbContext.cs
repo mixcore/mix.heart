@@ -20,24 +20,24 @@ namespace Mix.Heart.Entities.Cache
         {
             //string cnn = MixCommonHelper.GetWebConfig<string>(WebConfiguration.MixCacheConnectionString);
 
-            if (!string.IsNullOrEmpty(_configs.ConnectionString))
+            if (!string.IsNullOrEmpty(_configs.CacheConnection))
             {
                 switch (_configs.DatabaseProvider)
                 {
-                    case MixCacheDbProvider.SQLSERVER:
-                        optionsBuilder.UseSqlServer(_configs.ConnectionString);
+                    case MixDatabaseProvider.SQLSERVER:
+                        optionsBuilder.UseSqlServer(_configs.CacheConnection);
                         break;
 
-                    case MixCacheDbProvider.MYSQL:
-                        optionsBuilder.UseMySql(_configs.ConnectionString, ServerVersion.AutoDetect(_configs.ConnectionString));
+                    case MixDatabaseProvider.MySQL:
+                        optionsBuilder.UseMySql(_configs.CacheConnection, ServerVersion.AutoDetect(_configs.CacheConnection));
                         break;
 
-                    case MixCacheDbProvider.SQLITE:
-                        optionsBuilder.UseSqlite(_configs.ConnectionString);
+                    case MixDatabaseProvider.SQLITE:
+                        optionsBuilder.UseSqlite(_configs.CacheConnection);
                         break;
 
-                    case MixCacheDbProvider.POSGRES:
-                        optionsBuilder.UseNpgsql(_configs.ConnectionString);
+                    case MixDatabaseProvider.PostgreSQL:
+                        optionsBuilder.UseNpgsql(_configs.CacheConnection);
                         break;
 
                     default:

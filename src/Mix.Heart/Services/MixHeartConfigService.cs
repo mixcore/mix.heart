@@ -44,7 +44,7 @@ namespace Mix.Shared.Services
         {
         }
 
-        public MixCacheDbProvider DatabaseProvider
+        public MixDatabaseProvider DatabaseProvider
         {
             get => AppSettings.DatabaseProvider;
         }
@@ -54,9 +54,7 @@ namespace Mix.Shared.Services
             switch (name)
             {
                 case MixHeartConstants.CACHE_CONNECTION:
-                    return AppSettings.ConnectionStrings.CacheConnection;
-                case MixHeartConstants.AUDIT_LOG_CONNECTION:
-                    return AppSettings.ConnectionStrings.AuditLogConnection;
+                    return AppSettings.CacheConnection;
                 default:
                     return string.Empty;
             }
@@ -67,10 +65,7 @@ namespace Mix.Shared.Services
             switch (name)
             {
                 case MixHeartConstants.CACHE_CONNECTION:
-                    AppSettings.ConnectionStrings.CacheConnection = value;
-                    break;
-                case MixHeartConstants.AUDIT_LOG_CONNECTION:
-                    AppSettings.ConnectionStrings.AuditLogConnection = value;
+                    AppSettings.CacheConnection = value;
                     break;
                 default:
                     break;

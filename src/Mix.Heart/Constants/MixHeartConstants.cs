@@ -2,7 +2,7 @@
 {
     public class MixHeartConstants
     {
-        public const string CACHE_CONNECTION = "CacheConnection";
+        public const string CACHE_CONNECTION = "cacheConnection";
         public const string AUDIT_LOG_CONNECTION = "AuditLogConnection";
         public const string ConfigFilePath = "MixContent/AppConfigs/mix_heart";
     }
