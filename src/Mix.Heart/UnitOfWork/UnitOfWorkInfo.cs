@@ -68,6 +68,18 @@ namespace Mix.Heart.UnitOfWork
                 ActiveTransaction = null;
             }
         }
+        /// <summary>
+        /// TODO: implement multiple db context
+        /// </summary>
+        public void Rollback()
+        {
+            if (ActiveDbContext != null && ActiveTransaction != null)
+            {
+                ActiveTransaction?.Rollback();
+                ActiveTransaction?.Dispose();
+                ActiveTransaction = null;
+            }
+        }
 
         /// <summary>
         /// TODO: implement multiple db context
@@ -78,6 +90,18 @@ namespace Mix.Heart.UnitOfWork
             {
                 await ActiveDbContext.SaveChangesAsync();
                 await ActiveTransaction.CommitAsync();
+                await ActiveTransaction.DisposeAsync();
+                ActiveTransaction = null;
+            }
+        }
+        /// <summary>
+        /// TODO: implement multiple db context
+        /// </summary>
+        public async Task RollbackAsync()
+        {
+            if (ActiveDbContext != null && ActiveTransaction != null)
+            {
+                await ActiveTransaction.RollbackAsync();
                 await ActiveTransaction.DisposeAsync();
                 ActiveTransaction = null;
             }
