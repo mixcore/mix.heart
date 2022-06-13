@@ -102,18 +102,8 @@ namespace Mix.Heart.Repository
         {
             try
             {
-                BeginUow();
                 var entity = await GetEntityByIdAsync(id);
-                if (entity == null)
-                {
-                    await HandleExceptionAsync(new MixException(MixErrorStatus.NotFound, id));
-                    return;
-                }
-
-                Context.Entry(entity).State = EntityState.Deleted;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
-                await CacheService.RemoveCacheAsync(id, typeof(TEntity));
+                await DeleteAsync(entity);
             }
             catch (Exception ex)
             {
@@ -156,14 +146,11 @@ namespace Mix.Heart.Repository
         {
             try
             {
-                BeginUow();
-
-                await Context.Set<TEntity>().Where(predicate).ForEachAsync(
-                    m => Context.Entry(m).State = EntityState.Deleted
-                    );
-
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
+                var entities = Context.Set<TEntity>().Where(predicate);
+                foreach (var entity in entities)
+                {
+                    await DeleteAsync(entity);
+                }
             }
             catch (Exception ex)
             {
