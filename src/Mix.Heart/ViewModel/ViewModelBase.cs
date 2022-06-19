@@ -44,7 +44,7 @@ namespace Mix.Heart.ViewModel
 
         #endregion
 
-        #region Contructors
+        #region Constructors
 
         public ViewModelBase()
         {

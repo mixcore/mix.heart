@@ -20,7 +20,7 @@ namespace Mix.Heart.Infrastructure.ViewModels
         public MixCacheStatus Status { get; set; }
         #endregion
 
-        #region Contructors
+        #region Constructors
 
         public MixCacheViewModel(): base()
         {
