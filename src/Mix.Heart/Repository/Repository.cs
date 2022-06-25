@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
-using Mix.Heart.Enums;
-using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Exceptions;
 using Mix.Heart.UnitOfWork;
 using Mix.Heart.ViewModel;

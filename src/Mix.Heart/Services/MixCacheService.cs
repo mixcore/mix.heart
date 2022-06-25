@@ -20,7 +20,7 @@ namespace Mix.Heart.Services
         private readonly EntityRepository<MixCacheDbContext, MixCache, Guid> _repository;
         public bool IsCacheEnabled { get => _configs.IsCache; }
         protected JsonSerializer serializer;
-        
+
         public MixCacheService()
         {
             _configs = MixHeartConfigService.Instance.AppSettings;
