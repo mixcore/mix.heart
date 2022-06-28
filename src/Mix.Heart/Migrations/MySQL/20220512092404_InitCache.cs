@@ -16,7 +16,7 @@ namespace Mix.Heart.Migrations
                 name: "MixCache",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
                     Keyword = table.Column<string>(type: "varchar(400)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Value = table.Column<string>(type: "text", nullable: false)
