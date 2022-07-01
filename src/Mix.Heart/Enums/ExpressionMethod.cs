@@ -2,12 +2,14 @@
 {
     public enum ExpressionMethod
     {
-        Eq,
-        Ct,
-        Lt,
-        Gt,
-        Lte,
-        Gte,
+        Equal,
+        Like,
+        In,
+        NotEqual,
+        LessThan,
+        GreaterThan,
+        LessThanOrEqual,
+        GreaterThanOrEqual,
         And,
         Or
     }

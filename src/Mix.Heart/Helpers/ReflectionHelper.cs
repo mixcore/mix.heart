@@ -85,7 +85,7 @@ namespace Mix.Heart.Helpers
                 var pre = GetExpression<TEntity>(
                         item.Name,
                         GetPropertyValue(model, item.Name),
-                        ExpressionMethod.Eq);
+                        ExpressionMethod.Equal);
                 predicate =
                     predicate == null ? pre
                     : predicate.AndAlso(pre);
@@ -246,33 +246,33 @@ namespace Mix.Heart.Helpers
             Expression expression = null;
             switch (kind)
             {
-                case ExpressionMethod.Eq:
+                case ExpressionMethod.Equal:
                     expression = Expression.Equal(fieldPropertyExpression,
                                           Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case ExpressionMethod.Ct:
+                case ExpressionMethod.Like:
                     expression = GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
                     break;
 
-                case ExpressionMethod.Lt:
+                case ExpressionMethod.LessThan:
                     expression = Expression.LessThan(fieldPropertyExpression,
                                              Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case ExpressionMethod.Gt:
+                case ExpressionMethod.GreaterThan:
                     expression = Expression.GreaterThan(
                         fieldPropertyExpression,
                         Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case ExpressionMethod.Lte:
+                case ExpressionMethod.LessThanOrEqual:
                     expression = Expression.LessThanOrEqual(
                         fieldPropertyExpression,
                         Expression.Constant(data2, fieldPropertyType));
                     break;
 
-                case ExpressionMethod.Gte:
+                case ExpressionMethod.GreaterThanOrEqual:
                     expression = Expression.GreaterThanOrEqual(
                         fieldPropertyExpression,
                         Expression.Constant(data2, fieldPropertyType));
@@ -287,7 +287,12 @@ namespace Mix.Heart.Helpers
                     expression = Expression.Or(fieldPropertyExpression,
                                        Expression.Constant(data2, fieldPropertyType));
                     break;
-
+                case ExpressionMethod.NotEqual:
+                    expression = Expression.NotEqual(fieldPropertyExpression,
+                                      Expression.Constant(data2, fieldPropertyType));
+                    break;
+                case ExpressionMethod.In:                    
+                    break;
                 default:
                     break;
             }
