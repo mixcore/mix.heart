@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Mix.Common.Helper;
 using Mix.Heart.Constants;
 using Mix.Heart.Enums;
@@ -40,7 +40,7 @@ namespace Mix.Heart.Infrastructure
             }
             else
             {
-                optionsBuilder.UseSqlite($"Data Source=MixContent\\mix_cache.db");
+                optionsBuilder.UseSqlite("Data Source=MixContent\\\\mix_cache.db");
             }
 
             base.OnConfiguring(optionsBuilder);
