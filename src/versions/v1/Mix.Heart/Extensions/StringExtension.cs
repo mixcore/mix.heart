@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -40,7 +40,7 @@ namespace Mix.Heart.Extensions
         {
             base64String = base64String?.IndexOf(',') >= 0 ? base64String.Split(',')[1] : base64String;
             if (string.IsNullOrEmpty(base64String) || base64String.Length % 4 != 0
-               || base64String.Contains(" ") || base64String.Contains("\t") || base64String.Contains("\r") || base64String.Contains("\n"))
+               || base64String.Contains(' ') || base64String.Contains("\t") || base64String.Contains("\r") || base64String.Contains("\n"))
                 return false;
 
             try
