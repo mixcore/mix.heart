@@ -74,7 +74,7 @@ namespace Mix.Heart.Services
             var settings = MixFileHelper.GetFile(FilePath, MixFileExtensions.Json, string.Empty, true, "{}");
             if (settings != null)
             {
-                settings.Content = JObject.FromObject(AppSettings).ToString(Formatting.None);
+                settings.Content = ReflectionHelper.ParseObject(AppSettings).ToString(Formatting.None);
                 if (_isEncrypt)
                 {
                     settings.Content = AesEncryptionHelper.EncryptString(settings.Content, AesKey);
