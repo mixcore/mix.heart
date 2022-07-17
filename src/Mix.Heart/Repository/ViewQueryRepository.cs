@@ -44,7 +44,7 @@ namespace Mix.Heart.Repository
 
         protected string[] KeyMembers { get { return ReflectionHelper.GetKeyMembers(Context, typeof(TEntity)); } }
 
-        protected DbSet<TEntity> Table => Context?.Set<TEntity>();
+        public DbSet<TEntity> Table => Context?.Set<TEntity>();
 
         #region IQueryable
 
