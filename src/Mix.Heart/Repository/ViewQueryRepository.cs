@@ -36,7 +36,7 @@ namespace Mix.Heart.Repository
             SelectedMembers = typeof(TView).GetProperties().Select(m => m.Name).ToArray();
         }
 
-        protected MixCacheService CacheService { get; set; }
+        public MixCacheService CacheService { get; set; }
 
         public string CacheFilename { get; private set; } = "full";
 
