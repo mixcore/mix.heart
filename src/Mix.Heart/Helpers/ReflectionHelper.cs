@@ -40,7 +40,7 @@ namespace Mix.Heart.Helpers
 
         public static JObject ParseObject<T>(T obj)
         {
-            return JObject.FromObject(obj, serializer);
+            return obj != null ? JObject.FromObject(obj, serializer): null;
         }
         public static JsonSerializer FormattingData()
         {
