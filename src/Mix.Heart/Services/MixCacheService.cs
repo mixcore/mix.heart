@@ -51,7 +51,7 @@ namespace Mix.Heart.Services
                     FileFolder = $"{_configs.CacheFolder}/{dataType.FullName}/{key.ToLower()}",
                     Content = jobj.ToString(Formatting.None)
                 };
-                return MixFileHelper.SaveFile(cacheFile);
+                return !string.IsNullOrEmpty(MixFileHelper.SaveFile(cacheFile));
             }
             catch (Exception ex)
             {

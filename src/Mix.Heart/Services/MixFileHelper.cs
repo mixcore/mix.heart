@@ -133,15 +133,16 @@ namespace Mix.Heart.Services
 
         #region File
 
-        public static bool SaveFile(FileModel file)
+        public static string SaveFile(FileModel file)
         {
             try
             {
+                string fileName = $"{file.Filename}{file.Extension}";
                 if (!string.IsNullOrEmpty(file.Filename))
                 {
                     CreateFolderIfNotExist(file.FileFolder);
 
-                    string filePath = $"{file.Filename}{file.Extension}";
+                    string filePath = fileName;
                     if (!string.IsNullOrEmpty(file.FileFolder))
                     {
                         filePath = $"{file.FileFolder}/{filePath}";
@@ -156,7 +157,7 @@ namespace Mix.Heart.Services
                         {
                             writer.WriteLine(file.Content); //or .Write(), if you wish
                             writer.Dispose();
-                            return true;
+                            return fileName;
                         }
                     }
                     else if (file.FileStream != null)
@@ -166,23 +167,23 @@ namespace Mix.Heart.Services
                         using (var writer = File.Create(filePath))
                         {
                             writer.Write(bytes, 0, bytes.Length);
-                            return true;
+                            return fileName;
                         }
                     }
                     else
                     {
                         File.CreateText(filePath);
-                        return true;
+                        return fileName;
                     }
                 }
                 else
                 {
-                    return false;
+                    return string.Empty;
                 }
             }
             catch
             {
-                return false;
+                return string.Empty;
             }
         }
 
