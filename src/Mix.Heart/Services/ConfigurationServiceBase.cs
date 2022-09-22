@@ -69,7 +69,7 @@ namespace Mix.Heart.Services
             SaveSettings();
         }
 
-        public bool SaveSettings()
+        public virtual bool SaveSettings()
         {
             var settings = MixFileHelper.GetFileByFullName($"{FilePath}{MixFileExtensions.Json}", true, "{}");
             if (settings != null)
