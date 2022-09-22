@@ -113,8 +113,6 @@ namespace Mix.Heart.Services
             }
             else if (isCreate)
             {
-                CreateFolderIfNotExist(folder);
-                fileinfo.Create();
                 result = new FileModel()
                 {
                     FileFolder = folder,
@@ -125,7 +123,7 @@ namespace Mix.Heart.Services
                 SaveFile(result);
             }
 
-            return result ?? new FileModel() { FileFolder = folder };
+            return result ?? new FileModel() { FileFolder = folder, Filename = name, Extension = ext };
         }
         #endregion
 

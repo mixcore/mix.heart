@@ -71,7 +71,7 @@ namespace Mix.Heart.Services
 
         public bool SaveSettings()
         {
-            var settings = MixFileHelper.GetFile(FilePath, MixFileExtensions.Json, string.Empty, true, "{}");
+            var settings = MixFileHelper.GetFileByFullName($"{FilePath}{MixFileExtensions.Json}", true, "{}");
             if (settings != null)
             {
                 settings.Content = ReflectionHelper.ParseObject(AppSettings).ToString(Formatting.None);
@@ -103,7 +103,7 @@ namespace Mix.Heart.Services
 
         protected virtual void LoadAppSettings()
         {
-            var settings = MixFileHelper.GetFileByFullName($"{FilePath}{MixFileExtensions.Json}", true);
+            var settings = MixFileHelper.GetFileByFullName($"{FilePath}{MixFileExtensions.Json}", true, "{}");
             string content = string.IsNullOrWhiteSpace(settings.Content) ? "{}" : settings.Content;
 
             if (_isEncrypt && !content.StartsWith('{'))
