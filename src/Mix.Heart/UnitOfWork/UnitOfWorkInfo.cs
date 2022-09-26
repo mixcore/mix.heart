@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.UnitOfWork
 {
-    public class UnitOfWorkInfo
+    public class UnitOfWorkInfo : IUnitOfWorkInfo
     {
         public DbContext ActiveDbContext { get; private set; }
 
