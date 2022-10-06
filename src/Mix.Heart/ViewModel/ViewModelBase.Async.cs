@@ -104,6 +104,7 @@ namespace Mix.Heart.ViewModel
             var entity = await ParseEntity();
             await Repository.SaveAsync(entity);
             await SaveEntityRelationshipAsync(entity);
+            Id = entity.Id;
             return entity;
         }
 
