@@ -101,7 +101,7 @@ namespace Mix.Heart.Helpers
                 .ToArray();
         }
 
-        public static object GetMembers<TEntity>(TEntity model, string[] selectMembers)
+        public static JObject GetMembers<TEntity>(TEntity model, string[] selectMembers)
            where TEntity : class
         {
             serializer.Converters.Add(new StringEnumConverter());
