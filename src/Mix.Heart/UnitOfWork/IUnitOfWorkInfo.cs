@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.UnitOfWork
 {
-    public interface IUnitOfWorkInfo
+    public interface IUnitOfWorkInfo: IAsyncDisposable
     {
         DbContext ActiveDbContext { get; }
         IDbContextTransaction ActiveTransaction { get; }

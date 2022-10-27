@@ -104,7 +104,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<bool> CheckIsExistsAsync(TEntity entity)
         {
-            return await Table.AnyAsync(e => e.Id.Equals(entity.Id));
+            return entity != null && await Table.AnyAsync(e => e.Id.Equals(entity.Id));
         }
 
         public virtual async Task<bool> CheckIsExistsAsync(Expression<Func<TEntity, bool>> predicate)

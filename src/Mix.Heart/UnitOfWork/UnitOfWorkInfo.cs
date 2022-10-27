@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.UnitOfWork
@@ -105,6 +106,19 @@ namespace Mix.Heart.UnitOfWork
                 await ActiveTransaction.DisposeAsync();
                 ActiveTransaction = null;
             }
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            Task.Run(() =>
+            {
+                ActiveDbContext?.DisposeAsync();
+            }).ContinueWith((result) =>
+            {
+                GC.SuppressFinalize(this);
+                GC.WaitForPendingFinalizers();
+            });
+            return ValueTask.CompletedTask;
         }
     }
 }
