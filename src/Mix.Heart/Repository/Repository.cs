@@ -101,7 +101,8 @@ namespace Mix.Heart.Repository
             try
             {
                 var entity = await GetEntityByIdAsync(id);
-                await DeleteAsync(entity);
+                if(entity!=null)
+                    await DeleteAsync(entity);
             }
             catch (Exception ex)
             {
