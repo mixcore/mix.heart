@@ -40,7 +40,7 @@ namespace Mix.Heart.Helpers
 
         public static JObject ParseObject<T>(T obj)
         {
-            return obj != null ? JObject.FromObject(obj, serializer): null;
+            return obj != null ? JObject.FromObject(obj, serializer) : null;
         }
         public static JsonSerializer FormattingData()
         {
@@ -291,7 +291,7 @@ namespace Mix.Heart.Helpers
                     expression = Expression.NotEqual(fieldPropertyExpression,
                                       Expression.Constant(data2, fieldPropertyType));
                     break;
-                case ExpressionMethod.In:                    
+                case ExpressionMethod.In:
                     break;
                 default:
                     break;

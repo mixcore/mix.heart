@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.UnitOfWork
 {
-    public interface IUnitOfWorkInfo: IAsyncDisposable
+    public interface IUnitOfWorkInfo : IAsyncDisposable
     {
         DbContext ActiveDbContext { get; }
         IDbContextTransaction ActiveTransaction { get; }
