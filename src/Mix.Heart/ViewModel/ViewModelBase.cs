@@ -122,7 +122,7 @@ namespace Mix.Heart.ViewModel
 
 
 
-        public virtual Task<TEntity> ParseEntity()
+        public virtual Task<TEntity> ParseEntity(CancellationToken cancellationToken = default)
         {
             if (IsDefaultId(Id))
             {
