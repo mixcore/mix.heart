@@ -8,6 +8,7 @@ using Mix.Heart.UnitOfWork;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
@@ -97,16 +98,18 @@ namespace Mix.Heart.Repository
 
         #region Entity Async
 
-        public async Task<PagingResponseModel<TEntity>> GetPagingEntitiesAsync(Expression<Func<TEntity, bool>> predicate,
-                      PagingModel paging)
+        public async Task<PagingResponseModel<TEntity>> GetPagingEntitiesAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            PagingModel paging,
+            CancellationToken cancellationToken = default)
         {
             var source = GetPagingQuery(predicate, paging);
-            return await ToPagingEntityAsync(source, paging);
+            return await ToPagingEntityAsync(source, paging, cancellationToken);
         }
 
-        public async Task<TEntity> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        public async Task<TEntity> GetSingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            return await GetAllQuery().SingleOrDefaultAsync(predicate);
+            return await GetAllQuery().SingleOrDefaultAsync(predicate, cancellationToken);
         }
 
         public virtual async Task<TEntity> GetByIdAsync(TPrimaryKey id)
@@ -114,14 +117,14 @@ namespace Mix.Heart.Repository
             return await Context.Set<TEntity>().FindAsync(id);
         }
 
-        public virtual int MaxAsync(Func<TEntity, int> predicate)
+        public virtual Task<int> MaxAsync(Expression<Func<TEntity, int>> predicate, CancellationToken cancellationToken = default)
         {
-            return GetAllQuery().Max(predicate);
+            return GetAllQuery().MaxAsync(predicate, cancellationToken);
         }
 
-        public Task<TEntity> GetFirstAsync(Expression<Func<TEntity, bool>> predicate)
+        public Task<TEntity> GetFirstAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            return GetAllQuery().FirstOrDefaultAsync(predicate);
+            return GetAllQuery().FirstOrDefaultAsync(predicate, cancellationToken);
         }
 
         #endregion
@@ -191,11 +194,12 @@ namespace Mix.Heart.Repository
 
         protected async Task<PagingResponseModel<TEntity>> ToPagingEntityAsync(
            IQueryable<TEntity> source,
-           PagingModel pagingData)
+           PagingModel pagingData,
+           CancellationToken cancellationToken = default)
         {
             try
             {
-                var entities = await source.ToListAsync();
+                var entities = await source.ToListAsync(cancellationToken);
 
                 return new PagingResponseModel<TEntity>(entities, pagingData);
             }

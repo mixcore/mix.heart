@@ -3,6 +3,7 @@ using Mix.Heart.Exceptions;
 using Mix.Heart.Repository;
 using Mix.Heart.UnitOfWork;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
@@ -47,11 +48,11 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        protected virtual async Task CompleteUowAsync()
+        protected virtual async Task CompleteUowAsync(CancellationToken cancellationToken = default)
         {
             if (_isRoot)
             {
-                await UowInfo.CompleteAsync();
+                await UowInfo.CompleteAsync(cancellationToken);
                 return;
             };
 

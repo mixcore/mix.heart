@@ -5,6 +5,7 @@ using Mix.Heart.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
@@ -13,13 +14,13 @@ namespace Mix.Heart.ViewModel
     {
         #region Async
 
-        public async Task DeleteAsync()
+        public async Task DeleteAsync(CancellationToken cancellationToken = default)
         {
             try
             {
                 BeginUow();
-                await DeleteHandlerAsync();
-                await CompleteUowAsync();
+                await DeleteHandlerAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -31,12 +32,12 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        protected virtual async Task DeleteHandlerAsync()
+        protected virtual Task DeleteHandlerAsync(CancellationToken cancellationToken = default)
         {
-            await Repository.DeleteAsync(Id);
+            return Repository.DeleteAsync(Id, cancellationToken);
         }
 
-        public async Task<TPrimaryKey> SaveAsync()
+        public async Task<TPrimaryKey> SaveAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -46,8 +47,8 @@ namespace Mix.Heart.ViewModel
                 {
                     await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
                 }
-                var entity = await SaveHandlerAsync();
-                await CompleteUowAsync();
+                var entity = await SaveHandlerAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
                 return entity.Id;
             }
             catch (Exception ex)
@@ -61,7 +62,7 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        public async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties)
+        public async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -81,8 +82,8 @@ namespace Mix.Heart.ViewModel
                 }
                 await Validate();
                 var entity = await ParseEntity();
-                await Repository.SaveAsync(entity);
-                await CompleteUowAsync();
+                await Repository.SaveAsync(entity, cancellationToken);
+                await CompleteUowAsync(cancellationToken);
                 return entity.Id;
             }
             catch (Exception ex)
@@ -99,17 +100,17 @@ namespace Mix.Heart.ViewModel
         #region virtual methods
 
         // Override this method
-        protected virtual async Task<TEntity> SaveHandlerAsync()
+        protected virtual async Task<TEntity> SaveHandlerAsync(CancellationToken cancellationToken = default)
         {
             var entity = await ParseEntity();
-            await Repository.SaveAsync(entity);
-            await SaveEntityRelationshipAsync(entity);
+            await Repository.SaveAsync(entity, cancellationToken);
+            await SaveEntityRelationshipAsync(entity, cancellationToken);
             Id = entity.Id;
             return entity;
         }
 
         // Override this method
-        protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity)
+        protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }

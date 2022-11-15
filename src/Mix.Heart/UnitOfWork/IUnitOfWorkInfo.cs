@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.UnitOfWork
@@ -9,14 +10,13 @@ namespace Mix.Heart.UnitOfWork
     {
         DbContext ActiveDbContext { get; }
         IDbContextTransaction ActiveTransaction { get; }
-
         void Begin();
         void Close();
         Task CloseAsync();
         void Complete();
-        Task CompleteAsync();
+        Task CompleteAsync(CancellationToken cancellationToken = default);
         void Rollback();
-        Task RollbackAsync();
+        Task RollbackAsync(CancellationToken cancellationToken = default);
         void SetDbContext(DbContext dbContext);
         void SetTransaction(IDbContextTransaction dbContextTransaction);
     }

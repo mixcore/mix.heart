@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
@@ -31,64 +32,73 @@ namespace Mix.Heart.Repository
 
 
         #region Async
-        public virtual async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)
+        public virtual async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id, CancellationToken cancellationToken = default)
         {
-            var result = await Table.Where(m => m.Id.Equals(id)).SelectMembers(SelectedMembers).AsNoTracking().SingleOrDefaultAsync();
+            var result = await Table
+                .Where(m => m.Id.Equals(id))
+                .SelectMembers(SelectedMembers)
+                .AsNoTracking()
+                .SingleOrDefaultAsync(cancellationToken);
+
             if (result != null && CacheService != null)
             {
+                var key = $"{result.Id}/{typeof(TEntity).FullName}";
                 if (CacheFilename == "full")
                 {
-                    await CacheService.SetAsync($"{result.Id}/{typeof(TEntity).FullName}", result, typeof(TEntity), CacheFilename);
+                    await CacheService.SetAsync(key, result, typeof(TEntity), CacheFilename, cancellationToken);
                 }
                 else
                 {
                     var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
-                    await CacheService.SetAsync($"{result.Id}/{typeof(TEntity).FullName}", obj, typeof(TEntity), CacheFilename);
+                    await CacheService.SetAsync(key, obj, typeof(TEntity), CacheFilename, cancellationToken);
                 }
             }
+
             return result;
         }
 
-        public virtual async Task<TEntity> GetSingleAsync(TPrimaryKey id)
+        public virtual async Task<TEntity> GetSingleAsync(TPrimaryKey id, CancellationToken cancellationToken = default)
         {
 
             if (CacheService != null && CacheService.IsCacheEnabled)
             {
-                TEntity result = await CacheService.GetAsync<TEntity>($"{id}/{typeof(TEntity).FullName}", typeof(TEntity), CacheFilename);
+                var key = $"{id}/{typeof(TEntity).FullName}";
+                var result = await CacheService.GetAsync<TEntity>(key, typeof(TEntity), CacheFilename, cancellationToken);
                 if (result != null)
                 {
                     return result;
                 }
             }
-            return await GetEntityByIdAsync(id);
+            return await GetEntityByIdAsync(id, cancellationToken);
         }
 
-        protected async Task<List<TEntity>> ParseEntitiesAsync(List<TEntity> entities)
+        protected async Task<List<TEntity>> ParseEntitiesAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
         {
             List<TEntity> data = new List<TEntity>();
 
             foreach (var entity in entities)
             {
-                var view = await GetSingleAsync(entity.Id);
+                var view = await GetSingleAsync(entity.Id, cancellationToken);
                 data.Add(view);
             }
             return data;
         }
 
-        protected async Task<List<TEntity>> GetEntities(IQueryable<TEntity> source)
+        protected async Task<List<TEntity>> GetEntitiesAsync(IQueryable<TEntity> source, CancellationToken cancellationToken = default)
         {
-            return await source.SelectMembers(KeyMembers).ToListAsync();
+            return await source.SelectMembers(KeyMembers).ToListAsync(cancellationToken);
         }
 
         protected async Task<PagingResponseModel<TEntity>> ToPagingModelAsync(
            IQueryable<TEntity> source,
            PagingModel pagingData,
-           MixCacheService cacheService = null)
+           MixCacheService cacheService = null,
+           CancellationToken cancellationToken = default)
         {
             try
             {
-                var entities = await GetEntities(source);
-                List<TEntity> data = await ParseEntitiesAsync(entities);
+                var entities = await GetEntitiesAsync(source, cancellationToken);
+                List<TEntity> data = await ParseEntitiesAsync(entities, cancellationToken);
 
                 return new PagingResponseModel<TEntity>(data, pagingData);
             }
@@ -103,14 +113,14 @@ namespace Mix.Heart.Repository
             return await GetAllQuery().MaxAsync(predicate);
         }
 
-        public virtual async Task CreateAsync(TEntity entity)
+        public virtual async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             try
             {
                 BeginUow();
                 Context.Entry(entity).State = EntityState.Added;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -122,7 +132,7 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task UpdateAsync(TEntity entity)
+        public virtual async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -135,8 +145,8 @@ namespace Mix.Heart.Repository
                 }
 
                 Context.Entry(entity).State = EntityState.Modified;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -148,7 +158,7 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task SaveAsync(TEntity entity)
+        public virtual async Task SaveAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -156,10 +166,14 @@ namespace Mix.Heart.Repository
 
                 if (CheckIsExists(entity))
                 {
-                    await UpdateAsync(entity);
+                    await UpdateAsync(entity, cancellationToken);
                 }
-                else { await CreateAsync(entity); }
-                await CompleteUowAsync();
+                else
+                {
+                    await CreateAsync(entity, cancellationToken);
+                }
+
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -171,7 +185,7 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public async Task SaveFieldsAsync(TEntity entity, IEnumerable<EntityPropertyModel> properties)
+        public async Task SaveFieldsAsync(TEntity entity, IEnumerable<EntityPropertyModel> properties, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -189,8 +203,8 @@ namespace Mix.Heart.Repository
                         await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
                     }
                 }
-                await SaveAsync(entity);
-                await CompleteUowAsync();
+                await SaveAsync(entity, cancellationToken);
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -202,7 +216,7 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(TPrimaryKey id)
+        public virtual async Task DeleteAsync(TPrimaryKey id, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -215,8 +229,8 @@ namespace Mix.Heart.Repository
                 }
 
                 Context.Entry(entity).State = EntityState.Deleted;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -228,12 +242,12 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             try
             {
                 BeginUow();
-                var entity = await GetSingleAsync(predicate);
+                var entity = await GetSingleAsync(predicate, cancellationToken);
                 if (entity == null)
                 {
                     await HandleExceptionAsync(new EntityNotFoundException());
@@ -241,8 +255,8 @@ namespace Mix.Heart.Repository
                 }
 
                 Context.Entry(entity).State = EntityState.Deleted;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -254,18 +268,18 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             try
             {
                 BeginUow();
 
-                await Context.Set<TEntity>().Where(predicate).ForEachAsync(
-                    m => Context.Entry(m).State = EntityState.Deleted
-                    );
+                await Context.Set<TEntity>()
+                    .Where(predicate)
+                    .ForEachAsync(m => Context.Entry(m).State = EntityState.Deleted, cancellationToken);
 
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -277,7 +291,7 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(TEntity entity)
+        public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -290,8 +304,8 @@ namespace Mix.Heart.Repository
                 }
 
                 Context.Entry(entity).State = EntityState.Deleted;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -308,11 +322,12 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<PagingResponseModel<TEntity>> GetPagingAsync(
             Expression<Func<TEntity, bool>> predicate,
-            PagingModel paging)
+            PagingModel paging,
+            CancellationToken cancellationToken = default)
         {
             BeginUow();
             var query = GetPagingQuery(predicate, paging);
-            return await ToPagingModelAsync(query, paging);
+            return await ToPagingModelAsync(query, paging, cancellationToken: cancellationToken);
         }
 
 

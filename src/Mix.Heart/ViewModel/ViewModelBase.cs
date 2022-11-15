@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
@@ -81,7 +82,7 @@ namespace Mix.Heart.ViewModel
 
         #endregion
 
-        public virtual Task ExpandView()
+        public virtual Task ExpandView(CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
