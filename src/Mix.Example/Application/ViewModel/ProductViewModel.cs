@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Mix.Example.Dto;
 using Mix.Example.Infrastructure;
@@ -38,7 +39,7 @@ namespace Mix.Example.Application.ViewModel
             }
         }
 
-        protected override Task SaveEntityRelationshipAsync(ProductEntity parentEntity)
+        protected override Task SaveEntityRelationshipAsync(ProductEntity parentEntity, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
