@@ -10,113 +10,113 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
+public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
+{
+    #region Async
+
+    public async Task DeleteAsync(CancellationToken cancellationToken = default)
     {
-        #region Async
-
-        public async Task DeleteAsync(CancellationToken cancellationToken = default)
+        try
         {
-            try
-            {
-                BeginUow();
-                await DeleteHandlerAsync(cancellationToken);
-                await CompleteUowAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                await HandleExceptionAsync(ex);
-            }
-            finally
-            {
-                await CloseUowAsync();
-            }
+            BeginUow();
+            await DeleteHandlerAsync(cancellationToken);
+            await CompleteUowAsync(cancellationToken);
         }
-
-        protected virtual Task DeleteHandlerAsync(CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            return Repository.DeleteAsync(Id, cancellationToken);
+            await HandleExceptionAsync(ex);
         }
-
-        public async Task<TPrimaryKey> SaveAsync(CancellationToken cancellationToken = default)
+        finally
         {
-            try
+            await CloseUowAsync();
+        }
+    }
+
+    protected virtual Task DeleteHandlerAsync(CancellationToken cancellationToken = default)
+    {
+        return Repository.DeleteAsync(Id, cancellationToken);
+    }
+
+    public async Task<TPrimaryKey> SaveAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            BeginUow();
+            await Validate();
+            if (!IsValid)
             {
-                BeginUow();
-                await Validate();
-                if (!IsValid)
+                await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
+            }
+            var entity = await SaveHandlerAsync(cancellationToken);
+            await CompleteUowAsync(cancellationToken);
+            return entity.Id;
+        }
+        catch (Exception ex)
+        {
+            await HandleExceptionAsync(ex);
+            return default;
+        }
+        finally
+        {
+            await CloseUowAsync();
+        }
+    }
+
+    public async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            BeginUow();
+            foreach (var property in properties)
+            {
+                // check if field name is exist
+                var lamda = ReflectionHelper.GetLambda<TEntity>(property.PropertyName);
+                if (lamda != null)
                 {
-                    await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
+                    ReflectionHelper.SetPropertyValue(this, property);
                 }
-                var entity = await SaveHandlerAsync(cancellationToken);
-                await CompleteUowAsync(cancellationToken);
-                return entity.Id;
-            }
-            catch (Exception ex)
-            {
-                await HandleExceptionAsync(ex);
-                return default;
-            }
-            finally
-            {
-                await CloseUowAsync();
-            }
-        }
-
-        public async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                BeginUow();
-                foreach (var property in properties)
+                else
                 {
-                    // check if field name is exist
-                    var lamda = ReflectionHelper.GetLambda<TEntity>(property.PropertyName);
-                    if (lamda != null)
-                    {
-                        ReflectionHelper.SetPropertyValue(this, property);
-                    }
-                    else
-                    {
-                        await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
-                    }
+                    await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
                 }
-                await Validate();
-                var entity = await ParseEntity();
-                await Repository.SaveAsync(entity, cancellationToken);
-                await CompleteUowAsync(cancellationToken);
-                return entity.Id;
             }
-            catch (Exception ex)
-            {
-                await HandleExceptionAsync(ex);
-                return default;
-            }
-            finally
-            {
-                await CloseUowAsync();
-            }
-        }
-
-        #region virtual methods
-
-        // Override this method
-        protected virtual async Task<TEntity> SaveHandlerAsync(CancellationToken cancellationToken = default)
-        {
+            await Validate();
             var entity = await ParseEntity();
             await Repository.SaveAsync(entity, cancellationToken);
-            await SaveEntityRelationshipAsync(entity, cancellationToken);
-            Id = entity.Id;
-            return entity;
+            await CompleteUowAsync(cancellationToken);
+            return entity.Id;
         }
-
-        // Override this method
-        protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity, CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            return Task.CompletedTask;
+            await HandleExceptionAsync(ex);
+            return default;
         }
-
-        #endregion
-
-        #endregion
+        finally
+        {
+            await CloseUowAsync();
+        }
     }
+
+    #region virtual methods
+
+    // Override this method
+    protected virtual async Task<TEntity> SaveHandlerAsync(CancellationToken cancellationToken = default)
+    {
+        var entity = await ParseEntity();
+        await Repository.SaveAsync(entity, cancellationToken);
+        await SaveEntityRelationshipAsync(entity, cancellationToken);
+        Id = entity.Id;
+        return entity;
+    }
+
+    // Override this method
+    protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    #endregion
+
+    #endregion
+}
 }
