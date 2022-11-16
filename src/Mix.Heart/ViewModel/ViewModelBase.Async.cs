@@ -81,7 +81,7 @@ namespace Mix.Heart.ViewModel
                     }
                 }
                 await Validate();
-                var entity = await ParseEntity();
+                var entity = await ParseEntity(cancellationToken);
                 await Repository.SaveAsync(entity, cancellationToken);
                 await CompleteUowAsync(cancellationToken);
                 return entity.Id;
@@ -102,7 +102,7 @@ namespace Mix.Heart.ViewModel
         // Override this method
         protected virtual async Task<TEntity> SaveHandlerAsync(CancellationToken cancellationToken = default)
         {
-            var entity = await ParseEntity();
+            var entity = await ParseEntity(cancellationToken);
             await Repository.SaveAsync(entity, cancellationToken);
             await SaveEntityRelationshipAsync(entity, cancellationToken);
             Id = entity.Id;
