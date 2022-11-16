@@ -4,6 +4,7 @@ using Mix.Heart.Exceptions;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
@@ -65,12 +66,12 @@ namespace Mix.Heart.Repository
             }
         }
 
-        protected virtual async Task CompleteUowAsync()
+        protected virtual async Task CompleteUowAsync(CancellationToken cancellationToken = default)
         {
             if (_isRoot)
             {
-                await UowInfo.CompleteAsync();
-                UowInfo.Close();
+                await UowInfo.CompleteAsync(cancellationToken);
+                await UowInfo.CloseAsync();
                 return;
             };
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.UnitOfWork
@@ -53,7 +54,9 @@ namespace Mix.Heart.UnitOfWork
             //if (ActiveDbContext != null)
             //    await ActiveDbContext.DisposeAsync();
             if (ActiveTransaction != null)
+            {
                 await ActiveTransaction.DisposeAsync();
+            }
         }
 
         /// <summary>
@@ -85,12 +88,12 @@ namespace Mix.Heart.UnitOfWork
         /// <summary>
         /// TODO: implement multiple db context
         /// </summary>
-        public async Task CompleteAsync()
+        public async Task CompleteAsync(CancellationToken cancellationToken = default)
         {
             if (ActiveDbContext != null && ActiveTransaction != null)
             {
-                await ActiveDbContext.SaveChangesAsync();
-                await ActiveTransaction.CommitAsync();
+                await ActiveDbContext.SaveChangesAsync(cancellationToken);
+                await ActiveTransaction.CommitAsync(cancellationToken);
                 await ActiveTransaction.DisposeAsync();
                 ActiveTransaction = null;
             }
@@ -98,11 +101,11 @@ namespace Mix.Heart.UnitOfWork
         /// <summary>
         /// TODO: implement multiple db context
         /// </summary>
-        public async Task RollbackAsync()
+        public async Task RollbackAsync(CancellationToken cancellationToken = default)
         {
             if (ActiveDbContext != null && ActiveTransaction != null)
             {
-                await ActiveTransaction.RollbackAsync();
+                await ActiveTransaction.RollbackAsync(cancellationToken);
                 await ActiveTransaction.DisposeAsync();
                 ActiveTransaction = null;
             }

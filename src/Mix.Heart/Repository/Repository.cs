@@ -6,6 +6,7 @@ using Mix.Heart.ViewModel;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
@@ -22,19 +23,19 @@ namespace Mix.Heart.Repository
 
         #region Async
 
-        public virtual async Task<int> MaxAsync(Expression<Func<TEntity, int>> predicate)
+        public virtual async Task<int> MaxAsync(Expression<Func<TEntity, int>> predicate, CancellationToken cancellationToken = default)
         {
-            return await Table.MaxAsync(predicate);
+            return await Table.MaxAsync(predicate, cancellationToken);
         }
 
-        public virtual async Task CreateAsync(TEntity entity)
+        public virtual async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             try
             {
                 BeginUow();
                 Context.Entry(entity).State = EntityState.Added;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -46,22 +47,22 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task UpdateAsync(TEntity entity)
+        public virtual async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             try
             {
                 BeginUow();
 
-                if (!await CheckIsExistsAsync(entity))
+                if (!await CheckIsExistsAsync(entity, cancellationToken))
                 {
                     await HandleExceptionAsync(new EntityNotFoundException(entity.Id.ToString()));
                     return;
                 }
 
                 Context.Entry(entity).State = EntityState.Modified;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
-                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity));
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
+                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity), cancellationToken);
             }
             catch (Exception ex)
             {
@@ -73,18 +74,21 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task SaveAsync(TEntity entity)
+        public virtual async Task SaveAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             try
             {
                 BeginUow();
 
-                if (await CheckIsExistsAsync(entity))
+                if (await CheckIsExistsAsync(entity, cancellationToken))
                 {
-                    await UpdateAsync(entity);
+                    await UpdateAsync(entity, cancellationToken);
                 }
-                else { await CreateAsync(entity); }
-                await CompleteUowAsync();
+                else
+                {
+                    await CreateAsync(entity, cancellationToken);
+                }
+                await CompleteUowAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -96,13 +100,15 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(TPrimaryKey id)
+        public virtual async Task DeleteAsync(TPrimaryKey id, CancellationToken cancellationToken = default)
         {
             try
             {
-                var entity = await GetEntityByIdAsync(id);
+                var entity = await GetEntityByIdAsync(id, cancellationToken);
                 if (entity != null)
-                    await DeleteAsync(entity);
+                {
+                    await DeleteAsync(entity, cancellationToken);
+                }
             }
             catch (Exception ex)
             {
@@ -114,7 +120,7 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -127,9 +133,9 @@ namespace Mix.Heart.Repository
                 }
 
                 Context.Set<TEntity>().Remove(entity).State = EntityState.Deleted;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
-                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity));
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
+                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity), cancellationToken);
             }
             catch (Exception ex)
             {
@@ -141,14 +147,14 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             try
             {
                 var entities = Context.Set<TEntity>().Where(predicate);
                 foreach (var entity in entities)
                 {
-                    await DeleteAsync(entity);
+                    await DeleteAsync(entity, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -161,22 +167,22 @@ namespace Mix.Heart.Repository
             }
         }
 
-        public virtual async Task DeleteAsync(TEntity entity)
+        public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             try
             {
                 BeginUow();
 
-                if (!await CheckIsExistsAsync(entity))
+                if (!await CheckIsExistsAsync(entity, cancellationToken))
                 {
                     await HandleExceptionAsync(new EntityNotFoundException(entity.Id.ToString()));
                     return;
                 }
 
                 Context.Entry(entity).State = EntityState.Deleted;
-                await Context.SaveChangesAsync();
-                await CompleteUowAsync();
-                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity));
+                await Context.SaveChangesAsync(cancellationToken);
+                await CompleteUowAsync(cancellationToken);
+                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity), cancellationToken);
             }
             catch (Exception ex)
             {

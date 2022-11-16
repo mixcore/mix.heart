@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Repository
@@ -78,10 +79,9 @@ namespace Mix.Heart.Repository
             return query;
         }
 
-        public virtual async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)
+        public virtual async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id, CancellationToken cancellationToken = default)
         {
-
-            return await Table.Where(m => m.Id.Equals(id)).SelectMembers(FilterSelectedFields()).AsNoTracking().SingleOrDefaultAsync();
+            return await Table.Where(m => m.Id.Equals(id)).SelectMembers(FilterSelectedFields()).AsNoTracking().SingleOrDefaultAsync(cancellationToken);
         }
         #endregion
 
@@ -102,76 +102,81 @@ namespace Mix.Heart.Repository
             CacheFilename = string.Join('-', arrIndex);
         }
 
-        public virtual async Task<bool> CheckIsExistsAsync(TEntity entity)
+        public virtual async Task<bool> CheckIsExistsAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return entity != null && await Table.AnyAsync(e => e.Id.Equals(entity.Id));
+            return entity != null && await Table.AnyAsync(e => e.Id.Equals(entity.Id), cancellationToken);
         }
 
-        public virtual async Task<bool> CheckIsExistsAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<bool> CheckIsExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            return await Table.AnyAsync(predicate);
+            return await Table.AnyAsync(predicate, cancellationToken);
         }
 
         #region View Async
 
-        public virtual async Task<TView> GetSingleAsync(TPrimaryKey id)
+        public virtual async Task<TView> GetSingleAsync(TPrimaryKey id, CancellationToken cancellationToken = default)
         {
-
             if (CacheService != null && CacheService.IsCacheEnabled)
             {
-                TView result = await CacheService.GetAsync<TView>($"{id}/{typeof(TView).FullName}", typeof(TEntity), CacheFilename);
+                var key = $"{id}/{typeof(TView).FullName}";
+                var result = await CacheService.GetAsync<TView>(key, typeof(TEntity), CacheFilename, cancellationToken);
                 if (result != null)
                 {
                     if (CacheFilename == "full")
                     {
                         result.SetUowInfo(UowInfo);
-                        await result.ExpandView();
+                        await result.ExpandView(cancellationToken);
                     }
                     return result;
                 }
             }
-            var entity = await GetEntityByIdAsync(id);
-            return await GetSingleViewAsync(entity);
+            var entity = await GetEntityByIdAsync(id, cancellationToken);
+            return await GetSingleViewAsync(entity, cancellationToken);
         }
 
-        public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             var entity = await Table.AsNoTracking()
                             .Where(predicate)
                             .SelectMembers(KeyMembers)
-                            .SingleOrDefaultAsync();
+                            .SingleOrDefaultAsync(cancellationToken);
             if (entity != null)
             {
-                return await GetSingleAsync(entity.Id);
+                return await GetSingleAsync(entity.Id, cancellationToken);
             }
             return null;
         }
 
-        public virtual async Task<TView> GetFirstAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<TView> GetFirstAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            CancellationToken cancellationToken = default)
         {
-            var entity = await Table.AsNoTracking().Where(predicate)
+            var entity = await Table
+                .AsNoTracking()
+                .Where(predicate)
                 .SelectMembers(FilterSelectedFields())
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
+
             if (entity != null)
             {
-                return await GetSingleAsync(entity.Id);
+                return await GetSingleAsync(entity.Id, cancellationToken);
             }
             return null;
         }
 
-        public virtual async Task<List<TView>> GetListAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<List<TView>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             var query = GetListQuery(predicate);
-            var result = await ToListViewModelAsync(query);
+            var result = await ToListViewModelAsync(query, cancellationToken);
             return result;
         }
 
-        public virtual async Task<List<TView>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<List<TView>> GetAllAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             BeginUow();
             var query = Table.AsNoTracking().Where(predicate);
-            var entities = await GetEntities(query);
-            return await ParseEntitiesAsync(entities);
+            var entities = await GetEntitiesAsync(query, cancellationToken);
+            return await ParseEntitiesAsync(entities, cancellationToken);
         }
 
         public virtual async Task<PagingResponseModel<TView>> GetPagingAsync(
@@ -200,14 +205,12 @@ namespace Mix.Heart.Repository
             return Task.FromResult((TView)classConstructor.Invoke(new object[] { entity, UowInfo }));
         }
 
-        public async Task<List<TView>> ToListViewModelAsync(IQueryable<TEntity> source)
+        public async Task<List<TView>> ToListViewModelAsync(IQueryable<TEntity> source, CancellationToken cancellationToken = default)
         {
             try
             {
-                var entities = await source.SelectMembers(KeyMembers).AsNoTracking().ToListAsync();
-
-                List<TView> data = await ParseEntitiesAsync(entities);
-
+                var entities = await source.SelectMembers(KeyMembers).AsNoTracking().ToListAsync(cancellationToken);
+                var data = await ParseEntitiesAsync(entities, cancellationToken);
                 return data;
             }
             catch (Exception ex)
@@ -219,12 +222,13 @@ namespace Mix.Heart.Repository
         protected async Task<PagingResponseModel<TView>> ToPagingViewModelAsync(
             IQueryable<TEntity> source,
             PagingModel pagingData,
-            MixCacheService cacheService = null)
+            MixCacheService cacheService = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
-                var entities = await GetEntities(source);
-                List<TView> data = await ParseEntitiesAsync(entities);
+                var entities = await GetEntitiesAsync(source, cancellationToken);
+                List<TView> data = await ParseEntitiesAsync(entities, cancellationToken);
 
                 return new PagingResponseModel<TView>(data, pagingData);
             }
@@ -234,42 +238,42 @@ namespace Mix.Heart.Repository
             }
         }
 
-        protected async Task<List<TEntity>> GetEntities(IQueryable<TEntity> source)
+        protected async Task<List<TEntity>> GetEntitiesAsync(IQueryable<TEntity> source, CancellationToken cancellationToken = default)
         {
-            return await source.SelectMembers(KeyMembers).ToListAsync();
+            return await source.SelectMembers(KeyMembers).ToListAsync(cancellationToken);
         }
 
-        protected async Task<List<TView>> ParseEntitiesAsync(List<TEntity> entities)
+        protected async Task<List<TView>> ParseEntitiesAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
         {
             List<TView> data = new List<TView>();
 
             foreach (var entity in entities)
             {
-                var view = await GetSingleAsync(entity.Id);
+                var view = await GetSingleAsync(entity.Id, cancellationToken);
                 data.Add(view);
             }
             return data;
         }
 
-        protected async Task<TView> GetSingleViewAsync(TEntity entity)
+        protected async Task<TView> GetSingleViewAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity != null)
             {
-
                 TView result = GetViewModel(entity);
 
                 if (result != null && CacheService != null)
                 {
+                    var key = $"{entity.Id}/{typeof(TView).FullName}";
                     if (CacheFilename == "full")
                     {
                         result.SetUowInfo(UowInfo);
-                        await result.ExpandView();
-                        await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", result, typeof(TEntity), CacheFilename);
+                        await result.ExpandView(cancellationToken);
+                        await CacheService.SetAsync(key, result, typeof(TEntity), CacheFilename, cancellationToken);
                     }
                     else
                     {
                         var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
-                        await CacheService.SetAsync($"{entity.Id}/{typeof(TView).FullName}", obj, typeof(TEntity), CacheFilename);
+                        await CacheService.SetAsync(key, obj, typeof(TEntity), CacheFilename, cancellationToken);
                     }
                 }
 

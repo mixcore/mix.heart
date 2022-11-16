@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.Services
@@ -61,14 +62,14 @@ namespace Mix.Heart.Services
         }
 
 
-        public Task<T> GetAsync<T>(string key, Type dataType, string filename)
+        public Task<T> GetAsync<T>(string key, Type dataType, string filename, CancellationToken cancellationToken = default)
         {
             try
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
-                        return GetFromDatabaseAsync<T>(key, dataType.FullName, filename);
+                        return GetFromDatabaseAsync<T>(key, dataType.FullName, filename, cancellationToken);
                     case MixCacheMode.JSON:
                     default:
                         return Task.FromResult(GetFromJson<T>(key, dataType.FullName, filename));
@@ -105,12 +106,12 @@ namespace Mix.Heart.Services
             return default;
         }
 
-        private async Task<T> GetFromDatabaseAsync<T>(string key, string folder, string filename)
+        private async Task<T> GetFromDatabaseAsync<T>(string key, string folder, string filename, CancellationToken cancellationToken = default)
         {
             try
             {
                 string keyword = $"{folder}/{key}/{filename}";
-                var cache = await _repository.GetSingleAsync(m => m.Keyword == keyword);
+                var cache = await _repository.GetSingleAsync(m => m.Keyword == keyword, cancellationToken);
                 if (cache != null)
                 {
                     try
@@ -134,14 +135,14 @@ namespace Mix.Heart.Services
             }
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value, Type dataType, string filename)
+        public async Task<bool> SetAsync<T>(string key, T value, Type dataType, string filename, CancellationToken cancellationToken = default)
         {
             if (value != null)
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
-                        await SaveDatabaseAsync(key, value, dataType, filename);
+                        await SaveDatabaseAsync(key, value, dataType, filename, cancellationToken);
                         break;
                     case MixCacheMode.JSON:
                     default:
@@ -152,7 +153,7 @@ namespace Mix.Heart.Services
             return true;
         }
 
-        private async Task<bool> SaveDatabaseAsync<T>(string key, T value, Type dataType, string filename)
+        private async Task<bool> SaveDatabaseAsync<T>(string key, T value, Type dataType, string filename, CancellationToken cancellationToken = default)
         {
             if (value != null)
             {
@@ -166,18 +167,18 @@ namespace Mix.Heart.Services
                     CreatedDateTime = DateTime.UtcNow
                 };
 
-                await _repository.SaveAsync(cache);
-                await _repository.UowInfo.CompleteAsync();
+                await _repository.SaveAsync(cache, cancellationToken);
+                await _repository.UowInfo.CompleteAsync(cancellationToken);
             }
             return true;
         }
 
-        public async Task RemoveCacheAsync()
+        public async Task RemoveCacheAsync(CancellationToken cancellationToken = default)
         {
             switch (_configs.CacheMode)
             {
                 case MixCacheMode.DATABASE:
-                    await _repository.DeleteManyAsync(m => true);
+                    await _repository.DeleteManyAsync(m => true, cancellationToken);
                     break;
                 case MixCacheMode.JSON:
                 default:
@@ -186,12 +187,12 @@ namespace Mix.Heart.Services
             }
         }
 
-        public async Task RemoveCacheAsync(object key, Type dataType)
+        public async Task RemoveCacheAsync(object key, Type dataType, CancellationToken cancellationToken = default)
         {
             switch (_configs.CacheMode)
             {
                 case MixCacheMode.DATABASE:
-                    await _repository.DeleteAsync(m => m.Keyword == $"{dataType.FullName}_{key}");
+                    await _repository.DeleteAsync(m => m.Keyword == $"{dataType.FullName}_{key}", cancellationToken);
                     break;
                 case MixCacheMode.JSON:
                 default:
