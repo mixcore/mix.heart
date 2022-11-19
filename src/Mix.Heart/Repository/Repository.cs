@@ -33,7 +33,7 @@ namespace Mix.Heart.Repository
             try
             {
                 BeginUow();
-                Context.Entry(entity).State = EntityState.Added;
+                Context.Set<TEntity>().Add(entity);
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
             }
@@ -59,7 +59,7 @@ namespace Mix.Heart.Repository
                     return;
                 }
 
-                Context.Entry(entity).State = EntityState.Modified;
+                Context.Set<TEntity>().Update(entity);
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
                 await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity), cancellationToken);
