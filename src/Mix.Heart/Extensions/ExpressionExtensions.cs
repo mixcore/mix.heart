@@ -22,7 +22,7 @@ namespace Mix.Heart.Extensions
 
         public static Expression<Func<T, bool>> AndAlso<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
         {
-            return first.Compose(second, Expression.AndAlso);
+            return second != null ? first.Compose(second, Expression.AndAlso): first;
         }
 
         public static Expression<Func<T, bool>> AndAlsoNot<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)

@@ -212,7 +212,7 @@ namespace Mix.Heart.Helpers
 
                 if (propertyInfo == null)
                 {
-                    throw new MixException(MixErrorStatus.Badrequest, "Invalid Property Expression");
+                    return null;
                 }
 
                 fieldPropertyType = propertyInfo.PropertyType;
