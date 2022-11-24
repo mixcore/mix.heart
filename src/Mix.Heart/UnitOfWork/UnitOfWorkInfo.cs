@@ -111,17 +111,11 @@ namespace Mix.Heart.UnitOfWork
             }
         }
 
-        public ValueTask DisposeAsync()
+        public void Dispose()
         {
-            Task.Run(() =>
-            {
-                ActiveDbContext?.DisposeAsync();
-            }).ContinueWith((result) =>
-            {
-                GC.SuppressFinalize(this);
-                GC.WaitForPendingFinalizers();
-            });
-            return ValueTask.CompletedTask;
+            ActiveDbContext?.Dispose();
+            GC.SuppressFinalize(this);
+            GC.WaitForPendingFinalizers();
         }
     }
 }
