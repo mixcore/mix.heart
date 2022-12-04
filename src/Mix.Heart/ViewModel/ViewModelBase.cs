@@ -32,13 +32,15 @@ namespace Mix.Heart.ViewModel
         public int Priority { get; set; }
         public MixContentStatus Status { get; set; } = MixContentStatus.Published;
 
+        protected ValidationContext ValidateContext;
+
         [JsonIgnore]
-        public bool IsValid { get; set; }
+        protected bool IsValid { get; set; }
 
         [JsonIgnore]
         protected UnitOfWorkInfo UowInfo { get; set; }
         [JsonIgnore]
-        public List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
+        protected List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
         [JsonIgnore]
         protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
         protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
@@ -49,11 +51,13 @@ namespace Mix.Heart.ViewModel
 
         public ViewModelBase()
         {
+            ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
             Repository ??= GetRepository(UowInfo);
         }
 
         public ViewModelBase(TDbContext context)
         {
+            ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
             UowInfo = new UnitOfWorkInfo(context);
             Repository ??= GetRepository(UowInfo);
             _isRoot = true;
@@ -61,12 +65,14 @@ namespace Mix.Heart.ViewModel
 
         public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo = null)
         {
+            ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
             SetUowInfo(uowInfo);
             ParseView(entity);
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
         {
+            ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
             SetUowInfo(unitOfWorkInfo);
         }
 
@@ -97,12 +103,8 @@ namespace Mix.Heart.ViewModel
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context);
         }
 
-        public virtual async Task Validate()
+        public virtual async Task Validate(CancellationToken cancellationToken)
         {
-            var validateContext = new System.ComponentModel.DataAnnotations.ValidationContext(this, serviceProvider: null, items: null);
-
-            IsValid = Validator.TryValidateObject(this, validateContext, Errors);
-
             if (!IsValid)
             {
                 await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
@@ -124,6 +126,7 @@ namespace Mix.Heart.ViewModel
 
         public virtual Task<TEntity> ParseEntity(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (IsDefaultId(Id))
             {
                 InitDefaultValues();

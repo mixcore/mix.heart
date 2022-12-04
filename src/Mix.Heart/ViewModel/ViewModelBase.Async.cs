@@ -4,6 +4,7 @@ using Mix.Heart.Helpers;
 using Mix.Heart.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +43,8 @@ namespace Mix.Heart.ViewModel
             try
             {
                 BeginUow();
-                await Validate();
+                IsValid = Validator.TryValidateObject(this, ValidateContext, Errors);
+                await Validate(cancellationToken);
                 if (!IsValid)
                 {
                     await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
@@ -80,7 +82,8 @@ namespace Mix.Heart.ViewModel
                         await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, $"Invalid Property {property.PropertyName}"));
                     }
                 }
-                await Validate();
+                IsValid = Validator.TryValidateObject(this, ValidateContext, Errors);
+                await Validate(cancellationToken);
                 var entity = await ParseEntity(cancellationToken);
                 await Repository.SaveAsync(entity, cancellationToken);
                 await CompleteUowAsync(cancellationToken);
