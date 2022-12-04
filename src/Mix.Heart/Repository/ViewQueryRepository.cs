@@ -49,14 +49,17 @@ namespace Mix.Heart.Repository
 
         #region IQueryable
 
-        public IQueryable<TEntity> GetListQuery(Expression<Func<TEntity, bool>> predicate)
+        public IQueryable<TEntity> GetListQuery(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return Table.AsNoTracking().Where(predicate);
         }
 
-        public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate, PagingModel paging)
+        public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate, PagingModel paging, CancellationToken cancellationToken = default)
         {
-            var query = GetListQuery(predicate);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var query = GetListQuery(predicate, cancellationToken);
             dynamic sortBy = GetLambda(paging.SortBy);
 
             switch (paging.SortDirection)
@@ -81,6 +84,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TEntity> GetEntityByIdAsync(TPrimaryKey id, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return await Table.Where(m => m.Id.Equals(id)).SelectMembers(FilterSelectedFields()).AsNoTracking().SingleOrDefaultAsync(cancellationToken);
         }
         #endregion
@@ -104,11 +108,13 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<bool> CheckIsExistsAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return entity != null && await Table.AnyAsync(e => e.Id.Equals(entity.Id), cancellationToken);
         }
 
         public virtual async Task<bool> CheckIsExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return await Table.AnyAsync(predicate, cancellationToken);
         }
 
@@ -116,6 +122,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TView> GetSingleAsync(TPrimaryKey id, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (CacheService != null && CacheService.IsCacheEnabled)
             {
                 var key = $"{id}/{typeof(TView).FullName}";
@@ -136,6 +143,7 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var entity = await Table.AsNoTracking()
                             .Where(predicate)
                             .SelectMembers(KeyMembers)
@@ -151,6 +159,8 @@ namespace Mix.Heart.Repository
             Expression<Func<TEntity, bool>> predicate,
             CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var entity = await Table
                 .AsNoTracking()
                 .Where(predicate)
@@ -166,7 +176,8 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<List<TView>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            var query = GetListQuery(predicate);
+            cancellationToken.ThrowIfCancellationRequested();
+            var query = GetListQuery(predicate, cancellationToken);
             var result = await ToListViewModelAsync(query, cancellationToken);
             return result;
         }
@@ -181,11 +192,13 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<PagingResponseModel<TView>> GetPagingAsync(
             Expression<Func<TEntity, bool>> predicate,
-            PagingModel paging)
+            PagingModel paging,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             BeginUow();
-            var query = GetPagingQuery(predicate, paging);
-            return await ToPagingViewModelAsync(query, paging);
+            var query = GetPagingQuery(predicate, paging, cancellationToken);
+            return await ToPagingViewModelAsync(query, paging, cancellationToken: cancellationToken);
         }
 
         #endregion
@@ -209,6 +222,7 @@ namespace Mix.Heart.Repository
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var entities = await source.SelectMembers(KeyMembers).AsNoTracking().ToListAsync(cancellationToken);
                 var data = await ParseEntitiesAsync(entities, cancellationToken);
                 return data;
@@ -227,6 +241,7 @@ namespace Mix.Heart.Repository
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var entities = await GetEntitiesAsync(source, cancellationToken);
                 List<TView> data = await ParseEntitiesAsync(entities, cancellationToken);
 
@@ -240,11 +255,13 @@ namespace Mix.Heart.Repository
 
         protected async Task<List<TEntity>> GetEntitiesAsync(IQueryable<TEntity> source, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return await source.SelectMembers(KeyMembers).ToListAsync(cancellationToken);
         }
 
         protected async Task<List<TView>> ParseEntitiesAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             List<TView> data = new List<TView>();
 
             foreach (var entity in entities)
@@ -257,6 +274,7 @@ namespace Mix.Heart.Repository
 
         protected async Task<TView> GetSingleViewAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (entity != null)
             {
                 TView result = GetViewModel(entity);

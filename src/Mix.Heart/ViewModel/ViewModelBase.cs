@@ -90,6 +90,7 @@ namespace Mix.Heart.ViewModel
 
         public virtual Task ExpandView(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return Task.CompletedTask;
         }
 
@@ -105,6 +106,7 @@ namespace Mix.Heart.ViewModel
 
         public virtual async Task Validate(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!IsValid)
             {
                 await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
@@ -138,9 +140,10 @@ namespace Mix.Heart.ViewModel
             return Task.FromResult(entity);
         }
 
-        public virtual void ParseView<TSource>(TSource sourceObject)
+        public virtual void ParseView<TSource>(TSource sourceObject, CancellationToken cancellationToken = default)
             where TSource : TEntity
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), GetType()));
             var mapper = new Mapper(config);
             mapper.Map(sourceObject, this);

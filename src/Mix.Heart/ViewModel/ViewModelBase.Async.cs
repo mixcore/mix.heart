@@ -19,6 +19,7 @@ namespace Mix.Heart.ViewModel
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 BeginUow();
                 await DeleteHandlerAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
@@ -35,6 +36,7 @@ namespace Mix.Heart.ViewModel
 
         protected virtual Task DeleteHandlerAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return Repository.DeleteAsync(Id, cancellationToken);
         }
 
@@ -42,6 +44,7 @@ namespace Mix.Heart.ViewModel
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 BeginUow();
                 IsValid = Validator.TryValidateObject(this, ValidateContext, Errors);
                 await Validate(cancellationToken);
@@ -68,6 +71,7 @@ namespace Mix.Heart.ViewModel
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 BeginUow();
                 foreach (var property in properties)
                 {
@@ -105,6 +109,7 @@ namespace Mix.Heart.ViewModel
         // Override this method
         protected virtual async Task<TEntity> SaveHandlerAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var entity = await ParseEntity(cancellationToken);
             await Repository.SaveAsync(entity, cancellationToken);
             await SaveEntityRelationshipAsync(entity, cancellationToken);
@@ -115,6 +120,7 @@ namespace Mix.Heart.ViewModel
         // Override this method
         protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return Task.CompletedTask;
         }
 
