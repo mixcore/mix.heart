@@ -34,6 +34,7 @@ namespace Mix.Heart.ViewModel
 
         protected ValidationContext ValidateContext;
 
+        public bool IsDeleted { get; set; }
         [JsonIgnore]
         protected bool IsValid { get; set; }
 
@@ -84,6 +85,7 @@ namespace Mix.Heart.ViewModel
         {
             CreatedDateTime = DateTime.UtcNow;
             Status = MixContentStatus.Published;
+            IsDeleted = false;   
         }
 
         #endregion
