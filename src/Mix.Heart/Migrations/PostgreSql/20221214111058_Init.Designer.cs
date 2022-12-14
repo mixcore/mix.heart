@@ -9,66 +9,49 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Mix.Heart.Migrations.PostgreSql
-{
+namespace Mix.Heart.Migrations.PostgreSql {
 [DbContext(typeof(PostgresCacheDbContext))]
 [Migration("20221214111058_Init")]
-partial class Init
-{
-    /// <inheritdoc />
-    protected override void BuildTargetModel(ModelBuilder modelBuilder)
-    {
+partial class Init {
+  /// <inheritdoc />
+  protected override void BuildTargetModel(ModelBuilder modelBuilder) {
 #pragma warning disable 612, 618
-        modelBuilder
-        .HasAnnotation("ProductVersion", "7.0.0")
+    modelBuilder.HasAnnotation("ProductVersion", "7.0.0")
         .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-        NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+    NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-        modelBuilder.Entity("Mix.Heart.Entities.Cache.MixCache", b =>
-        {
-            b.Property<Guid>("Id")
-            .ValueGeneratedOnAdd()
-            .HasColumnType("uuid");
+    modelBuilder.Entity("Mix.Heart.Entities.Cache.MixCache", b => {
+      b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
 
-            b.Property<string>("CreatedBy")
-            .HasColumnType("varchar(50)");
+      b.Property<string>("CreatedBy").HasColumnType("varchar(50)");
 
-            b.Property<DateTime>("CreatedDateTime")
-            .HasColumnType("timestamp with time zone");
+      b.Property<DateTime>("CreatedDateTime")
+          .HasColumnType("timestamp with time zone");
 
-            b.Property<DateTime?>("ExpiredDateTime")
-            .HasColumnType("timestamp with time zone");
+      b.Property<DateTime?>("ExpiredDateTime")
+          .HasColumnType("timestamp with time zone");
 
-            b.Property<string>("Keyword")
-            .IsRequired()
-            .HasColumnType("varchar(400)");
+      b.Property<string>("Keyword").IsRequired().HasColumnType("varchar(400)");
 
-            b.Property<DateTime?>("LastModified")
-            .HasColumnType("timestamp with time zone");
+      b.Property<DateTime?>("LastModified")
+          .HasColumnType("timestamp with time zone");
 
-            b.Property<string>("ModifiedBy")
-            .HasColumnType("varchar(50)");
+      b.Property<string>("ModifiedBy").HasColumnType("varchar(50)");
 
-            b.Property<int>("Priority")
-            .HasColumnType("integer");
+      b.Property<int>("Priority").HasColumnType("integer");
 
-            b.Property<string>("Status")
-            .IsRequired()
-            .HasColumnType("varchar(50)");
+      b.Property<string>("Status").IsRequired().HasColumnType("varchar(50)");
 
-            b.Property<string>("Value")
-            .IsRequired()
-            .HasColumnType("text");
+      b.Property<string>("Value").IsRequired().HasColumnType("text");
 
-            b.HasKey("Id");
+      b.HasKey("Id");
 
-            b.HasIndex("ExpiredDateTime")
-            .HasDatabaseName("Index_ExpiresAtTime");
+      b.HasIndex("ExpiredDateTime").HasDatabaseName("Index_ExpiresAtTime");
 
-            b.ToTable("MixCache");
-        });
+      b.ToTable("MixCache");
+    });
 #pragma warning restore 612, 618
-    }
+  }
 }
 }
