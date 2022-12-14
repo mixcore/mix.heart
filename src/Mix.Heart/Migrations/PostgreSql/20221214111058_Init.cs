@@ -1,12 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Mix.Heart.Migrations.PostgresCacheDb
+namespace Mix.Heart.Migrations.PostgreSql
 {
-    public partial class AddPostgresCache : Migration
+    /// <inheritdoc />
+    public partial class Init : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -16,11 +18,11 @@ namespace Mix.Heart.Migrations.PostgresCacheDb
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Keyword = table.Column<string>(type: "varchar(400)", nullable: false),
                     Value = table.Column<string>(type: "text", nullable: false),
-                    ExpiredDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ExpiredDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ModifiedBy = table.Column<string>(type: "varchar(50)", nullable: true),
                     CreatedBy = table.Column<string>(type: "varchar(50)", nullable: true),
-                    LastModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    CreatedDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Priority = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<string>(type: "varchar(50)", nullable: false)
                 },
@@ -35,6 +37,7 @@ namespace Mix.Heart.Migrations.PostgresCacheDb
                 column: "ExpiredDateTime");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
