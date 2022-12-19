@@ -10,8 +10,8 @@ namespace Mix.Heart.Infrastructure.EntityConfigurations.POSTGRES
     {
         public void Configure(EntityTypeBuilder<MixCache> entity)
         {
-            string valueType = "text";
-            string dtType = "timestamp without time zone";
+            const string valueType = "text";
+            const string dtType = "timestamp with time zone";
 
             entity.HasIndex(e => e.ExpiredDateTime)
                 .HasDatabaseName("Index_ExpiresAtTime");
