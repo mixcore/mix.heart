@@ -4,6 +4,7 @@ namespace Mix.Heart.Models
 {
     public class PagingModel
     {
+        public int Page { get; set; }
         public int PageIndex { get; set; }
 
         public int? PageSize { get; set; }
