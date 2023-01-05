@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
 
 namespace Mix.Heart.Models
 {
@@ -42,7 +43,7 @@ namespace Mix.Heart.Models
 
         public FileModel(IFormFile file, string folder)
         {
-            Filename = file.FileName[0..file.FileName.LastIndexOf('.')];
+            Filename = file.FileName[0..Math.Min(file.FileName.LastIndexOf('.'), 40)];
             Extension = file.FileName[file.FileName.LastIndexOf('.')..];
             FileFolder = folder;
         }

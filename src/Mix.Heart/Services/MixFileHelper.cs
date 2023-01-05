@@ -193,6 +193,10 @@ namespace Mix.Heart.Services
                 {
                     CreateFolderIfNotExist(fullPath);
                     string fileName = file.FileName;
+                    if(fileName.Length > 40)
+                    {
+                        fileName = fileName[0..40];
+                    }
                     string fullPath2 = $"{fullPath}/{fileName}";
                     if (File.Exists(fullPath2))
                     {

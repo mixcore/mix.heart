@@ -38,6 +38,11 @@ namespace Mix.Heart.Helpers
             mapper.Map(source, dest);
         }
 
+        public static JArray ParseArray<T>(T obj)
+        {
+            return obj != null ? JArray.FromObject(obj, serializer) : null;
+        }
+
         public static JObject ParseObject<T>(T obj)
         {
             return obj != null ? JObject.FromObject(obj, serializer) : null;
