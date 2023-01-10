@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
 using Mix.Heart.Models;
 using System;
 using System.Collections.Generic;
@@ -131,6 +133,41 @@ namespace Mix.Heart.Services
 
         #region File
 
+        public static bool SaveFileBytes(string folder, string filename, byte[] bytes)
+        {
+            try
+            {
+                string fullPath = $"{folder}/{filename}";
+                if (!Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+
+                if (File.Exists(fullPath))
+                {
+                    File.Delete(fullPath);
+                }
+
+                FileStream fileStream = new FileStream(fullPath, FileMode.Create);
+                BinaryWriter binaryWriter = new BinaryWriter(fileStream);
+                try
+                {
+                    binaryWriter.Write(bytes);
+                }
+                finally
+                {
+                    fileStream.Close();
+                    binaryWriter.Close();
+                }
+
+                return true;
+            }
+            catch(Exception ex)
+            {
+                throw new Exceptions.MixException(MixErrorStatus.ServerError, ex);
+            }
+        }
+
         public static string SaveFile(FileModel file)
         {
             try
@@ -193,7 +230,7 @@ namespace Mix.Heart.Services
                 {
                     CreateFolderIfNotExist(fullPath);
                     string fileName = file.FileName;
-                    if(fileName.Length > 40)
+                    if (fileName.Length > 40)
                     {
                         fileName = fileName[0..40];
                     }
