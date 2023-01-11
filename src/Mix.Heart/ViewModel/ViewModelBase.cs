@@ -85,7 +85,7 @@ namespace Mix.Heart.ViewModel
         {
             CreatedDateTime = DateTime.UtcNow;
             Status = MixContentStatus.Published;
-            IsDeleted = false;   
+            IsDeleted = false;
         }
 
         #endregion
@@ -96,9 +96,12 @@ namespace Mix.Heart.ViewModel
             return Task.CompletedTask;
         }
 
-        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo)
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo, bool isCache = true)
         {
-            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo);
+            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
+            {
+                IsCache = isCache
+            };
         }
 
         public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRootRepository(TDbContext context)

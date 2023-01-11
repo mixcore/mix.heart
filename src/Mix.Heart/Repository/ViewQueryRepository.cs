@@ -25,6 +25,7 @@ namespace Mix.Heart.Repository
         where TPrimaryKey : IComparable
         where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
+        public bool IsCache { get; set; } = true;
         public ViewQueryRepository(TDbContext dbContext) : base(dbContext)
         {
             CacheService = new();
@@ -123,7 +124,7 @@ namespace Mix.Heart.Repository
         public virtual async Task<TView> GetSingleAsync(TPrimaryKey id, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (CacheService != null && CacheService.IsCacheEnabled)
+            if (IsCache && CacheService != null && CacheService.IsCacheEnabled)
             {
                 var key = $"{id}/{typeof(TView).FullName}";
                 var result = await CacheService.GetAsync<TView>(key, typeof(TEntity), CacheFilename, cancellationToken);

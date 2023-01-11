@@ -162,7 +162,7 @@ namespace Mix.Heart.Services
 
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exceptions.MixException(MixErrorStatus.ServerError, ex);
             }
@@ -229,12 +229,13 @@ namespace Mix.Heart.Services
                 if (file.Length > 0)
                 {
                     CreateFolderIfNotExist(fullPath);
-                    string fileName = file.FileName;
+                    string fileName = file.FileName.Split('.')[0];
+                    string ext = file.FileName.Split('.')[1];
                     if (fileName.Length > 40)
                     {
                         fileName = fileName[0..40];
                     }
-                    string fullPath2 = $"{fullPath}/{fileName}";
+                    string fullPath2 = $"{fullPath}/{fileName}.{ext}";
                     if (File.Exists(fullPath2))
                     {
                         DeleteFile(fullPath2);
