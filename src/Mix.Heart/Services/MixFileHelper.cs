@@ -229,13 +229,12 @@ namespace Mix.Heart.Services
                 if (file.Length > 0)
                 {
                     CreateFolderIfNotExist(fullPath);
-                    string fileName = file.FileName.Split('.')[0];
-                    string ext = file.FileName.Split('.')[1];
-                    if (fileName.Length > 40)
+                    string fileName = file.FileName;
+                    if(fileName.Length > 50)
                     {
-                        fileName = fileName[0..40];
+                        fileName = $"{file.FileName[0..40]}.{file.FileName[file.FileName.LastIndexOf('.')..]}";
                     }
-                    string fullPath2 = $"{fullPath}/{fileName}.{ext}";
+                    string fullPath2 = $"{fullPath}/{fileName}";
                     if (File.Exists(fullPath2))
                     {
                         DeleteFile(fullPath2);

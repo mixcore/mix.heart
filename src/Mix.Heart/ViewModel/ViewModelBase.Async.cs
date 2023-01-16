@@ -37,6 +37,7 @@ namespace Mix.Heart.ViewModel
         protected virtual Task DeleteHandlerAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            Repository.SetUowInfo(UowInfo);
             return Repository.DeleteAsync(Id, cancellationToken);
         }
 

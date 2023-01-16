@@ -33,8 +33,9 @@ namespace Mix.Heart.ViewModel
         public MixContentStatus Status { get; set; } = MixContentStatus.Published;
 
         protected ValidationContext ValidateContext;
-
         public bool IsDeleted { get; set; }
+        [JsonIgnore]
+        public static bool IsCache { get; set; } = true;
         [JsonIgnore]
         protected bool IsValid { get; set; }
 
@@ -61,6 +62,7 @@ namespace Mix.Heart.ViewModel
             ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
             UowInfo = new UnitOfWorkInfo(context);
             Repository ??= GetRepository(UowInfo);
+
             _isRoot = true;
         }
 
@@ -96,11 +98,11 @@ namespace Mix.Heart.ViewModel
             return Task.CompletedTask;
         }
 
-        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo, bool isCache = true)
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo)
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
             {
-                IsCache = isCache
+                IsCache = IsCache
             };
         }
 
