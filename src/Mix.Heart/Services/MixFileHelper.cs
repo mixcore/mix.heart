@@ -168,7 +168,7 @@ namespace Mix.Heart.Services
             }
         }
 
-        public static string SaveFile(FileModel file)
+        public static FileModel SaveFile(FileModel file)
         {
             try
             {
@@ -190,9 +190,9 @@ namespace Mix.Heart.Services
                     {
                         using (var writer = File.CreateText(filePath))
                         {
-                            writer.WriteLine(file.Content); //or .Write(), if you wish
+                            writer.WriteLine(file.Content);
                             writer.Dispose();
-                            return fileName;
+                            return file;
                         }
                     }
                     else if (file.FileStream != null)
@@ -202,27 +202,27 @@ namespace Mix.Heart.Services
                         using (var writer = File.Create(filePath))
                         {
                             writer.Write(bytes, 0, bytes.Length);
-                            return fileName;
+                            return file;
                         }
                     }
                     else
                     {
                         File.CreateText(filePath);
-                        return fileName;
+                        return file;
                     }
                 }
                 else
                 {
-                    return string.Empty;
+                    return default;
                 }
             }
             catch
             {
-                return string.Empty;
+                return default;
             }
         }
 
-        public static string SaveFile(IFormFile file, string fullPath)
+        public static FileModel SaveFile(IFormFile file, string fullPath)
         {
             try
             {
@@ -245,14 +245,19 @@ namespace Mix.Heart.Services
                         file.CopyTo(target);
                     }
 
-                    return fileName;
+                    return new FileModel()
+                    {
+                        Filename = fileName[0..fileName.LastIndexOf('.')],
+                        Extension = fileName[fileName.LastIndexOf('.')..],
+                        FileFolder = fullPath
+                    };
                 }
 
-                return string.Empty;
+                return default;
             }
             catch
             {
-                return string.Empty;
+                return default;
             }
         }
 

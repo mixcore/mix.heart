@@ -79,7 +79,8 @@ namespace Mix.Heart.Services
                 {
                     settings.Content = AesEncryptionHelper.EncryptString(settings.Content, AesKey);
                 }
-                return !string.IsNullOrEmpty(MixFileHelper.SaveFile(settings));
+                var result = MixFileHelper.SaveFile(settings);
+                return result != null;
             }
             else
             {

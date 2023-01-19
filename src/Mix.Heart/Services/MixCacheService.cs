@@ -52,7 +52,7 @@ namespace Mix.Heart.Services
                     FileFolder = $"{_configs.CacheFolder}/{dataType.FullName}/{key.ToLower()}",
                     Content = jobj.ToString(Formatting.None)
                 };
-                return !string.IsNullOrEmpty(MixFileHelper.SaveFile(cacheFile));
+                return MixFileHelper.SaveFile(cacheFile) != null;
             }
             catch (Exception ex)
             {
