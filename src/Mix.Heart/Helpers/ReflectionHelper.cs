@@ -71,6 +71,16 @@ namespace Mix.Heart.Helpers
                 .ToDictionary(prop => prop.Name, prop => prop.GetValue(someObject, null)?.ToString());
         }
 
+        public static TSource CloneObject<TSource>(TSource sourceObject, TSource destObject = default)
+            where TSource: class
+        {
+            destObject ??= (TSource)Activator.CreateInstance(typeof(TSource));
+            var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TSource)));
+            var mapper = new Mapper(config);
+            mapper.Map(sourceObject, destObject);
+            return destObject;
+        }
+        
         public static void Mapping<TSource, TDest>(TSource sourceObject, TDest destObject)
         {
             var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TDest)));
