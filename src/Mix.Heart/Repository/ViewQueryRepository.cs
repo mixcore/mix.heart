@@ -41,6 +41,7 @@ namespace Mix.Heart.Repository
         public MixCacheService CacheService { get; set; }
 
         public string CacheFilename { get; private set; } = "full";
+        public string CacheFolder { get; set; } = typeof(TEntity).FullName;
 
         public string[] SelectedMembers { get; private set; }
 
@@ -90,6 +91,12 @@ namespace Mix.Heart.Repository
         }
         #endregion
 
+        public void UpdateCacheSettings(bool isCache, string cacheFolder = null)
+        {
+            IsCache = isCache;
+            CacheFolder = cacheFolder ?? typeof(TEntity).FullName;
+        }
+
         public void SetSelectedMembers(string[] selectMembers)
         {
             var properties = typeof(TView).GetProperties().Select(p => p.Name);
@@ -127,7 +134,7 @@ namespace Mix.Heart.Repository
             if (IsCache && CacheService != null && CacheService.IsCacheEnabled)
             {
                 var key = $"{id}/{typeof(TView).FullName}";
-                var result = await CacheService.GetAsync<TView>(key, typeof(TEntity), CacheFilename, cancellationToken);
+                var result = await CacheService.GetAsync<TView>(key, CacheFolder, CacheFilename, cancellationToken);
                 if (result != null)
                 {
                     if (CacheFilename == "full")
@@ -280,19 +287,19 @@ namespace Mix.Heart.Repository
             {
                 TView result = GetViewModel(entity);
 
-                if (result != null && CacheService != null)
+                if (result != null && IsCache && CacheService != null)
                 {
                     var key = $"{entity.Id}/{typeof(TView).FullName}";
                     if (CacheFilename == "full")
                     {
                         result.SetUowInfo(UowInfo);
                         await result.ExpandView(cancellationToken);
-                        await CacheService.SetAsync(key, result, typeof(TEntity), CacheFilename, cancellationToken);
+                        await CacheService.SetAsync(key, result, CacheFolder, CacheFilename, cancellationToken);
                     }
                     else
                     {
                         var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
-                        await CacheService.SetAsync(key, obj, typeof(TEntity), CacheFilename, cancellationToken);
+                        await CacheService.SetAsync(key, obj, CacheFolder, CacheFilename, cancellationToken);
                     }
                 }
 

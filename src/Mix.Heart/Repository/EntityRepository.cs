@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
+using Mix.Heart.Entities.Cache;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
@@ -23,6 +24,9 @@ namespace Mix.Heart.Repository
         where TDbContext : DbContext
         where TEntity : class, IEntity<TPrimaryKey>
     {
+        public bool IsCache { get; set; } = true;
+        public string CacheFolder { get; set; } = typeof(TEntity).FullName;
+
         public EntityRepository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
         public EntityRepository(TDbContext dbContext) : base(dbContext) { }
 
@@ -45,12 +49,12 @@ namespace Mix.Heart.Repository
                 var key = $"{result.Id}/{typeof(TEntity).FullName}";
                 if (CacheFilename == "full")
                 {
-                    await CacheService.SetAsync(key, result, typeof(TEntity), CacheFilename, cancellationToken);
+                    await CacheService.SetAsync(key, result, CacheFolder, CacheFilename, cancellationToken);
                 }
                 else
                 {
                     var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
-                    await CacheService.SetAsync(key, obj, typeof(TEntity), CacheFilename, cancellationToken);
+                    await CacheService.SetAsync(key, obj, CacheFolder, CacheFilename, cancellationToken);
                 }
             }
 
@@ -63,7 +67,7 @@ namespace Mix.Heart.Repository
             if (CacheService != null && CacheService.IsCacheEnabled)
             {
                 var key = $"{id}/{typeof(TEntity).FullName}";
-                var result = await CacheService.GetAsync<TEntity>(key, typeof(TEntity), CacheFilename, cancellationToken);
+                var result = await CacheService.GetAsync<TEntity>(key, typeof(TEntity).FullName, CacheFilename, cancellationToken);
                 if (result != null)
                 {
                     return result;
@@ -333,6 +337,11 @@ namespace Mix.Heart.Repository
 
         #endregion
 
+        public void UpdateCacheSettings(bool isCache, string cacheFolder = null)
+        {
+            IsCache = isCache;
+            CacheFolder = cacheFolder ?? typeof(TEntity).FullName;
+        }
         public void SetSelectedMembers(string[] selectMembers)
         {
             SelectedMembers = selectMembers;

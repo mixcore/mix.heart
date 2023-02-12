@@ -39,7 +39,7 @@ namespace Mix.Heart.Services
             serializer.Converters.Add(new StringEnumConverter());
         }
 
-        private bool SaveJson<T>(string key, T value, Type dataType, string filename)
+        private bool SaveJson<T>(string key, T value, string cacheFolder, string filename)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace Mix.Heart.Services
                 {
                     Filename = filename.ToLower(),
                     Extension = ".json",
-                    FileFolder = $"{_configs.CacheFolder}/{dataType.FullName}/{key.ToLower()}",
+                    FileFolder = $"{_configs.CacheFolder}/{cacheFolder}/{key.ToLower()}",
                     Content = jobj.ToString(Formatting.None)
                 };
                 return MixFileHelper.SaveFile(cacheFile) != null;
@@ -62,17 +62,17 @@ namespace Mix.Heart.Services
         }
 
 
-        public Task<T> GetAsync<T>(string key, Type dataType, string filename, CancellationToken cancellationToken = default)
+        public Task<T> GetAsync<T>(string key, string cacheFolder, string filename, CancellationToken cancellationToken = default)
         {
             try
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
-                        return GetFromDatabaseAsync<T>(key, dataType.FullName, filename, cancellationToken);
+                        return GetFromDatabaseAsync<T>(key, cacheFolder, filename, cancellationToken);
                     case MixCacheMode.JSON:
                     default:
-                        return Task.FromResult(GetFromJson<T>(key, dataType.FullName, filename));
+                        return Task.FromResult(GetFromJson<T>(key, cacheFolder, filename));
                 }
             }
             catch (Exception ex)
@@ -135,25 +135,25 @@ namespace Mix.Heart.Services
             }
         }
 
-        public async Task<bool> SetAsync<T>(string key, T value, Type dataType, string filename, CancellationToken cancellationToken = default)
+        public async Task<bool> SetAsync<T>(string key, T value, string cacheFolder, string filename, CancellationToken cancellationToken = default)
         {
             if (value != null)
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
-                        await SaveDatabaseAsync(key, value, dataType, filename, cancellationToken);
+                        await SaveDatabaseAsync(key, value, cacheFolder, filename, cancellationToken);
                         break;
                     case MixCacheMode.JSON:
                     default:
-                        SaveJson(key, value, dataType, filename);
+                        SaveJson(key, value, cacheFolder, filename);
                         break;
                 }
             }
             return true;
         }
 
-        private async Task<bool> SaveDatabaseAsync<T>(string key, T value, Type dataType, string filename, CancellationToken cancellationToken = default)
+        private async Task<bool> SaveDatabaseAsync<T>(string key, T value, string cacheFolder, string filename, CancellationToken cancellationToken = default)
         {
             if (value != null)
             {
@@ -162,7 +162,7 @@ namespace Mix.Heart.Services
                 var cache = new MixCache()
                 {
                     Id = Guid.NewGuid(),
-                    Keyword = $"{dataType.FullName}_{key}_{filename}",
+                    Keyword = $"{cacheFolder}_{key}_{filename}",
                     Value = jobj.ToString(Formatting.None),
                     CreatedDateTime = DateTime.UtcNow
                 };
