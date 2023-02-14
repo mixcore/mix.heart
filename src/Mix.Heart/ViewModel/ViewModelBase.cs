@@ -37,6 +37,8 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         public static bool IsCache { get; set; } = true;
         [JsonIgnore]
+        public static string CacheFolder { get; set; } = typeof(TEntity).FullName;
+        [JsonIgnore]
         protected bool IsValid { get; set; }
 
         [JsonIgnore]
@@ -98,11 +100,12 @@ namespace Mix.Heart.ViewModel
             return Task.CompletedTask;
         }
 
-        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo)
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo, bool isCache = true, string cacheFolder = null)
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
             {
-                IsCache = IsCache
+                IsCache = isCache,
+                CacheFolder = cacheFolder
             };
         }
 
