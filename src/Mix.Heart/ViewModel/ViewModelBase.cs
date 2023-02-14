@@ -105,7 +105,7 @@ namespace Mix.Heart.ViewModel
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
             {
                 IsCache = isCache,
-                CacheFolder = cacheFolder
+                CacheFolder = cacheFolder ?? typeof(TEntity).FullName
             };
         }
 
