@@ -187,17 +187,17 @@ namespace Mix.Heart.Services
             }
         }
 
-        public async Task RemoveCacheAsync(object key, Type dataType, CancellationToken cancellationToken = default)
+        public async Task RemoveCacheAsync(object key, string cacheFolder, CancellationToken cancellationToken = default)
         {
             switch (_configs.CacheMode)
             {
                 case MixCacheMode.DATABASE:
-                    await _repository.DeleteAsync(m => m.Keyword == $"{dataType.FullName}_{key}", cancellationToken);
+                    await _repository.DeleteAsync(m => m.Keyword == $"{cacheFolder}_{key}", cancellationToken);
                     break;
                 case MixCacheMode.JSON:
                 default:
                     MixFileHelper.DeleteFolder(
-                        $"{_configs.CacheFolder}/{dataType.FullName}/{key}");
+                        $"{_configs.CacheFolder}/{cacheFolder}/{key}");
                     break;
             }
         }

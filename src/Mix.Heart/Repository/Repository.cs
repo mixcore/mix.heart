@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
+using Mix.Heart.Exceptions;
 using Mix.Heart.Infrastructure.Exceptions;
 using Mix.Heart.UnitOfWork;
 using Mix.Heart.ViewModel;
@@ -18,8 +19,14 @@ namespace Mix.Heart.Repository
         where TEntity : class, IEntity<TPrimaryKey>
         where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
-        public Repository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
-        public Repository(TDbContext dbContext) : base(dbContext) { }
+        public Repository(UnitOfWorkInfo uowInfo) : base(uowInfo)
+        {
+            CacheFolder = typeof(TEntity).FullName;
+        }
+        public Repository(TDbContext dbContext) : base(dbContext)
+        {
+            CacheFolder = typeof(TEntity).FullName;
+        }
 
         #region Async
 
@@ -33,7 +40,7 @@ namespace Mix.Heart.Repository
             try
             {
                 BeginUow();
-                Context.Set<TEntity>().Add(entity);
+                await Context.Set<TEntity>().AddAsync(entity);
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
             }
@@ -54,15 +61,12 @@ namespace Mix.Heart.Repository
                 BeginUow();
 
                 if (!await CheckIsExistsAsync(entity, cancellationToken))
-                {
-                    await HandleExceptionAsync(new EntityNotFoundException(entity.Id.ToString()));
-                    return;
-                }
+                    throw new MixException(Enums.MixErrorStatus.NotFound, entity.Id.ToString());
 
                 Context.Set<TEntity>().Update(entity);
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
-                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity), cancellationToken);
+                await CacheService.RemoveCacheAsync(entity.Id, CacheFolder, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -72,6 +76,7 @@ namespace Mix.Heart.Repository
             {
                 await CloseUowAsync();
             }
+
         }
 
         public virtual async Task SaveAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -125,7 +130,7 @@ namespace Mix.Heart.Repository
             try
             {
                 BeginUow();
-                var entity = Context.Set<TEntity>().Single(predicate);
+                var entity = await Context.Set<TEntity>().SingleOrDefaultAsync(predicate);
                 if (entity == null)
                 {
                     await HandleExceptionAsync(new EntityNotFoundException());
@@ -135,7 +140,7 @@ namespace Mix.Heart.Repository
                 Context.Set<TEntity>().Remove(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
-                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity), cancellationToken);
+                await CacheService.RemoveCacheAsync(entity.Id, CacheFolder, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -151,7 +156,8 @@ namespace Mix.Heart.Repository
         {
             try
             {
-                var entities = Context.Set<TEntity>().Where(predicate);
+                var entities = await Context.Set<TEntity>().Where(predicate)
+                                .ToListAsync();
                 foreach (var entity in entities)
                 {
                     await DeleteAsync(entity, cancellationToken);
@@ -182,7 +188,7 @@ namespace Mix.Heart.Repository
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
-                await CacheService.RemoveCacheAsync(entity.Id, typeof(TEntity), cancellationToken);
+                await CacheService.RemoveCacheAsync(entity.Id, CacheFolder, cancellationToken);
             }
             catch (Exception ex)
             {
