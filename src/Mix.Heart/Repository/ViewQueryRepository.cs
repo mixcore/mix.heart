@@ -100,7 +100,7 @@ namespace Mix.Heart.Repository
         public void SetSelectedMembers(string[] selectMembers)
         {
             var properties = typeof(TView).GetProperties().Select(p => p.Name);
-            SelectedMembers = SelectedMembers.Where(m => selectMembers.Contains(m.ToCamelCase())).ToArray();
+            SelectedMembers = selectMembers.Where(m => properties.Contains(m.ToTitleCase())).ToArray();
             if (!SelectedMembers.Any(m => m == "Id"))
             {
                 SelectedMembers = SelectedMembers.Prepend("Id").ToArray();
