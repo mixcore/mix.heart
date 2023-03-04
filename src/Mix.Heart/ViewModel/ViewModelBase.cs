@@ -68,7 +68,7 @@ namespace Mix.Heart.ViewModel
             _isRoot = true;
         }
 
-        public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo = null)
+        public ViewModelBase(TEntity entity, UnitOfWorkInfo? uowInfo)
         {
             ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
             SetUowInfo(uowInfo);
@@ -105,13 +105,16 @@ namespace Mix.Heart.ViewModel
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
             {
                 IsCache = isCache,
-                CacheFolder = cacheFolder ?? typeof(TEntity).FullName
+                CacheFolder = cacheFolder ?? CacheFolder
             };
         }
 
         public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRootRepository(TDbContext context)
         {
-            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context);
+            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context)
+            {
+                CacheFolder = CacheFolder
+            };
         }
 
         public virtual async Task Validate(CancellationToken cancellationToken)

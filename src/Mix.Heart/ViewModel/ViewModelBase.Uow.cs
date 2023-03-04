@@ -18,9 +18,18 @@ namespace Mix.Heart.ViewModel
             {
                 InitRootUow();
             }
+
             UowInfo.Begin();
-            Repository ??= new Repository<TDbContext, TEntity, TPrimaryKey, TView>(UowInfo);
-            Repository.SetUowInfo(UowInfo);
+
+            if (Repository != null)
+            {
+                Repository.SetUowInfo(UowInfo);
+                Repository.CacheFolder = CacheFolder;
+            }
+            else
+            {
+                Repository = GetRepository(UowInfo);
+            }
         }
 
         public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
