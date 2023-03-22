@@ -168,6 +168,16 @@ namespace Mix.Heart.ViewModel
                 || (id.GetType() == typeof(int) && int.Parse(id.ToString()) == default);
         }
 
+        public virtual Task DuplicateAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
+
+        public virtual void Duplicate()
+        {
+        }
+
         protected async Task HandleErrorsAsync()
         {
             await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
