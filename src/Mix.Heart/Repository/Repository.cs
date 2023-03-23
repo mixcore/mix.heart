@@ -130,7 +130,7 @@ namespace Mix.Heart.Repository
             try
             {
                 BeginUow();
-                var entity = await Context.Set<TEntity>().SingleOrDefaultAsync(predicate);
+                var entity = await Context.Set<TEntity>().SingleOrDefaultAsync(predicate, cancellationToken);
                 if (entity == null)
                 {
                     await HandleExceptionAsync(new EntityNotFoundException());

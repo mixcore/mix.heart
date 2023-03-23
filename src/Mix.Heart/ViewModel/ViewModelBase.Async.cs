@@ -34,11 +34,12 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        protected virtual Task DeleteHandlerAsync(CancellationToken cancellationToken = default)
+        protected virtual async Task DeleteHandlerAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Repository.SetUowInfo(UowInfo);
-            return Repository.DeleteAsync(Id, cancellationToken);
+            await Repository.DeleteAsync(Id, cancellationToken);
+            await DeleteEntityRelationshipAsync(cancellationToken);
         }
 
         public async Task<TPrimaryKey> SaveAsync(CancellationToken cancellationToken = default)
@@ -122,6 +123,11 @@ namespace Mix.Heart.ViewModel
         protected virtual Task SaveEntityRelationshipAsync(TEntity parentEntity, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
+
+        protected virtual Task DeleteEntityRelationshipAsync(CancellationToken cancellationToken = default)
+        {
             return Task.CompletedTask;
         }
 
