@@ -18,7 +18,7 @@ namespace Mix.Heart.Helpers
 {
     public class ReflectionHelper
     {
-        static JsonSerializer serializer = InitSerializer();
+        public static JsonSerializer serializer = InitSerializer();
 
         private static JsonSerializer InitSerializer()
         {
@@ -29,6 +29,10 @@ namespace Mix.Heart.Helpers
             serializer.Converters.Add(new StringEnumConverter());
             return serializer;
         }
+
+        #region Binary
+
+        #endregion
 
         public static void MapObject<TSource, TDest>(TSource source, TDest dest)
         {

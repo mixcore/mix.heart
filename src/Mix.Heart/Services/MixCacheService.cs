@@ -1,4 +1,5 @@
-﻿using Mix.Heart.Entities.Cache;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Mix.Heart.Entities.Cache;
 using Mix.Heart.Enums;
 using Mix.Heart.Models;
 using Mix.Heart.Repository;
@@ -8,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using StackExchange.Redis;
 using System;
 using System.IO;
 using System.Threading;
@@ -17,6 +19,7 @@ namespace Mix.Heart.Services
 {
     public class MixCacheService
     {
+        private readonly MixDitributedCache _ditributedCache;
         private readonly MixHeartConfigurationModel _configs;
         private readonly EntityRepository<MixCacheDbContext, MixCache, Guid> _repository;
         public bool IsCacheEnabled { get => _configs.IsCache; }
@@ -38,37 +41,40 @@ namespace Mix.Heart.Services
             };
             serializer.Converters.Add(new StringEnumConverter());
         }
-
-        private bool SaveJson<T>(string key, T value, string cacheFolder, string filename)
+        
+        public MixCacheService(MixDitributedCache ditributedCache)
         {
-            try
+            _configs = MixHeartConfigService.Instance.AppSettings;
+            if (_configs.CacheMode == MixCacheMode.DATABASE)
             {
-                var jobj = JObject.FromObject(value, serializer);
-
-                var cacheFile = new FileModel()
-                {
-                    Filename = filename.ToLower(),
-                    Extension = ".json",
-                    FileFolder = $"{_configs.CacheFolder}/{cacheFolder}/{key.ToLower()}",
-                    Content = jobj.ToString(Formatting.None)
-                };
-                return MixFileHelper.SaveFile(cacheFile) != null;
+                var uow = new UnitOfWorkInfo(new MixCacheDbContext());
+                _repository = new(uow);
             }
-            catch (Exception ex)
+            serializer = new JsonSerializer()
             {
-                Console.WriteLine(ex);
-                return false;
-            }
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            serializer.Converters.Add(new StringEnumConverter());
+            _ditributedCache = ditributedCache;
         }
 
+       
+        #region Get
 
         public Task<T> GetAsync<T>(string key, string cacheFolder, string filename, CancellationToken cancellationToken = default)
+            where T: class
         {
             try
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
+                        if (_ditributedCache != null)
+                        {
+                            return _ditributedCache.GetFromCache<T>($"{cacheFolder}_{key}_{filename}");
+                        }
                         return GetFromDatabaseAsync<T>(key, cacheFolder, filename, cancellationToken);
                     case MixCacheMode.JSON:
                     default:
@@ -110,7 +116,7 @@ namespace Mix.Heart.Services
         {
             try
             {
-                string keyword = $"{folder}/{key}/{filename}";
+                string keyword = $"{folder}_{key}_{filename}";
                 var cache = await _repository.GetSingleAsync(m => m.Keyword == keyword, cancellationToken);
                 if (cache != null)
                 {
@@ -134,14 +140,25 @@ namespace Mix.Heart.Services
                 return default;
             }
         }
+        #endregion
 
-        public async Task<bool> SetAsync<T>(string key, T value, string cacheFolder, string filename, CancellationToken cancellationToken = default)
+        #region Set
+        
+        public async Task SetAsync<T>(string key, T value, string cacheFolder, string filename, CancellationToken cancellationToken = default)
+            where T : class
         {
             if (value != null)
             {
                 switch (_configs.CacheMode)
                 {
                     case MixCacheMode.DATABASE:
+                        if (_ditributedCache != null)
+                        {
+                            await _ditributedCache.SetCache($"{cacheFolder}_{key}_{filename}", value, new()
+                            {
+                                SlidingExpiration = TimeSpan.FromMinutes(_configs.SlidingExpirationInMinute)
+                            });
+                        }
                         await SaveDatabaseAsync(key, value, cacheFolder, filename, cancellationToken);
                         break;
                     case MixCacheMode.JSON:
@@ -150,7 +167,28 @@ namespace Mix.Heart.Services
                         break;
                 }
             }
-            return true;
+        }
+
+        private bool SaveJson<T>(string key, T value, string cacheFolder, string filename)
+        {
+            try
+            {
+                var jobj = JObject.FromObject(value, serializer);
+
+                var cacheFile = new FileModel()
+                {
+                    Filename = filename.ToLower(),
+                    Extension = ".json",
+                    FileFolder = $"{_configs.CacheFolder}/{cacheFolder}/{key.ToLower()}",
+                    Content = jobj.ToString(Formatting.None)
+                };
+                return MixFileHelper.SaveFile(cacheFile) != null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
         }
 
         private async Task<bool> SaveDatabaseAsync<T>(string key, T value, string cacheFolder, string filename, CancellationToken cancellationToken = default)
@@ -173,6 +211,10 @@ namespace Mix.Heart.Services
             return true;
         }
 
+        #endregion
+
+        #region Clear
+
         public async Task RemoveCacheAsync(CancellationToken cancellationToken = default)
         {
             switch (_configs.CacheMode)
@@ -189,17 +231,26 @@ namespace Mix.Heart.Services
 
         public async Task RemoveCacheAsync(object key, string cacheFolder, CancellationToken cancellationToken = default)
         {
-            switch (_configs.CacheMode)
+            string keyPath = $"{cacheFolder}_{key}";
+            if (_ditributedCache != null)
             {
-                case MixCacheMode.DATABASE:
-                    await _repository.DeleteAsync(m => m.Keyword == $"{cacheFolder}_{key}", cancellationToken);
-                    break;
-                case MixCacheMode.JSON:
-                default:
-                    MixFileHelper.DeleteFolder(
-                        $"{_configs.CacheFolder}/{cacheFolder}/{key}");
-                    break;
+                await _ditributedCache.ClearCache(keyPath);
+            }
+            else
+            {
+                switch (_configs.CacheMode)
+                {
+                    case MixCacheMode.DATABASE:
+                        await _repository.DeleteAsync(m => m.Keyword == keyPath, cancellationToken);
+                        break;
+                    case MixCacheMode.JSON:
+                    default:
+                        MixFileHelper.DeleteFolder(
+                            $"{_configs.CacheFolder}/{cacheFolder}/{key}");
+                        break;
+                }
             }
         }
+        #endregion
     }
 }
