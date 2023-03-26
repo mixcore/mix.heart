@@ -28,13 +28,11 @@ namespace Mix.Heart.Repository
         public bool IsCache { get; set; } = true;
         public ViewQueryRepository(TDbContext dbContext) : base(dbContext)
         {
-            CacheService = new();
             SelectedMembers = typeof(TView).GetProperties().Select(m => m.Name).ToArray();
         }
 
         public ViewQueryRepository(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
         {
-            CacheService = new();
             SelectedMembers = typeof(TView).GetProperties().Select(m => m.Name).ToArray();
         }
 
@@ -93,8 +91,13 @@ namespace Mix.Heart.Repository
 
         public void UpdateCacheSettings(bool isCache, string cacheFolder = null)
         {
-            IsCache = isCache;
+            IsCache = CacheService != null && isCache;
             CacheFolder = cacheFolder ?? typeof(TEntity).FullName;
+        }
+
+        public void SetCacheService(MixCacheService cacheService)
+        {
+            CacheService ??= cacheService;
         }
 
         public void SetSelectedMembers(string[] selectMembers)
@@ -141,6 +144,10 @@ namespace Mix.Heart.Repository
                     {
                         result.SetUowInfo(UowInfo);
                         await result.ExpandView(cancellationToken);
+                        if (CacheService != null)
+                        {
+                            result.SetCacheService(CacheService);
+                        }
                     }
                     return result;
                 }
@@ -244,7 +251,6 @@ namespace Mix.Heart.Repository
         protected async Task<PagingResponseModel<TView>> ToPagingViewModelAsync(
             IQueryable<TEntity> source,
             PagingModel pagingData,
-            MixCacheService cacheService = null,
             CancellationToken cancellationToken = default)
         {
             try
@@ -293,6 +299,7 @@ namespace Mix.Heart.Repository
                     if (CacheFilename == "full")
                     {
                         result.SetUowInfo(UowInfo);
+                        result.SetCacheService(CacheService);
                         await result.ExpandView(cancellationToken);
                         await CacheService.SetAsync(key, result, CacheFolder, CacheFilename, cancellationToken);
                     }

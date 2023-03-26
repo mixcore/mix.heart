@@ -23,11 +23,12 @@ namespace Mix.Heart.ViewModel
             if (Repository != null)
             {
                 Repository.SetUowInfo(UowInfo);
+                Repository.SetCacheService(CacheService);
                 Repository.CacheFolder = CacheFolder;
             }
             else
             {
-                Repository = GetRepository(UowInfo);
+                Repository = GetRepository(UowInfo, CacheService);
             }
         }
 
@@ -37,7 +38,7 @@ namespace Mix.Heart.ViewModel
             {
                 UowInfo = unitOfWorkInfo;
                 _isRoot = false;
-                Repository ??= GetRepository(UowInfo);
+                Repository ??= GetRepository(UowInfo, CacheService);
             }
         }
 

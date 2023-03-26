@@ -4,6 +4,7 @@ using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Repository;
+using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -44,6 +45,8 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         protected UnitOfWorkInfo UowInfo { get; set; }
         [JsonIgnore]
+        protected MixCacheService CacheService { get; set; }
+        [JsonIgnore]
         protected List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
         [JsonIgnore]
         protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
@@ -56,14 +59,14 @@ namespace Mix.Heart.ViewModel
         public ViewModelBase()
         {
             ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-            Repository ??= GetRepository(UowInfo);
+            Repository ??= GetRepository(UowInfo, CacheService);
         }
 
         public ViewModelBase(TDbContext context)
         {
             ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
             UowInfo = new UnitOfWorkInfo(context);
-            Repository ??= GetRepository(UowInfo);
+            Repository ??= GetRepository(UowInfo, CacheService);
 
             _isRoot = true;
         }
@@ -100,12 +103,13 @@ namespace Mix.Heart.ViewModel
             return Task.CompletedTask;
         }
 
-        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo, bool isCache = true, string cacheFolder = null)
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo, MixCacheService cacheService, bool isCache = true, string cacheFolder = null)
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
             {
                 IsCache = isCache,
-                CacheFolder = cacheFolder ?? CacheFolder
+                CacheFolder = cacheFolder ?? CacheFolder,
+                CacheService = cacheService
             };
         }
 
@@ -129,6 +133,11 @@ namespace Mix.Heart.ViewModel
         public void SetDbContext(TDbContext context)
         {
             UowInfo = new UnitOfWorkInfo(context);
+        }
+        
+        public void SetCacheService(MixCacheService cacheService)
+        {
+            CacheService ??= cacheService;
         }
 
         public virtual TEntity InitModel()

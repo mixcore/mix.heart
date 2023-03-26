@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mix.Heart.Entities.Cache;
 using Mix.Heart.Repository;
 using Mix.Heart.Services;
+using Mix.Heart.UnitOfWork;
 using System;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -11,8 +13,9 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddMixCache(this IServiceCollection services, IConfiguration configuration)
         {
 
-            services.AddSingleton<MixCacheDbContext>();
-            services.AddSingleton<EntityRepository<MixCacheDbContext, MixCache, Guid>>();
+            services.TryAddScoped<MixCacheDbContext>();
+            services.TryAddScoped<UnitOfWorkInfo<MixCacheDbContext>>();
+            services.TryAddScoped<EntityRepository<MixCacheDbContext, MixCache, Guid>>();
             string redisConnection = configuration.GetSection("Redis")["ConnectionString"];
             if (!string.IsNullOrEmpty(redisConnection))
             {
@@ -21,8 +24,9 @@ namespace Microsoft.Extensions.DependencyInjection
                     options.Configuration = configuration.GetSection("Redis")["ConnectionString"];
                 });
             }
-            services.AddSingleton<MixDitributedCache>();
-            services.AddSingleton<MixCacheService>();
+            services.TryAddScoped<MixDitributedCache>();
+            services.TryAddScoped<MixCacheService>();
+
 
             return services;
         }

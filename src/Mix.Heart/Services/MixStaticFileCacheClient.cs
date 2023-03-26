@@ -1,0 +1,89 @@
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Mix.Heart.Interfaces;
+using Newtonsoft.Json;
+using System;
+using System.Threading.Tasks;
+using System.Threading;
+using System.IO;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Converters;
+using Mix.Heart.Models;
+
+namespace Mix.Heart.Services
+{
+    public class MixStaticFileCacheClient : IDitributedCacheClient
+    {
+        private readonly string _cacheFolder;
+        private readonly JsonSerializer serializer;
+        public MixStaticFileCacheClient(string cacheFolder)
+        {
+            _cacheFolder = cacheFolder;
+            serializer = new JsonSerializer()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            serializer.Converters.Add(new StringEnumConverter());
+        }
+
+        public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
+        {
+            string filePath = $"{_cacheFolder}/{key}.json";
+            if (File.Exists(filePath))
+            {
+                using (StreamReader file = File.OpenText(filePath))
+                using (JsonTextReader reader = new JsonTextReader(file))
+                {
+                    try
+                    {
+                        JObject jobj = (JObject)JToken.ReadFrom(reader);
+                        return jobj.ToObject<T>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Write(ex);
+                        return default;
+                    }
+                }
+            }
+            return default;
+        }
+
+        public Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
+        {
+            try
+            {
+                var jobj = JObject.FromObject(value, serializer);
+                string filename = key.Substring(key.LastIndexOf('/'), key.LastIndexOf('.'));
+                string folder = key.Substring(0, key.LastIndexOf('/'));
+                var cacheFile = new FileModel()
+                {
+                    Filename = filename.ToLower(),
+                    Extension = ".json",
+                    FileFolder = $"{_cacheFolder}/{folder}/{key.ToLower()}",
+                    Content = jobj.ToString(Formatting.None)
+                };
+                MixFileHelper.SaveFile(cacheFile);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task ClearCache(string key, CancellationToken cancellationToken = default)
+        {
+            MixFileHelper.DeleteFolder($"{_cacheFolder}/{key}");
+            return Task.CompletedTask;
+        }
+
+        public Task ClearAllCache(CancellationToken cancellationToken = default)
+        {
+            MixFileHelper.DeleteFolder(_cacheFolder);
+            return Task.CompletedTask;
+        }
+    }
+}

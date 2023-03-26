@@ -4,5 +4,6 @@
     {
         JSON,
         DATABASE,
+        REDIS
     }
 }

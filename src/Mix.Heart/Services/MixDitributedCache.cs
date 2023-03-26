@@ -1,6 +1,13 @@
 ﻿using Azure.Core.Serialization;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
+using Mix.Heart.Entities.Cache;
+using Mix.Heart.Factories;
 using Mix.Heart.Helpers;
+using Mix.Heart.Interfaces;
+using Mix.Heart.Models;
+using Mix.Heart.UnitOfWork;
+using Mix.Shared.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,29 +21,33 @@ namespace Mix.Heart.Services
 {
     public class MixDitributedCache
     {
-        private readonly IDistributedCache _cache;
-
-        public MixDitributedCache(IDistributedCache cache)
+        private readonly IDitributedCacheClient _cacheClient;
+        private readonly MixHeartConfigurationModel _configs;
+        private readonly DistributedCacheEntryOptions _options;
+        public MixDitributedCache(IConfiguration configuration, IDistributedCache cache, UnitOfWorkInfo<MixCacheDbContext> cacheUow)
         {
-            
-            _cache = cache;
+            _configs = MixHeartConfigService.Instance.AppSettings;
+            _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, cacheUow, configuration, cache);
         }
 
-        public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
+        public Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
         {
-            var cachedResponse = await _cache.GetStringAsync(key);
-            return cachedResponse == null ? null : JsonConvert.DeserializeObject<T>(cachedResponse);
+            return _cacheClient.GetFromCache<T>(key, cancellationToken);
         }
 
-        public async Task SetCache<T>(string key, T value, DistributedCacheEntryOptions options) where T : class
+        public Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
         {
-            var response = JsonConvert.SerializeObject(value);
-            await _cache.SetStringAsync(key, response, options);
+            return _cacheClient.SetCache<T>(key, value, cancellationToken);
         }
 
-        public async Task ClearCache(string key)
+        public Task ClearCache(string key, CancellationToken cancellationToken = default)
         {
-            await _cache.RemoveAsync(key);
+            return _cacheClient.ClearCache(key, cancellationToken);
+        }
+
+        public Task ClearAllCache(CancellationToken cancellationToken = default)
+        {
+            return _cacheClient.ClearAllCache(cancellationToken);
         }
     }
 }
