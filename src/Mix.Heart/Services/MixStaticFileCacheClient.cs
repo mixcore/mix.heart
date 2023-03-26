@@ -30,7 +30,9 @@ namespace Mix.Heart.Services
 
         public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
         {
-            string filePath = $"{_cacheFolder}/{key}.json";
+            string filename = key.Substring(key.LastIndexOf('/') + 1);
+            string folder = key.Substring(0, key.LastIndexOf('/'));
+            string filePath = $"{_cacheFolder}/{folder}/{filename}.json";
             if (File.Exists(filePath))
             {
                 using (StreamReader file = File.OpenText(filePath))
@@ -56,13 +58,13 @@ namespace Mix.Heart.Services
             try
             {
                 var jobj = JObject.FromObject(value, serializer);
-                string filename = key.Substring(key.LastIndexOf('/'), key.LastIndexOf('.'));
+                string filename = key.Substring(key.LastIndexOf('/') + 1);
                 string folder = key.Substring(0, key.LastIndexOf('/'));
                 var cacheFile = new FileModel()
                 {
                     Filename = filename.ToLower(),
                     Extension = ".json",
-                    FileFolder = $"{_cacheFolder}/{folder}/{key.ToLower()}",
+                    FileFolder = $"{_cacheFolder}/{folder}",
                     Content = jobj.ToString(Formatting.None)
                 };
                 MixFileHelper.SaveFile(cacheFile);
