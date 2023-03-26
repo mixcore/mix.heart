@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Mix.Heart.Enums;
-using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
 using Mix.Heart.Models;
 using Newtonsoft.Json;
@@ -72,7 +71,7 @@ namespace Mix.Heart.Helpers
         }
 
         public static TSource CloneObject<TSource>(TSource sourceObject, TSource destObject = default)
-            where TSource: class
+            where TSource : class
         {
             destObject ??= (TSource)Activator.CreateInstance(typeof(TSource));
             var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TSource)));
@@ -80,7 +79,7 @@ namespace Mix.Heart.Helpers
             mapper.Map(sourceObject, destObject);
             return destObject;
         }
-        
+
         public static void Mapping<TSource, TDest>(TSource sourceObject, TDest destObject)
         {
             var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TDest)));

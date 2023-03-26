@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Mix.Heart.Enums;
-using Mix.Heart.Exceptions;
 using Mix.Heart.Models;
 using System;
 using System.Collections.Generic;
@@ -230,7 +229,7 @@ namespace Mix.Heart.Services
                 {
                     CreateFolderIfNotExist(fullPath);
                     string fileName = file.FileName;
-                    if(fileName.Length > 50)
+                    if (fileName.Length > 50)
                     {
                         fileName = $"{file.FileName[0..40]}.{file.FileName[file.FileName.LastIndexOf('.')..]}";
                     }
