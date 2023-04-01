@@ -262,59 +262,68 @@ namespace Mix.Heart.Helpers
                 data2 = data2.ToString().Replace("'", "");
             }
             Expression expression = null;
-            switch (kind)
+            switch (fieldPropertyType.BaseType)
             {
-                case ExpressionMethod.Equal:
-                    expression = Expression.Equal(fieldPropertyExpression,
-                                          Expression.Constant(data2, fieldPropertyType));
-                    break;
+                case var dataType when dataType == typeof(string):
+                    switch (kind)
+                    {
+                        case ExpressionMethod.Equal:
+                            expression = Expression.Equal(fieldPropertyExpression,
+                                                  Expression.Constant(data2, fieldPropertyType));
+                            break;
 
-                case ExpressionMethod.Like:
-                    expression = GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
+                        case ExpressionMethod.Like:
+                        case ExpressionMethod.In:
+                            expression = GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
+                            break;
+                        default:
+                            break;
+                    }
                     break;
+                case var dataType when dataType == typeof(int) || dataType  == typeof(long) || dataType == typeof(double) || dataType == typeof(float):
+                    switch (kind)
+                    {
+                        case ExpressionMethod.Equal:
+                            expression = Expression.Equal(fieldPropertyExpression,
+                                                  Expression.Constant(data2, fieldPropertyType));
+                            break;
 
-                case ExpressionMethod.LessThan:
-                    expression = Expression.LessThan(fieldPropertyExpression,
-                                             Expression.Constant(data2, fieldPropertyType));
-                    break;
+                        case ExpressionMethod.LessThan:
+                            expression = Expression.LessThan(fieldPropertyExpression,
+                                                     Expression.Constant(data2, fieldPropertyType));
+                            break;
 
-                case ExpressionMethod.GreaterThan:
-                    expression = Expression.GreaterThan(
-                        fieldPropertyExpression,
-                        Expression.Constant(data2, fieldPropertyType));
-                    break;
+                        case ExpressionMethod.GreaterThan:
+                            expression = Expression.GreaterThan(
+                                fieldPropertyExpression,
+                                Expression.Constant(data2, fieldPropertyType));
+                            break;
 
-                case ExpressionMethod.LessThanOrEqual:
-                    expression = Expression.LessThanOrEqual(
-                        fieldPropertyExpression,
-                        Expression.Constant(data2, fieldPropertyType));
-                    break;
+                        case ExpressionMethod.LessThanOrEqual:
+                            expression = Expression.LessThanOrEqual(
+                                fieldPropertyExpression,
+                                Expression.Constant(data2, fieldPropertyType));
+                            break;
 
-                case ExpressionMethod.GreaterThanOrEqual:
-                    expression = Expression.GreaterThanOrEqual(
-                        fieldPropertyExpression,
-                        Expression.Constant(data2, fieldPropertyType));
-                    break;
+                        case ExpressionMethod.GreaterThanOrEqual:
+                            expression = Expression.GreaterThanOrEqual(
+                                fieldPropertyExpression,
+                                Expression.Constant(data2, fieldPropertyType));
+                            break;
 
-                case ExpressionMethod.And:
-                    expression = Expression.And(fieldPropertyExpression,
-                                        Expression.Constant(data2, fieldPropertyType));
-                    break;
-
-                case ExpressionMethod.Or:
-                    expression = Expression.Or(fieldPropertyExpression,
-                                       Expression.Constant(data2, fieldPropertyType));
-                    break;
-                case ExpressionMethod.NotEqual:
-                    expression = Expression.NotEqual(fieldPropertyExpression,
-                                      Expression.Constant(data2, fieldPropertyType));
-                    break;
-                case ExpressionMethod.In:
+                        case ExpressionMethod.NotEqual:
+                            expression = Expression.NotEqual(fieldPropertyExpression,
+                                              Expression.Constant(data2, fieldPropertyType));
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 default:
+                    expression = Expression.Equal(fieldPropertyExpression,
+                                                  Expression.Constant(data2, fieldPropertyType));
                     break;
             }
-
             return Expression.Lambda<Func<T, bool>>(expression, par);
         }
 

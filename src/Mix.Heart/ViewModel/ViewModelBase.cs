@@ -113,7 +113,7 @@ namespace Mix.Heart.ViewModel
             };
         }
 
-        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRootRepository(TDbContext context)
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRootRepository(TDbContext context, MixCacheService cacheService)
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context)
             {
