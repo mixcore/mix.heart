@@ -66,7 +66,10 @@ namespace Mix.Heart.Repository
                 Context.Set<TEntity>().Update(entity);
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
-                await CacheService.RemoveCacheAsync(entity.Id, CacheFolder, cancellationToken);
+                if (CacheService != null)
+                {
+                    await CacheService.RemoveCacheAsync(entity.Id, CacheFolder, cancellationToken);
+                }
             }
             catch (Exception ex)
             {
@@ -188,7 +191,7 @@ namespace Mix.Heart.Repository
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
-                if (CacheService!=null)
+                if (CacheService != null)
                 {
                     await CacheService?.RemoveCacheAsync($"{typeof(TEntity).FullName}_{entity.Id}*", CacheFolder, cancellationToken);
                 }

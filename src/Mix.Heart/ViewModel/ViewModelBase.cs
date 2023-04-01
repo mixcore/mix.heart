@@ -74,14 +74,14 @@ namespace Mix.Heart.ViewModel
         public ViewModelBase(TEntity entity, UnitOfWorkInfo? uowInfo)
         {
             ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-            SetUowInfo(uowInfo);
+            SetUowInfo(uowInfo, CacheService);
             ParseView(entity);
         }
 
         public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
         {
             ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-            SetUowInfo(unitOfWorkInfo);
+            SetUowInfo(unitOfWorkInfo, CacheService);
         }
 
         #endregion

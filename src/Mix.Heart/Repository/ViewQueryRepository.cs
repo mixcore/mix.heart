@@ -142,7 +142,7 @@ namespace Mix.Heart.Repository
                 {
                     if (CacheFilename == "full")
                     {
-                        result.SetUowInfo(UowInfo);
+                        result.SetUowInfo(UowInfo, CacheService);
                         await result.ExpandView(cancellationToken);
                         if (CacheService != null)
                         {
@@ -298,8 +298,7 @@ namespace Mix.Heart.Repository
                     var key = $"{entity.Id}/{typeof(TView).FullName}";
                     if (CacheFilename == "full")
                     {
-                        result.SetUowInfo(UowInfo);
-                        result.SetCacheService(CacheService);
+                        result.SetUowInfo(UowInfo, CacheService);
                         await result.ExpandView(cancellationToken);
                         await CacheService.SetAsync(key, result, CacheFolder, CacheFilename, cancellationToken);
                     }

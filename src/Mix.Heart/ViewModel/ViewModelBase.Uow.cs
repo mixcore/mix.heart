@@ -1,5 +1,6 @@
 ﻿using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
+using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Threading;
@@ -23,16 +24,16 @@ namespace Mix.Heart.ViewModel
             if (Repository != null)
             {
                 Repository.SetUowInfo(UowInfo);
-                Repository.SetCacheService(CacheService);
-                Repository.CacheFolder = CacheFolder;
             }
             else
             {
                 Repository = GetRepository(UowInfo, CacheService);
             }
+            Repository.SetCacheService(CacheService);
+            Repository.CacheFolder = CacheFolder;
         }
 
-        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo)
+        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo, MixCacheService cacheService)
         {
             if (unitOfWorkInfo != null)
             {
@@ -40,6 +41,7 @@ namespace Mix.Heart.ViewModel
                 _isRoot = false;
                 Repository ??= GetRepository(UowInfo, CacheService);
             }
+            SetCacheService(cacheService);
         }
 
 
