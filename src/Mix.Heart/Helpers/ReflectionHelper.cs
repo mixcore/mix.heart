@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Mix.Heart.Enums;
 using Mix.Heart.Extensions;
@@ -33,13 +32,6 @@ namespace Mix.Heart.Helpers
         #region Binary
 
         #endregion
-
-        public static void MapObject<TSource, TDest>(TSource source, TDest dest)
-        {
-            var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TDest)));
-            var mapper = new Mapper(config);
-            mapper.Map(source, dest);
-        }
 
         public static JArray ParseArray<T>(T obj)
         {
@@ -78,17 +70,8 @@ namespace Mix.Heart.Helpers
             where TSource : class
         {
             destObject ??= (TSource)Activator.CreateInstance(typeof(TSource));
-            var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TSource)));
-            var mapper = new Mapper(config);
-            mapper.Map(sourceObject, destObject);
+            Map(sourceObject, destObject);
             return destObject;
-        }
-
-        public static void Mapping<TSource, TDest>(TSource sourceObject, TDest destObject)
-        {
-            var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), typeof(TDest)));
-            var mapper = new Mapper(config);
-            mapper.Map(sourceObject, destObject);
         }
 
         public static Expression<Func<TEntity, bool>> BuildExpressionByKeys<TEntity, TDbContext>(
@@ -203,6 +186,29 @@ namespace Mix.Heart.Helpers
             }
         }
 
+        public static TDestinate Map<TSource, TDestinate>(TSource source, TDestinate destination)
+            where TDestinate : class
+        {
+            var inPropDict = typeof(TSource).GetProperties()
+                .Where(p => p.CanRead)
+                .ToDictionary(p => p.Name);
+            var outProps = typeof(TDestinate).GetProperties()
+                .Where(p => p.CanWrite);
+            foreach (var outProp in outProps)
+            {
+                if (inPropDict.TryGetValue(outProp.Name, out var inProp))
+                {
+                    object sourceValue = inProp.GetValue(source);
+                    if (inProp.PropertyType != outProp.PropertyType)
+                    {
+                        sourceValue = Convert.ChangeType(sourceValue, outProp.PropertyType);
+                    }
+                    outProp.SetValue(destination, sourceValue);
+                }
+            }
+            return destination;
+        }
+
         public static Expression<Func<T, bool>> GetExpression<T>(
                         string propertyName,
                         object propertyValue,
@@ -257,76 +263,96 @@ namespace Mix.Heart.Helpers
                 }
             }
 
-            if (fieldPropertyType == typeof(string))
+            Expression expression = null;
+
+            if (IsNumeric(propertyValue))
+            {
+                expression = GetNumericExpression(kind, fieldPropertyExpression, fieldPropertyType, data2);
+
+            }
+            else if (fieldPropertyType.BaseType == typeof(string))
             {
                 data2 = data2.ToString().Replace("'", "");
+                expression = GetStringExpressoin(kind, fieldPropertyExpression, fieldPropertyType, data2, propertyName, propertyValue);
             }
-            Expression expression = null;
-            switch (fieldPropertyType.BaseType)
+            else
             {
-                case var dataType when dataType == typeof(string):
-                    switch (kind)
-                    {
-                        case ExpressionMethod.Equal:
-                            expression = Expression.Equal(fieldPropertyExpression,
+                expression = Expression.Equal(fieldPropertyExpression,
                                                   Expression.Constant(data2, fieldPropertyType));
-                            break;
-
-                        case ExpressionMethod.Like:
-                        case ExpressionMethod.In:
-                            expression = GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
-                case var dataType when dataType == typeof(int) || dataType  == typeof(long) || dataType == typeof(double) || dataType == typeof(float):
-                    switch (kind)
-                    {
-                        case ExpressionMethod.Equal:
-                            expression = Expression.Equal(fieldPropertyExpression,
-                                                  Expression.Constant(data2, fieldPropertyType));
-                            break;
-
-                        case ExpressionMethod.LessThan:
-                            expression = Expression.LessThan(fieldPropertyExpression,
-                                                     Expression.Constant(data2, fieldPropertyType));
-                            break;
-
-                        case ExpressionMethod.GreaterThan:
-                            expression = Expression.GreaterThan(
-                                fieldPropertyExpression,
-                                Expression.Constant(data2, fieldPropertyType));
-                            break;
-
-                        case ExpressionMethod.LessThanOrEqual:
-                            expression = Expression.LessThanOrEqual(
-                                fieldPropertyExpression,
-                                Expression.Constant(data2, fieldPropertyType));
-                            break;
-
-                        case ExpressionMethod.GreaterThanOrEqual:
-                            expression = Expression.GreaterThanOrEqual(
-                                fieldPropertyExpression,
-                                Expression.Constant(data2, fieldPropertyType));
-                            break;
-
-                        case ExpressionMethod.NotEqual:
-                            expression = Expression.NotEqual(fieldPropertyExpression,
-                                              Expression.Constant(data2, fieldPropertyType));
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
-                default:
-                    expression = Expression.Equal(fieldPropertyExpression,
-                                                  Expression.Constant(data2, fieldPropertyType));
-                    break;
             }
             return Expression.Lambda<Func<T, bool>>(expression, par);
         }
 
+        private static Expression GetStringExpressoin(
+            ExpressionMethod kind,
+            Expression fieldPropertyExpression,
+            Type fieldPropertyType,
+            object data2, string propertyName, object propertyValue)
+        {
+            switch (kind)
+            {
+                case ExpressionMethod.Equal:
+                    return Expression.Equal(fieldPropertyExpression,
+                                          Expression.Constant(data2, fieldPropertyType));
+                case ExpressionMethod.Like:
+                case ExpressionMethod.In:
+                    return GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
+                default:
+                    return Expression.Equal(fieldPropertyExpression,
+                                          Expression.Constant(data2, fieldPropertyType));
+            }
+        }
+
+        private static Expression GetNumericExpression(ExpressionMethod kind, Expression fieldPropertyExpression, Type fieldPropertyType, object data2)
+        {
+            switch (kind)
+            {
+                case ExpressionMethod.Equal:
+                    return Expression.Equal(fieldPropertyExpression,
+                                          Expression.Constant(data2, fieldPropertyType));
+
+                case ExpressionMethod.LessThan:
+                    return Expression.LessThan(fieldPropertyExpression,
+                                             Expression.Constant(data2, fieldPropertyType));
+
+                case ExpressionMethod.GreaterThan:
+                    return Expression.GreaterThan(
+                        fieldPropertyExpression,
+                        Expression.Constant(data2, fieldPropertyType));
+
+                case ExpressionMethod.LessThanOrEqual:
+                    return Expression.LessThanOrEqual(
+                        fieldPropertyExpression,
+                        Expression.Constant(data2, fieldPropertyType));
+
+                case ExpressionMethod.GreaterThanOrEqual:
+                    return Expression.GreaterThanOrEqual(
+                        fieldPropertyExpression,
+                        Expression.Constant(data2, fieldPropertyType));
+
+                case ExpressionMethod.NotEqual:
+                    return Expression.NotEqual(fieldPropertyExpression,
+                                      Expression.Constant(data2, fieldPropertyType));
+                default:
+                    return Expression.Equal(fieldPropertyExpression,
+                                                  Expression.Constant(data2, fieldPropertyType));
+            }
+        }
+
+        private static bool IsNumeric(object value)
+        {
+            return value is sbyte ||
+                   value is byte ||
+                   value is short ||
+                   value is ushort ||
+                   value is int ||
+                   value is uint ||
+                   value is long ||
+                   value is ulong ||
+                   value is float ||
+                   value is double ||
+                   value is decimal;
+        }
         private static Expression GetStringContainsExpression(Expression fieldExpression, string propertyName, object propertyValue)
         {
             var likeMethod = typeof(DbFunctionsExtensions).GetMethod("Like",

@@ -1,8 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
+using Mix.Heart.Helpers;
 using Mix.Heart.Repository;
 using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
@@ -87,7 +87,6 @@ namespace Mix.Heart.ViewModel
         #endregion
 
         #region Abstracts
-
         public virtual void InitDefaultValues(string language = null, int? cultureId = null)
         {
             CreatedDateTime = DateTime.UtcNow;
@@ -134,7 +133,7 @@ namespace Mix.Heart.ViewModel
         {
             UowInfo = new UnitOfWorkInfo(context);
         }
-        
+
         public void SetCacheService(MixCacheService cacheService)
         {
             CacheService ??= cacheService;
@@ -151,14 +150,14 @@ namespace Mix.Heart.ViewModel
         public virtual Task<TEntity> ParseEntity(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            
             if (IsDefaultId(Id))
             {
                 InitDefaultValues();
             }
+            
             var entity = Activator.CreateInstance<TEntity>();
-            var config = new MapperConfiguration(cfg => cfg.CreateMap(GetType(), typeof(TEntity)));
-            var mapper = new Mapper(config);
-            mapper.Map(this, entity);
+            ReflectionHelper.Map(this as TView, entity);
             return Task.FromResult(entity);
         }
 
@@ -166,9 +165,7 @@ namespace Mix.Heart.ViewModel
             where TSource : TEntity
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var config = new MapperConfiguration(cfg => cfg.CreateMap(typeof(TSource), GetType()));
-            var mapper = new Mapper(config);
-            mapper.Map(sourceObject, this);
+            ReflectionHelper.Map(sourceObject, this as TView);
         }
 
         public bool IsDefaultId(TPrimaryKey id)
