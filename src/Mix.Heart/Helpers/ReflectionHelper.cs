@@ -242,43 +242,43 @@ namespace Mix.Heart.Helpers
                 fieldPropertyType = propertyInfo.PropertyType;
                 fieldPropertyExpression = Expression.Property(par, propertyInfo);
             }
-            object data2;
+            object parsedValue;
             if (fieldPropertyType.IsGenericType &&
                 fieldPropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 System.ComponentModel.TypeConverter conv =
                     System.ComponentModel.TypeDescriptor.GetConverter(
                         fieldPropertyType);
-                data2 = conv.ConvertFrom(propertyValue);
+                parsedValue = conv.ConvertFrom(propertyValue);
             }
             else
             {
                 if (fieldPropertyType.BaseType == typeof(Enum))
                 {
-                    data2 = Enum.Parse(fieldPropertyType, propertyValue.ToString());
+                    parsedValue = Enum.Parse(fieldPropertyType, propertyValue.ToString());
                 }
                 else
                 {
-                    data2 = Convert.ChangeType(propertyValue, fieldPropertyType);
+                    parsedValue = Convert.ChangeType(propertyValue, fieldPropertyType);
                 }
             }
 
             Expression expression = null;
 
-            if (IsNumeric(propertyValue))
+            if (IsNumeric(parsedValue))
             {
-                expression = GetNumericExpression(kind, fieldPropertyExpression, fieldPropertyType, data2);
+                expression = GetNumericExpression(kind, fieldPropertyExpression, fieldPropertyType, parsedValue);
 
             }
-            else if (fieldPropertyType.BaseType == typeof(string))
+            else if (parsedValue is string)
             {
-                data2 = data2.ToString().Replace("'", "");
-                expression = GetStringExpressoin(kind, fieldPropertyExpression, fieldPropertyType, data2, propertyName, propertyValue);
+                parsedValue = parsedValue.ToString().Replace("'", "");
+                expression = GetStringExpressoin(kind, fieldPropertyExpression, fieldPropertyType, parsedValue, propertyName, propertyValue);
             }
             else
             {
                 expression = Expression.Equal(fieldPropertyExpression,
-                                                  Expression.Constant(data2, fieldPropertyType));
+                                                  Expression.Constant(parsedValue, fieldPropertyType));
             }
             return Expression.Lambda<Func<T, bool>>(expression, par);
         }

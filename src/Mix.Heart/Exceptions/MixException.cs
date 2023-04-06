@@ -48,6 +48,8 @@ namespace Mix.Heart.Exceptions
 
         private void LogException(Exception ex = null, MixErrorStatus? status = null, string message = null)
         {
+            Console.Error.Write(ex);
+
             string fullPath = $"{Environment.CurrentDirectory}/logs/{DateTime.Now:dd-MM-yyyy}";
             if (!string.IsNullOrEmpty(fullPath) && !Directory.Exists(fullPath))
             {
