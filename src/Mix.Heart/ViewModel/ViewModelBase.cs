@@ -116,6 +116,7 @@ namespace Mix.Heart.ViewModel
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context)
             {
+                IsCache = cacheService != null,
                 CacheFolder = CacheFolder
             };
         }
@@ -150,12 +151,12 @@ namespace Mix.Heart.ViewModel
         public virtual Task<TEntity> ParseEntity(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             if (IsDefaultId(Id))
             {
                 InitDefaultValues();
             }
-            
+
             var entity = Activator.CreateInstance<TEntity>();
             ReflectionHelper.Map(this as TView, entity);
             return Task.FromResult(entity);
