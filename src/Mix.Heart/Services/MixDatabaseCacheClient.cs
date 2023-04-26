@@ -1,20 +1,15 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.EntityFrameworkCore;
+using Mix.Heart.Entities.Cache;
 using Mix.Heart.Interfaces;
+using Mix.Heart.Repository;
+using Mix.Heart.UnitOfWork;
 using Newtonsoft.Json;
-using System;
-using System.Threading.Tasks;
-using System.Threading;
-using System.IO;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Converters;
-using Mix.Heart.Models;
-using Mix.Heart.Repository;
-using StackExchange.Redis;
-using Mix.Heart.Entities.Cache;
-using Mix.Heart.UnitOfWork;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Mix.Heart.Services
 {

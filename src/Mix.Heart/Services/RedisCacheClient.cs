@@ -2,10 +2,9 @@
 using Mix.Heart.Interfaces;
 using Newtonsoft.Json;
 using StackExchange.Redis;
-using System;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Mix.Heart.Services
 {

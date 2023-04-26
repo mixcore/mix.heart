@@ -1,19 +1,11 @@
-﻿using Azure.Core.Serialization;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Mix.Heart.Entities.Cache;
 using Mix.Heart.Factories;
-using Mix.Heart.Helpers;
 using Mix.Heart.Interfaces;
 using Mix.Heart.Models;
 using Mix.Heart.UnitOfWork;
 using Mix.Shared.Services;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 

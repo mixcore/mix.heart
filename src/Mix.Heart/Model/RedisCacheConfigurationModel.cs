@@ -1,6 +1,4 @@
-﻿using Mix.Heart.Enums;
-
-namespace Mix.Heart.Models
+﻿namespace Mix.Heart.Models
 {
     public class RedisCacheConfigurationModel
     {
@@ -11,7 +9,7 @@ namespace Mix.Heart.Models
 
         public RedisCacheConfigurationModel()
         {
-            
+
         }
     }
 }

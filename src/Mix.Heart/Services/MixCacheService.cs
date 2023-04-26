@@ -1,17 +1,9 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using Mix.Heart.Entities.Cache;
-using Mix.Heart.Enums;
+﻿using Mix.Heart.Entities.Cache;
 using Mix.Heart.Models;
 using Mix.Heart.Repository;
-using Mix.Heart.UnitOfWork;
 using Mix.Shared.Services;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using StackExchange.Redis;
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
