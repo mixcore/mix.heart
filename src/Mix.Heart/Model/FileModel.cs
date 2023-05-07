@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
+using System.IO;
 
 namespace Mix.Heart.Models
 {
@@ -16,7 +16,8 @@ namespace Mix.Heart.Models
 
         public string Content { get; set; }
 
-        public string FileStream { get; set; }
+        public string FileBase64 { get; set; }
+        public Stream FileStream{ get; set; }
 
         public string FullPath
         {
@@ -41,11 +42,12 @@ namespace Mix.Heart.Models
         {
         }
 
-        public FileModel(IFormFile file, string folder)
+        public FileModel(string fileName, Stream fileStream, string folder)
         {
-            Filename = file.FileName[0..Math.Min(file.FileName.LastIndexOf('.'), 40)];
-            Extension = file.FileName[file.FileName.LastIndexOf('.')..];
+            Filename = fileName[0..Math.Min(fileName.LastIndexOf('.'), 40)];
+            Extension = fileName[fileName.LastIndexOf('.')..];
             FileFolder = folder;
+            FileStream = fileStream;
         }
     }
 }

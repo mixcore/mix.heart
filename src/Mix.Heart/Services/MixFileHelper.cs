@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Mix.Heart.Enums;
+﻿using Mix.Heart.Enums;
 using Mix.Heart.Models;
 using System;
 using System.Collections.Generic;
@@ -167,7 +166,7 @@ namespace Mix.Heart.Services
             }
         }
 
-        public static FileModel SaveFile(FileModel file)
+        public static bool SaveFile(FileModel file)
         {
             try
             {
@@ -191,23 +190,28 @@ namespace Mix.Heart.Services
                         {
                             writer.WriteLine(file.Content);
                             writer.Dispose();
-                            return file;
+                            return true;
                         }
                     }
-                    else if (file.FileStream != null)
+                    else if (file.FileBase64 != null)
                     {
-                        string base64 = file.FileStream.Split(',')[1];
+                        string base64 = file.FileBase64.Split(',')[1];
                         byte[] bytes = Convert.FromBase64String(base64);
                         using (var writer = File.Create(filePath))
                         {
                             writer.Write(bytes, 0, bytes.Length);
-                            return file;
+                            return true;
                         }
+                    }
+                    else if (file.FileStream != null)
+                    {
+                        SaveFileStream(file.FileStream, filePath);
+                        return true;
                     }
                     else
                     {
                         File.CreateText(filePath);
-                        return file;
+                        return true;
                     }
                 }
                 else
@@ -221,35 +225,22 @@ namespace Mix.Heart.Services
             }
         }
 
-        public static FileModel SaveFile(IFormFile file, string fullPath)
+        private static bool SaveFileStream(Stream fileStream, string fullPath)
         {
             try
             {
-                if (file.Length > 0)
+                if (fileStream.Length > 0)
                 {
-                    CreateFolderIfNotExist(fullPath);
-                    string fileName = file.FileName;
-                    if (fileName.Length > 50)
+                    if (File.Exists(fullPath))
                     {
-                        fileName = $"{file.FileName[0..40]}.{file.FileName[file.FileName.LastIndexOf('.')..]}";
-                    }
-                    string fullPath2 = $"{fullPath}/{fileName}";
-                    if (File.Exists(fullPath2))
-                    {
-                        DeleteFile(fullPath2);
+                        DeleteFile(fullPath);
                     }
 
-                    using (FileStream target = new FileStream(fullPath2, FileMode.Create))
+                    using (FileStream target = new FileStream(fullPath, FileMode.Create))
                     {
-                        file.CopyTo(target);
+                        fileStream.CopyTo(target);
+                        return true;
                     }
-
-                    return new FileModel()
-                    {
-                        Filename = fileName[0..fileName.LastIndexOf('.')],
-                        Extension = fileName[fileName.LastIndexOf('.')..],
-                        FileFolder = fullPath
-                    };
                 }
 
                 return default;
