@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Mix.Heart.Enums;
+using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
 using Mix.Heart.Models;
 using Newtonsoft.Json;
@@ -41,6 +42,19 @@ namespace Mix.Heart.Helpers
         public static JObject ParseObject<T>(T obj)
         {
             return obj != null ? JObject.FromObject(obj, serializer) : null;
+        }
+        
+        public static T ParseStringToObject<T>(string obj)
+        {
+            try
+            {
+                var jsonObject = JObject.Parse(obj);
+                return jsonObject.ToObject<T>();
+            }
+            catch(Exception ex)
+            {
+                throw new MixException(MixErrorStatus.Badrequest, ex);
+            }
         }
         public static JsonSerializer FormattingData()
         {
