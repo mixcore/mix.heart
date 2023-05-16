@@ -72,6 +72,13 @@ namespace Mix.Heart.Extensions
                 return false;
             }
         }
+        
+        public static string ToBase64Stream(this string base64String)
+        {
+            return base64String?.IndexOf(',') >= 0
+                               ? base64String.Split(',')[1]
+                               : base64String;
+        }
 
         public static string Base64Encode(string plainText)
         {
