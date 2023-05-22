@@ -43,7 +43,7 @@ namespace Mix.Heart.Helpers
         {
             return obj != null ? JObject.FromObject(obj, serializer) : null;
         }
-        
+
         public static T ParseStringToObject<T>(string obj)
         {
             try
@@ -51,7 +51,7 @@ namespace Mix.Heart.Helpers
                 var jsonObject = JObject.Parse(obj);
                 return jsonObject.ToObject<T>();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new MixException(MixErrorStatus.Badrequest, ex);
             }
@@ -203,24 +203,29 @@ namespace Mix.Heart.Helpers
         public static TDestinate Map<TSource, TDestinate>(TSource source, TDestinate destination)
             where TDestinate : class
         {
-            var inPropDict = typeof(TSource).GetProperties()
-                .Where(p => p.CanRead)
-                .ToDictionary(p => p.Name);
-            var outProps = typeof(TDestinate).GetProperties()
-                .Where(p => p.CanWrite);
-            foreach (var outProp in outProps)
+            if (source != null)
             {
-                if (inPropDict.TryGetValue(outProp.Name, out var inProp))
+                var inPropDict = typeof(TSource).GetProperties()
+                    .Where(p => p.CanRead)
+                    .DistinctBy(p => p.Name)
+                    .ToDictionary(p => p.Name);
+                var outProps = typeof(TDestinate).GetProperties()
+                    .Where(p => p.CanWrite);
+                foreach (var outProp in outProps)
                 {
-                    object sourceValue = inProp.GetValue(source);
-                    if (inProp.PropertyType != outProp.PropertyType)
+                    if (inPropDict.TryGetValue(outProp.Name, out var inProp))
                     {
-                        sourceValue = Convert.ChangeType(sourceValue, outProp.PropertyType);
+                        object sourceValue = inProp.GetValue(source);
+                        if (inProp.PropertyType != outProp.PropertyType)
+                        {
+                            sourceValue = Convert.ChangeType(sourceValue, outProp.PropertyType);
+                        }
+                        outProp.SetValue(destination, sourceValue);
                     }
-                    outProp.SetValue(destination, sourceValue);
                 }
+                return destination;
             }
-            return destination;
+            return default;
         }
 
         public static Expression<Func<T, bool>> GetExpression<T>(
