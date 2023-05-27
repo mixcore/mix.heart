@@ -205,25 +205,32 @@ namespace Mix.Heart.Helpers
         {
             if (source != null)
             {
-                var inPropDict = typeof(TSource).GetProperties()
-                    .Where(p => p.CanRead)
-                    .DistinctBy(p => p.Name)
-                    .ToDictionary(p => p.Name);
-                var outProps = typeof(TDestinate).GetProperties()
-                    .Where(p => p.CanWrite);
-                foreach (var outProp in outProps)
+                try
                 {
-                    if (inPropDict.TryGetValue(outProp.Name, out var inProp))
+                    var inPropDict = typeof(TSource).GetProperties()
+                        .Where(p => p.CanRead)
+                        .DistinctBy(p => p.Name)
+                        .ToDictionary(p => p.Name);
+                    var outProps = typeof(TDestinate).GetProperties()
+                        .Where(p => p.CanWrite);
+                    foreach (var outProp in outProps)
                     {
-                        object sourceValue = inProp.GetValue(source);
-                        if (inProp.PropertyType != outProp.PropertyType)
+                        if (inPropDict.TryGetValue(outProp.Name, out var inProp))
                         {
-                            sourceValue = Convert.ChangeType(sourceValue, outProp.PropertyType);
+                            object sourceValue = inProp.GetValue(source);
+                            //if (inProp.PropertyType != outProp.PropertyType)
+                            //{
+                            //    sourceValue = Convert.ChangeType(sourceValue, outProp.PropertyType);
+                            //}
+                            outProp.SetValue(destination, sourceValue);
                         }
-                        outProp.SetValue(destination, sourceValue);
                     }
+                    return destination;
                 }
-                return destination;
+                catch(Exception ex)
+                {
+                    throw new MixException(MixErrorStatus.ServerError, ex);
+                }
             }
             return default;
         }
