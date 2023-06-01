@@ -56,6 +56,18 @@ namespace Mix.Heart.Helpers
                 throw new MixException(MixErrorStatus.Badrequest, ex);
             }
         }
+        public static T ParseStringToArray<T>(string obj)
+        {
+            try
+            {
+                var jsonObject = JArray.Parse(obj);
+                return jsonObject.ToObject<T>();
+            }
+            catch (Exception ex)
+            {
+                throw new MixException(MixErrorStatus.Badrequest, ex);
+            }
+        }
         public static JsonSerializer FormattingData()
         {
             var jsonSerializersettings = new JsonSerializer
