@@ -239,7 +239,7 @@ namespace Mix.Heart.Helpers
                     }
                     return destination;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     throw new MixException(MixErrorStatus.ServerError, ex);
                 }
@@ -311,7 +311,7 @@ namespace Mix.Heart.Helpers
             else if (parsedValue is string)
             {
                 parsedValue = parsedValue.ToString().Replace("'", "");
-                expression = GetStringExpressoin(kind, fieldPropertyExpression, fieldPropertyType, parsedValue, propertyName, propertyValue);
+                expression = GetStringExpression(kind, fieldPropertyExpression, fieldPropertyType, parsedValue, propertyName, propertyValue);
             }
             else
             {
@@ -321,7 +321,7 @@ namespace Mix.Heart.Helpers
             return Expression.Lambda<Func<T, bool>>(expression, par);
         }
 
-        private static Expression GetStringExpressoin(
+        private static Expression GetStringExpression(
             ExpressionMethod kind,
             Expression fieldPropertyExpression,
             Type fieldPropertyType,
@@ -333,8 +333,24 @@ namespace Mix.Heart.Helpers
                     return Expression.Equal(fieldPropertyExpression,
                                           Expression.Constant(data2, fieldPropertyType));
                 case ExpressionMethod.Like:
-                case ExpressionMethod.In:
                     return GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
+                case ExpressionMethod.In:
+                    string[] arr = data2.ToString().Split(',');
+                    BinaryExpression exp = null;
+                    foreach (string val in arr)
+                    {
+                        BinaryExpression eq = Expression.Equal(fieldPropertyExpression, 
+                                                Expression.Constant(val, fieldPropertyType));
+                        if (exp == null)
+                        {
+                            exp = eq;
+                        }
+                        else
+                        {
+                            exp = Expression.OrElse(exp, eq);
+                        }
+                    }
+                    return exp;
                 default:
                     return Expression.Equal(fieldPropertyExpression,
                                           Expression.Constant(data2, fieldPropertyType));
