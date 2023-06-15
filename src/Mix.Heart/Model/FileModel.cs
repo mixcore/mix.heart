@@ -44,7 +44,7 @@ namespace Mix.Heart.Models
 
         public FileModel(string fileName, Stream fileStream, string folder)
         {
-            Filename = fileName[0..Math.Min(fileName.LastIndexOf('.'), 40)];
+            Filename = fileName[0..fileName.LastIndexOf('.')];//Math.Min(fileName.LastIndexOf('.'), 40)];
             Extension = fileName[fileName.LastIndexOf('.')..];
             FileFolder = folder;
             FileStream = fileStream;
