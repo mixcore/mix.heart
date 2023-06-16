@@ -253,72 +253,79 @@ namespace Mix.Heart.Helpers
                         ExpressionMethod kind,
                         string name = "model")
         {
-            Type type = typeof(T);
-            var par = Expression.Parameter(type, name);
-
-            Type fieldPropertyType;
-            Expression fieldPropertyExpression;
-
-            FieldInfo fieldInfo = type.GetField(propertyName.ToTitleCase());
-
-            if (fieldInfo != null)
+            try
             {
-                fieldPropertyType = fieldInfo.FieldType;
-                fieldPropertyExpression = Expression.Field(par, fieldInfo);
-            }
-            else
-            {
+                Type type = typeof(T);
+                var par = Expression.Parameter(type, name);
 
-                PropertyInfo propertyInfo =
-                    type.GetProperty(propertyName.ToTitleCase());
+                Type fieldPropertyType;
+                Expression fieldPropertyExpression;
 
-                if (propertyInfo == null)
+                FieldInfo fieldInfo = type.GetField(propertyName.ToTitleCase());
+
+                if (fieldInfo != null)
                 {
-                    return null;
-                }
-
-                fieldPropertyType = propertyInfo.PropertyType;
-                fieldPropertyExpression = Expression.Property(par, propertyInfo);
-            }
-            object parsedValue;
-            if (fieldPropertyType.IsGenericType &&
-                fieldPropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                System.ComponentModel.TypeConverter conv =
-                    System.ComponentModel.TypeDescriptor.GetConverter(
-                        fieldPropertyType);
-                parsedValue = conv.ConvertFrom(propertyValue);
-            }
-            else
-            {
-                if (fieldPropertyType.BaseType == typeof(Enum))
-                {
-                    parsedValue = Enum.Parse(fieldPropertyType, propertyValue.ToString());
+                    fieldPropertyType = fieldInfo.FieldType;
+                    fieldPropertyExpression = Expression.Field(par, fieldInfo);
                 }
                 else
                 {
-                    parsedValue = Convert.ChangeType(propertyValue, fieldPropertyType);
+
+                    PropertyInfo propertyInfo =
+                        type.GetProperty(propertyName.ToTitleCase());
+
+                    if (propertyInfo == null)
+                    {
+                        return null;
+                    }
+
+                    fieldPropertyType = propertyInfo.PropertyType;
+                    fieldPropertyExpression = Expression.Property(par, propertyInfo);
                 }
-            }
+                object parsedValue;
+                if (fieldPropertyType.IsGenericType &&
+                    fieldPropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    System.ComponentModel.TypeConverter conv =
+                        System.ComponentModel.TypeDescriptor.GetConverter(
+                            fieldPropertyType);
+                    parsedValue = conv.ConvertFrom(propertyValue);
+                }
+                else
+                {
+                    if (fieldPropertyType.BaseType == typeof(Enum))
+                    {
+                        parsedValue = Enum.Parse(fieldPropertyType, propertyValue.ToString());
+                    }
+                    else
+                    {
+                        parsedValue = Convert.ChangeType(propertyValue, fieldPropertyType);
+                    }
+                }
 
-            Expression expression = null;
+                Expression expression = null;
 
-            if (IsNumeric(parsedValue))
-            {
-                expression = GetNumericExpression(kind, fieldPropertyExpression, fieldPropertyType, parsedValue);
+                if (IsNumeric(parsedValue))
+                {
+                    expression = GetNumericExpression(kind, fieldPropertyExpression, fieldPropertyType, parsedValue);
 
+                }
+                else if (parsedValue is string)
+                {
+                    parsedValue = parsedValue.ToString().Replace("'", "");
+                    expression = GetStringExpression(kind, fieldPropertyExpression, fieldPropertyType, parsedValue, propertyName, propertyValue);
+                }
+                else
+                {
+                    expression = Expression.Equal(fieldPropertyExpression,
+                                                      Expression.Constant(parsedValue, fieldPropertyType));
+                }
+                return Expression.Lambda<Func<T, bool>>(expression, par);
             }
-            else if (parsedValue is string)
+            catch (Exception ex)
             {
-                parsedValue = parsedValue.ToString().Replace("'", "");
-                expression = GetStringExpression(kind, fieldPropertyExpression, fieldPropertyType, parsedValue, propertyName, propertyValue);
+                throw new MixException(MixErrorStatus.ServerError, ex);
             }
-            else
-            {
-                expression = Expression.Equal(fieldPropertyExpression,
-                                                  Expression.Constant(parsedValue, fieldPropertyType));
-            }
-            return Expression.Lambda<Func<T, bool>>(expression, par);
         }
 
         private static Expression GetStringExpression(
@@ -339,7 +346,7 @@ namespace Mix.Heart.Helpers
                     BinaryExpression exp = null;
                     foreach (string val in arr)
                     {
-                        BinaryExpression eq = Expression.Equal(fieldPropertyExpression, 
+                        BinaryExpression eq = Expression.Equal(fieldPropertyExpression,
                                                 Expression.Constant(val, fieldPropertyType));
                         if (exp == null)
                         {
@@ -351,6 +358,23 @@ namespace Mix.Heart.Helpers
                         }
                     }
                     return exp;
+                case ExpressionMethod.NotIn:
+                    string[] notarr = data2.ToString().Split(',');
+                    BinaryExpression notexp = null;
+                    foreach (string val in notarr)
+                    {
+                        BinaryExpression eq = Expression.NotEqual(fieldPropertyExpression,
+                                                Expression.Constant(val, fieldPropertyType));
+                        if (notexp == null)
+                        {
+                            notexp = eq;
+                        }
+                        else
+                        {
+                            notexp = Expression.AndAlso(notexp, eq);
+                        }
+                    }
+                    return notexp;
                 default:
                     return Expression.Equal(fieldPropertyExpression,
                                           Expression.Constant(data2, fieldPropertyType));

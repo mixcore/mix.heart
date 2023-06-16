@@ -5,6 +5,7 @@
         Equal,
         Like,
         In,
+        NotIn,
         NotEqual,
         LessThan,
         GreaterThan,
