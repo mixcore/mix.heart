@@ -339,6 +339,9 @@ namespace Mix.Heart.Helpers
                 case ExpressionMethod.Equal:
                     return Expression.Equal(fieldPropertyExpression,
                                           Expression.Constant(data2, fieldPropertyType));
+                case ExpressionMethod.NotEqual:
+                    return Expression.NotEqual(fieldPropertyExpression,
+                                          Expression.Constant(data2, fieldPropertyType));
                 case ExpressionMethod.Like:
                     return GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
                 case ExpressionMethod.In:
