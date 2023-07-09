@@ -325,6 +325,19 @@ namespace Mix.Heart.Services
             return true;
         }
 
+        public static bool MoveFile(string srcPath, string desPath)
+        {
+            if (srcPath.ToLower() != desPath.ToLower() && File.Exists(srcPath))
+            {
+                CreateFolderIfNotExist(desPath.Substring(0, desPath.LastIndexOf('/')));
+
+                File.Copy(srcPath, desPath, true);
+                //File.Delete(srcPath);
+                return true;
+            }
+            return true;
+        }
+
         public static bool DeleteFolder(string folderPath)
         {
             if (Directory.Exists(folderPath))

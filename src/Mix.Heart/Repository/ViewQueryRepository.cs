@@ -12,9 +12,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Mix.Heart.Repository
 {
@@ -53,6 +55,27 @@ namespace Mix.Heart.Repository
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Table.AsNoTracking().Where(predicate);
+        }
+
+        public IQueryable<TEntity> GetSortedQuery(
+            Expression<Func<TEntity, bool>> predicate,
+            string sortByFieldName, SortDirection direction,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var query = GetListQuery(predicate, cancellationToken);
+            dynamic sortBy = GetLambda(sortByFieldName);
+
+            switch (direction)
+            {
+                case SortDirection.Asc:
+                    query = Queryable.OrderBy(query, sortBy);
+                    break;
+                case SortDirection.Desc:
+                    query = Queryable.OrderByDescending(query, sortBy);
+                    break;
+            }
+            return query;
         }
 
         public IQueryable<TEntity> GetPagingQuery(Expression<Func<TEntity, bool>> predicate, PagingModel paging, CancellationToken cancellationToken = default)
@@ -193,6 +216,18 @@ namespace Mix.Heart.Repository
         {
             cancellationToken.ThrowIfCancellationRequested();
             var query = GetListQuery(predicate, cancellationToken);
+            var result = await ToListViewModelAsync(query, cancellationToken);
+            return result;
+        }
+
+        public virtual async Task<List<TView>> GetSortedListAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            string sortby,
+            SortDirection direction,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var query = GetSortedQuery(predicate, sortby, direction, cancellationToken);
             var result = await ToListViewModelAsync(query, cancellationToken);
             return result;
         }

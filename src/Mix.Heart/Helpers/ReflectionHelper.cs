@@ -299,7 +299,9 @@ namespace Mix.Heart.Helpers
                     }
                     else
                     {
-                        parsedValue = Convert.ChangeType(propertyValue, fieldPropertyType);
+                        parsedValue = kind != ExpressionMethod.In && kind != ExpressionMethod.NotIn
+                            ? Convert.ChangeType(propertyValue, fieldPropertyType)
+                            : propertyValue;
                     }
                 }
 
@@ -350,7 +352,7 @@ namespace Mix.Heart.Helpers
                     foreach (string val in arr)
                     {
                         BinaryExpression eq = Expression.Equal(fieldPropertyExpression,
-                                                Expression.Constant(val, fieldPropertyType));
+                                                Expression.Constant(Convert.ChangeType(val, fieldPropertyType), fieldPropertyType));
                         if (exp == null)
                         {
                             exp = eq;
@@ -367,7 +369,7 @@ namespace Mix.Heart.Helpers
                     foreach (string val in notarr)
                     {
                         BinaryExpression eq = Expression.NotEqual(fieldPropertyExpression,
-                                                Expression.Constant(val, fieldPropertyType));
+                                                Expression.Constant(Convert.ChangeType(val, fieldPropertyType), fieldPropertyType));
                         if (notexp == null)
                         {
                             notexp = eq;
