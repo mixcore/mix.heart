@@ -1,9 +1,12 @@
 ﻿using Mix.Heart.Entities.Cache;
+using Mix.Heart.Exceptions;
+using Mix.Heart.Model;
 using Mix.Heart.Models;
 using Mix.Heart.Repository;
 using Mix.Shared.Services;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,7 +25,6 @@ namespace Mix.Heart.Services
             _configs = MixHeartConfigService.Instance.AppSettings;
             _cache = ditributedCache;
         }
-
 
         #region Get
 
@@ -46,12 +48,45 @@ namespace Mix.Heart.Services
 
         public Task ClearAllCacheAsync(CancellationToken cancellationToken = default)
         {
-            return _cache.ClearAllCache(cancellationToken);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return _cache.ClearAllCache(cancellationToken);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         public Task RemoveCacheAsync(object key, string cacheFolder, CancellationToken cancellationToken = default)
         {
-            return _cache.ClearCache($"{cacheFolder}_{key}", cancellationToken);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return _cache.ClearCache($"{cacheFolder}_{key}", cancellationToken);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+
+        public async Task RemoveCachesAsync(List<ModifiedEntityModel> modifiedEntities, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                foreach (var item in modifiedEntities)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await RemoveCacheAsync(item.Id, item.CacheFolder, cancellationToken);
+                }
+            }
+            catch
+            {
+                throw;
+            }
         }
         #endregion
     }

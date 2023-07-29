@@ -3,6 +3,7 @@ using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Helpers;
+using Mix.Heart.Model;
 using Mix.Heart.Repository;
 using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
@@ -51,6 +52,8 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
         protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
+        [JsonIgnore]
+        public List<ModifiedEntityModel> ModifiedEntities { get; set; } = new();
 
         #endregion
 
