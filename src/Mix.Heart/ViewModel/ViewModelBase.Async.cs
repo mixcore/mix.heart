@@ -39,6 +39,7 @@ namespace Mix.Heart.ViewModel
             cancellationToken.ThrowIfCancellationRequested();
             Repository.SetUowInfo(UowInfo);
             await Repository.DeleteAsync(Id, cancellationToken);
+            ModifiedEntities.Add(new(typeof(TEntity), Id, ViewModelAction.Delete));
             await DeleteEntityRelationshipAsync(cancellationToken);
         }
 
@@ -113,6 +114,9 @@ namespace Mix.Heart.ViewModel
         {
             cancellationToken.ThrowIfCancellationRequested();
             var entity = await ParseEntity(cancellationToken);
+
+            ModifiedEntities.Add(new(typeof(TEntity), Id, !Id.Equals(default) ? ViewModelAction.Create : ViewModelAction.Update));
+
             await Repository.SaveAsync(entity, cancellationToken);
             await SaveEntityRelationshipAsync(entity, cancellationToken);
             Id = entity.Id;

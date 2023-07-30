@@ -49,7 +49,7 @@ namespace Mix.Heart.Extensions
 
         public static bool IsJsonString(this string jsonString)
         {
-            return jsonString.Trim().StartsWith("{") && jsonString.Trim().EndsWith("}");
+            return !string.IsNullOrEmpty(jsonString) && jsonString.Trim().StartsWith("{") && jsonString.Trim().EndsWith("}");
         }
 
         public static bool IsBase64(this string base64String)
