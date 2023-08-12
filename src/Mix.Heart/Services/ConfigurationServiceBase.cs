@@ -16,7 +16,8 @@ namespace Mix.Heart.Services
         public string AesKey { get; set; }
         public T AppSettings { get; set; }
         protected string FilePath { get => filePath; set => filePath = value; }
-
+        protected DateTime LastModified { get; private set; }
+        protected DateTime LastSaved { get; private set; }
         protected readonly FileSystemWatcher watcher = new();
 
         public ConfigurationServiceBase(string filePath)
@@ -80,7 +81,9 @@ namespace Mix.Heart.Services
                     settings.Content = AesEncryptionHelper.EncryptString(settings.Content, AesKey);
                 }
                 var result = MixFileHelper.SaveFile(settings);
-                return result != null;
+
+                LastSaved = DateTime.UtcNow;
+                return result;
             }
             else
             {
@@ -98,8 +101,11 @@ namespace Mix.Heart.Services
 
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
-            Thread.Sleep(500);
-            LoadAppSettings();
+            if (LastSaved > LastModified)
+            {
+                Thread.Sleep(500);
+                LoadAppSettings();
+            }
         }
 
         protected virtual void LoadAppSettings()
@@ -114,6 +120,8 @@ namespace Mix.Heart.Services
 
             _obj = JObject.Parse(content);
             AppSettings = _obj.ToObject<T>();
+            LastModified = DateTime.UtcNow;
+            LastSaved = DateTime.UtcNow;
         }
     }
 }
