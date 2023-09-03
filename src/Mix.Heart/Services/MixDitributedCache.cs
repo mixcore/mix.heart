@@ -15,7 +15,6 @@ namespace Mix.Heart.Services
     {
         private readonly IDitributedCacheClient _cacheClient;
         private readonly MixHeartConfigurationModel _configs;
-        private readonly DistributedCacheEntryOptions _options;
         public MixDitributedCache(IConfiguration configuration, IDistributedCache cache, UnitOfWorkInfo<MixCacheDbContext> cacheUow)
         {
             _configs = MixHeartConfigService.Instance.AppSettings;
