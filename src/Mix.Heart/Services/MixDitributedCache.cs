@@ -11,34 +11,34 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.Services
 {
-    public class MixDitributedCache
+public class MixDitributedCache
+{
+    private readonly IDitributedCacheClient _cacheClient;
+    private readonly MixHeartConfigurationModel _configs;
+    public MixDitributedCache(IConfiguration configuration, IDistributedCache cache, UnitOfWorkInfo<MixCacheDbContext> cacheUow)
     {
-        private readonly IDitributedCacheClient _cacheClient;
-        private readonly MixHeartConfigurationModel _configs;
-        public MixDitributedCache(IConfiguration configuration, IDistributedCache cache, UnitOfWorkInfo<MixCacheDbContext> cacheUow)
-        {
-            _configs = MixHeartConfigService.Instance.AppSettings;
-            _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, cacheUow, configuration, cache);
-        }
-
-        public Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
-        {
-            return _cacheClient.GetFromCache<T>(key, cancellationToken);
-        }
-
-        public Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
-        {
-            return _cacheClient.SetCache<T>(key, value, cancellationToken);
-        }
-
-        public Task ClearCache(string key, CancellationToken cancellationToken = default)
-        {
-            return _cacheClient.ClearCache(key, cancellationToken);
-        }
-
-        public Task ClearAllCache(CancellationToken cancellationToken = default)
-        {
-            return _cacheClient.ClearAllCache(cancellationToken);
-        }
+        _configs = MixHeartConfigService.Instance.AppSettings;
+        _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, cacheUow, configuration, cache);
     }
+
+    public Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
+    {
+        return _cacheClient.GetFromCache<T>(key, cancellationToken);
+    }
+
+    public Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
+    {
+        return _cacheClient.SetCache<T>(key, value, cancellationToken);
+    }
+
+    public Task ClearCache(string key, CancellationToken cancellationToken = default)
+    {
+        return _cacheClient.ClearCache(key, cancellationToken);
+    }
+
+    public Task ClearAllCache(CancellationToken cancellationToken = default)
+    {
+        return _cacheClient.ClearAllCache(cancellationToken);
+    }
+}
 }
