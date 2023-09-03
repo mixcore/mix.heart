@@ -74,7 +74,7 @@ namespace Mix.Heart.ViewModel
             _isRoot = true;
         }
 
-        public ViewModelBase(TEntity entity, UnitOfWorkInfo? uowInfo)
+        public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo)
         {
             ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
             SetUowInfo(uowInfo, CacheService);

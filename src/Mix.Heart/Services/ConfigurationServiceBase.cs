@@ -80,7 +80,7 @@ namespace Mix.Heart.Services
                     settings.Content = AesEncryptionHelper.EncryptString(settings.Content, AesKey);
                 }
                 var result = MixFileHelper.SaveFile(settings);
-                return result != null;
+                return result;
             }
             else
             {

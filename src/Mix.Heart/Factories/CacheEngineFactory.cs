@@ -12,7 +12,7 @@ namespace Mix.Heart.Factories
 {
     public class CacheEngineFactory
     {
-        public static IDitributedCacheClient? CreateCacheClient(
+        public static IDitributedCacheClient CreateCacheClient(
             MixHeartConfigurationModel mixHeartConfiguration,
             UnitOfWorkInfo<MixCacheDbContext> uow = null,
             IConfiguration configuration = null,
