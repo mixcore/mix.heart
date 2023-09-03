@@ -15,242 +15,180 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mix.Heart.ViewModel
-{
-public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
+namespace Mix.Heart.ViewModel {
+public abstract
+    partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     : IViewModel
-      where TPrimaryKey : IComparable
-      where TEntity : class, IEntity<TPrimaryKey>
-      where TDbContext : DbContext
-      where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
-{
-    #region Properties
+    where TPrimaryKey : IComparable
+    where TEntity : class, IEntity<TPrimaryKey>
+    where TDbContext : DbContext
+    where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView> {
+#region Properties
 
-    public TPrimaryKey Id {
-        get;
-        set;
-    }
-    public DateTime CreatedDateTime {
-        get;
-        set;
-    }
-    public DateTime? LastModified {
-        get;
-        set;
-    }
-    public string CreatedBy {
-        get;
-        set;
-    }
-    public string ModifiedBy {
-        get;
-        set;
-    }
-    public int Priority {
-        get;
-        set;
-    }
-    public MixContentStatus Status {
-        get;
-        set;
-    } = MixContentStatus.Published;
+  public TPrimaryKey Id { get; set; }
+  public DateTime CreatedDateTime { get; set; }
+  public DateTime? LastModified { get; set; }
+  public string CreatedBy { get; set; }
+  public string ModifiedBy { get; set; }
+  public int Priority { get; set; }
+  public MixContentStatus Status { get; set; } = MixContentStatus.Published;
 
-    protected ValidationContext ValidateContext;
-    public bool IsDeleted {
-        get;
-        set;
+  protected ValidationContext ValidateContext;
+  public bool IsDeleted { get; set; }
+  [JsonIgnore]
+  public static bool IsCache { get; set; } = true;
+  [JsonIgnore]
+  public static string CacheFolder { get; set; } = typeof(TEntity).FullName;
+  [JsonIgnore]
+  protected bool IsValid { get; set; }
+
+  [JsonIgnore]
+  protected UnitOfWorkInfo UowInfo { get; set; }
+  [JsonIgnore]
+  protected MixCacheService CacheService { get; set; }
+  [JsonIgnore]
+  protected List<ValidationResult> Errors { get; set; } =
+      new List<ValidationResult>();
+  [JsonIgnore]
+  protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository {
+      get; set; }
+  protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
+  [JsonIgnore]
+  public List<ModifiedEntityModel> ModifiedEntities { get; set; } = new();
+
+#endregion
+
+#region Constructors
+
+  public ViewModelBase() {
+    ValidateContext =
+        new ValidationContext(this, serviceProvider: null, items: null);
+    Repository ??= GetRepository(UowInfo, CacheService);
+  }
+
+  public ViewModelBase(TDbContext context) {
+    ValidateContext =
+        new ValidationContext(this, serviceProvider: null, items: null);
+    UowInfo = new UnitOfWorkInfo(context);
+    Repository ??= GetRepository(UowInfo, CacheService);
+
+    _isRoot = true;
+  }
+
+  public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo) {
+    ValidateContext =
+        new ValidationContext(this, serviceProvider: null, items: null);
+    SetUowInfo(uowInfo, CacheService);
+    ParseView(entity);
+  }
+
+  public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo) {
+    ValidateContext =
+        new ValidationContext(this, serviceProvider: null, items: null);
+    SetUowInfo(unitOfWorkInfo, CacheService);
+  }
+
+#endregion
+
+#region Abstracts
+  public virtual void InitDefaultValues(string language = null,
+                                        int? cultureId = null) {
+    CreatedDateTime = DateTime.UtcNow;
+    Status = MixContentStatus.Published;
+    IsDeleted = false;
+  }
+
+#endregion
+
+  public virtual Task
+  ExpandView(CancellationToken cancellationToken = default) {
+    cancellationToken.ThrowIfCancellationRequested();
+    return Task.CompletedTask;
+  }
+
+  public static Repository<TDbContext, TEntity, TPrimaryKey, TView>
+  GetRepository(UnitOfWorkInfo uowInfo, MixCacheService cacheService,
+                bool isCache = true, string cacheFolder = null) {
+    return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(
+        uowInfo) { IsCache = isCache, CacheFolder = cacheFolder ?? CacheFolder,
+                   CacheService = cacheService };
+  }
+
+  public static Repository<TDbContext, TEntity, TPrimaryKey, TView>
+  GetRootRepository(TDbContext context, MixCacheService cacheService) {
+    return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(
+        context) { IsCache = cacheService != null, CacheFolder = CacheFolder };
+  }
+
+  public virtual async Task Validate(CancellationToken cancellationToken) {
+    cancellationToken.ThrowIfCancellationRequested();
+    if (!IsValid) {
+      await HandleExceptionAsync(
+          new MixException(MixErrorStatus.Badrequest,
+                           Errors.Select(e => e.ErrorMessage).ToArray()));
     }
-    [JsonIgnore]
-    public static bool IsCache {
-        get;
-        set;
-    } = true;
-    [JsonIgnore]
-    public static string CacheFolder {
-        get;
-        set;
-    } = typeof(TEntity).FullName;
-    [JsonIgnore]
-    protected bool IsValid {
-        get;
-        set;
-    }
+  }
 
-    [JsonIgnore]
-    protected UnitOfWorkInfo UowInfo {
-        get;
-        set;
-    }
-    [JsonIgnore]
-    protected MixCacheService CacheService {
-        get;
-        set;
-    }
-    [JsonIgnore]
-    protected List<ValidationResult> Errors {
-        get;
-        set;
-    } = new List<ValidationResult>();
-    [JsonIgnore]
-    protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository {
-        get;
-        set;
-    }
-    protected TDbContext Context {
-        get => (TDbContext)UowInfo?.ActiveDbContext;
-    }
-    [JsonIgnore]
-    public List<ModifiedEntityModel> ModifiedEntities {
-        get;
-        set;
-    } = new();
+  public void SetDbContext(TDbContext context) {
+    UowInfo = new UnitOfWorkInfo(context);
+  }
 
-    #endregion
+  public void SetCacheService(MixCacheService cacheService) {
+    CacheService ??= cacheService;
+  }
 
-    #region Constructors
+  public virtual TEntity InitModel() {
+    Type classType = typeof(TEntity);
+    return (TEntity)Activator.CreateInstance(classType);
+  }
 
-    public ViewModelBase()
-    {
-        ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-        Repository ??= GetRepository(UowInfo, CacheService);
-    }
+  public virtual Task<TEntity>
+  ParseEntity(CancellationToken cancellationToken = default) {
+    cancellationToken.ThrowIfCancellationRequested();
 
-    public ViewModelBase(TDbContext context)
-    {
-        ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-        UowInfo = new UnitOfWorkInfo(context);
-        Repository ??= GetRepository(UowInfo, CacheService);
-
-        _isRoot = true;
-    }
-
-    public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo)
-    {
-        ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-        SetUowInfo(uowInfo, CacheService);
-        ParseView(entity);
-    }
-
-    public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
-    {
-        ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-        SetUowInfo(unitOfWorkInfo, CacheService);
-    }
-
-    #endregion
-
-    #region Abstracts
-    public virtual void InitDefaultValues(string language = null, int? cultureId = null)
-    {
-        CreatedDateTime = DateTime.UtcNow;
-        Status = MixContentStatus.Published;
-        IsDeleted = false;
-    }
-
-    #endregion
-
-    public virtual Task ExpandView(CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        return Task.CompletedTask;
+    if (IsDefaultId(Id)) {
+      InitDefaultValues();
     }
 
-    public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo, MixCacheService cacheService, bool isCache = true, string cacheFolder = null)
-    {
-        return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
-        {
-            IsCache = isCache,
-            CacheFolder = cacheFolder ?? CacheFolder,
-            CacheService = cacheService
-        };
-    }
+    var entity = Activator.CreateInstance<TEntity>();
+    ReflectionHelper.Map(this as TView, entity);
+    return Task.FromResult(entity);
+  }
 
-    public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRootRepository(TDbContext context, MixCacheService cacheService)
-    {
-        return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context)
-        {
-            IsCache = cacheService != null,
-            CacheFolder = CacheFolder
-        };
-    }
+  public virtual void
+  ParseView<TSource>(TSource sourceObject,
+                     CancellationToken cancellationToken = default)
+      where TSource : TEntity {
+    cancellationToken.ThrowIfCancellationRequested();
+    ReflectionHelper.Map(sourceObject, this as TView);
+  }
 
-    public virtual async Task Validate(CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (!IsValid)
-        {
-            await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
-        }
-    }
+  public bool IsDefaultId(TPrimaryKey id) {
+    return (id.GetType() == typeof(Guid) &&
+            Guid.Parse(id.ToString()) == Guid.Empty) ||
+           (id.GetType() == typeof(int) && int.Parse(id.ToString()) == default);
+  }
 
-    public void SetDbContext(TDbContext context)
-    {
-        UowInfo = new UnitOfWorkInfo(context);
-    }
+  public virtual Task
+  DuplicateAsync(CancellationToken cancellationToken = default) {
+    cancellationToken.ThrowIfCancellationRequested();
+    return Task.CompletedTask;
+  }
 
-    public void SetCacheService(MixCacheService cacheService)
-    {
-        CacheService ??= cacheService;
-    }
+  public virtual void Duplicate() {}
 
-    public virtual TEntity InitModel()
-    {
-        Type classType = typeof(TEntity);
-        return (TEntity)Activator.CreateInstance(classType);
-    }
+  protected async Task HandleErrorsAsync() {
+    await HandleExceptionAsync(
+        new MixException(MixErrorStatus.Badrequest,
+                         Errors.Select(e => e.ErrorMessage).ToArray()));
+  }
 
+  protected virtual async Task HandleExceptionAsync(Exception ex) {
+    await Repository.HandleExceptionAsync(ex);
+  }
 
-
-    public virtual Task<TEntity> ParseEntity(CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (IsDefaultId(Id))
-        {
-            InitDefaultValues();
-        }
-
-        var entity = Activator.CreateInstance<TEntity>();
-        ReflectionHelper.Map(this as TView, entity);
-        return Task.FromResult(entity);
-    }
-
-    public virtual void ParseView<TSource>(TSource sourceObject, CancellationToken cancellationToken = default)
-    where TSource : TEntity
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        ReflectionHelper.Map(sourceObject, this as TView);
-    }
-
-    public bool IsDefaultId(TPrimaryKey id)
-    {
-        return (id.GetType() == typeof(Guid) && Guid.Parse(id.ToString()) == Guid.Empty)
-               || (id.GetType() == typeof(int) && int.Parse(id.ToString()) == default);
-    }
-
-    public virtual Task DuplicateAsync(CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        return Task.CompletedTask;
-    }
-
-    public virtual void Duplicate()
-    {
-    }
-
-    protected async Task HandleErrorsAsync()
-    {
-        await HandleExceptionAsync(new MixException(MixErrorStatus.Badrequest, Errors.Select(e => e.ErrorMessage).ToArray()));
-    }
-
-    protected virtual async Task HandleExceptionAsync(Exception ex)
-    {
-        await Repository.HandleExceptionAsync(ex);
-    }
-
-    protected virtual void HandleException(Exception ex)
-    {
-        Repository.HandleException(ex);
-    }
+  protected virtual void HandleException(Exception ex) {
+    Repository.HandleException(ex);
+  }
 }
 }
