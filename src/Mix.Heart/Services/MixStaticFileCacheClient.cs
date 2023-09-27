@@ -27,7 +27,7 @@ namespace Mix.Heart.Services
             serializer.Converters.Add(new StringEnumConverter());
         }
 
-        public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
+        public Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
         {
             string filename = key.Substring(key.LastIndexOf('/') + 1);
             string folder = key.Substring(0, key.LastIndexOf('/'));
@@ -40,7 +40,7 @@ namespace Mix.Heart.Services
                     try
                     {
                         JObject jobj = (JObject)JToken.ReadFrom(reader);
-                        return jobj.ToObject<T>();
+                        return Task.FromResult(jobj.ToObject<T>());
                     }
                     catch (Exception ex)
                     {
