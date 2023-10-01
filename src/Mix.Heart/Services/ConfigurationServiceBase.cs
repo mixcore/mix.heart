@@ -14,14 +14,16 @@ namespace Mix.Heart.Services
         private JObject _obj;
         protected bool _isEncrypt;
         public string AesKey { get; set; }
+        public string SectionName { get; set; }
         public T AppSettings { get; set; }
         protected string FilePath { get => filePath; set => filePath = value; }
 
         protected readonly FileSystemWatcher watcher = new();
 
-        public ConfigurationServiceBase(string filePath)
+        public ConfigurationServiceBase(string filePath, string sectionName = null)
         {
             FilePath = filePath;
+            SectionName = sectionName;
             LoadAppSettings();
             WatchFile();
         }
@@ -74,7 +76,11 @@ namespace Mix.Heart.Services
             var settings = MixFileHelper.GetFileByFullName($"{FilePath}{MixFileExtensions.Json}", true, "{}");
             if (settings != null)
             {
-                settings.Content = ReflectionHelper.ParseObject(AppSettings).ToString(Formatting.None);
+                settings.Content = string.IsNullOrEmpty(SectionName) 
+                                    ? ReflectionHelper.ParseObject(AppSettings).ToString(Formatting.None)
+                                    : ReflectionHelper.ParseObject(
+                                        new JObject(SectionName, ReflectionHelper.ParseObject(AppSettings)
+                            .ToString(Formatting.None))).ToString(Formatting.None);
                 if (_isEncrypt)
                 {
                     settings.Content = AesEncryptionHelper.EncryptString(settings.Content, AesKey);
@@ -113,7 +119,8 @@ namespace Mix.Heart.Services
             }
 
             _obj = JObject.Parse(content);
-            AppSettings = _obj.ToObject<T>();
+            AppSettings = string.IsNullOrEmpty(SectionName) ? _obj.ToObject<T>()
+                : _obj[SectionName].ToObject<T>();
         }
     }
 }
