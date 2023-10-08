@@ -27,10 +27,11 @@ namespace Mix.Heart.Services
 
         #region Get
 
-        public Task<T> GetAsync<T>(string key, string cacheFolder, string filename, CancellationToken cancellationToken = default)
+        public async Task<T> GetAsync<T>(string key, string cacheFolder, string filename, CancellationToken cancellationToken = default)
             where T : class
         {
-            return _cache.GetFromCache<T>($"{cacheFolder}_{key}_{filename}", cancellationToken);
+            var result = await _cache.GetFromCache<T>($"{cacheFolder}_{key}_{filename}", cancellationToken); ;
+            return result ?? default;
         }
         #endregion
 

@@ -76,11 +76,12 @@ namespace Mix.Heart.Services
             var settings = MixFileHelper.GetFileByFullName($"{FilePath}{MixFileExtensions.Json}", true, "{}");
             if (settings != null)
             {
-                settings.Content = string.IsNullOrEmpty(SectionName) 
+                settings.Content = string.IsNullOrEmpty(SectionName)
                                     ? ReflectionHelper.ParseObject(AppSettings).ToString(Formatting.None)
                                     : ReflectionHelper.ParseObject(
-                                        new JObject(SectionName, ReflectionHelper.ParseObject(AppSettings)
-                            .ToString(Formatting.None))).ToString(Formatting.None);
+                                        new JObject(
+                                            new JProperty(SectionName, ReflectionHelper.ParseObject         (AppSettings))))
+                                    .ToString(Formatting.None);
                 if (_isEncrypt)
                 {
                     settings.Content = AesEncryptionHelper.EncryptString(settings.Content, AesKey);

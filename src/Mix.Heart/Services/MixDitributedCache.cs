@@ -21,9 +21,10 @@ namespace Mix.Heart.Services
             _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, cacheUow, configuration, cache);
         }
 
-        public Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
+        public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
         {
-            return _cacheClient.GetFromCache<T>(key, cancellationToken);
+            var result = await _cacheClient.GetFromCache<T>(key, cancellationToken);
+            return result ?? default;
         }
 
         public Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
