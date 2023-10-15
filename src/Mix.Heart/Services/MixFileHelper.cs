@@ -263,7 +263,7 @@ namespace Mix.Heart.Services
             return true;
         }
 
-        public static List<FileModel> GetTopFiles(string folder)
+        public static List<FileModel> GetTopFiles(string folder, bool isLoadContent = false)
         {
             List<FileModel> result = new List<FileModel>();
             if (Directory.Exists(folder))
@@ -274,15 +274,26 @@ namespace Mix.Heart.Services
                 var Files = path.GetFiles();
                 foreach (var file in Files.OrderByDescending(f => f.CreationTimeUtc))
                 {
-                    result.Add(new FileModel()
+                    var fileModel = new FileModel()
                     {
                         FolderName = folderName,
                         FileFolder = folder,
 
                         Filename = file.Name.Substring(0, file.Name.LastIndexOf('.') >= 0 ? file.Name.LastIndexOf('.') : 0),
                         Extension = file.Extension,
-                        //Content = s.ReadToEnd()
-                    });
+                    };
+
+                    if (isLoadContent)
+                    {
+                        using (var stream = file.OpenRead())
+                        {
+                            using (StreamReader s = new StreamReader(stream))
+                            {
+                                fileModel.Content = s.ReadToEnd();
+                            }
+                        }
+                    }
+                    result.Add(fileModel);
                 }
             }
             return result;

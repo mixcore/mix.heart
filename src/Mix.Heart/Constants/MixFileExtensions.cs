@@ -7,5 +7,7 @@
         public const string Xml = ".xml";
         public const string Json = ".json";
         public const string Zip = ".zip";
+        public const string Js = ".js";
+        public const string Css = ".css";
     }
 }
