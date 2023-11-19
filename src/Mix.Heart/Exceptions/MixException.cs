@@ -16,10 +16,10 @@ namespace Mix.Heart.Exceptions
         {
             LogException(message: message);
         }
-
-        public MixException(string message, Exception innerException) : base(message, innerException)
+         public MixException(MixErrorStatus status) : base()
         {
-            LogException(ex: innerException, message: message);
+            Status = status;
+            LogException(status: status, message: Message);
         }
 
         protected MixException(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -27,7 +27,7 @@ namespace Mix.Heart.Exceptions
             LogException(message: Message);
         }
 
-        public MixException(MixErrorStatus status, params object[] messages) : base(string.Join('\n', messages))
+        public MixException(MixErrorStatus status, object description, params object[] messages) : base(string.Join('\n', messages))
         {
             Status = status;
             Value = messages;

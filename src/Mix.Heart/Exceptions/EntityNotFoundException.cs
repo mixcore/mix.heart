@@ -16,9 +16,5 @@ namespace Mix.Heart.Infrastructure.Exceptions
         public EntityNotFoundException(string message, Exception innerException) : base(message, innerException)
         {
         }
-
-        protected EntityNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }

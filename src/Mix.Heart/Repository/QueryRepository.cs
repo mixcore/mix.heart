@@ -189,7 +189,7 @@ namespace Mix.Heart.Repository
         private string[] FilterSelectedFields()
         {
             var properties = typeof(TEntity).GetProperties();
-            return properties.Where(p => p.PropertyType.IsSerializable).Select(p => p.Name).ToArray();
+            return properties.Where(p => p.PropertyType.IsPublic).Select(p => p.Name).ToArray();
         }
 
         protected async Task<PagingResponseModel<TEntity>> ToPagingEntityAsync(
