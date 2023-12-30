@@ -18,21 +18,17 @@ namespace Mix.Heart.Services
         public T AppSettings { get; set; }
         protected string FilePath { get => filePath; set => filePath = value; }
 
-        protected readonly FileSystemWatcher watcher = new();
-
         public ConfigurationServiceBase(string filePath, string sectionName = null)
         {
             FilePath = filePath;
             SectionName = sectionName;
             LoadAppSettings();
-            WatchFile();
         }
         public ConfigurationServiceBase(string filePath, bool isEncrypt)
         {
             FilePath = filePath;
             _isEncrypt = isEncrypt;
             LoadAppSettings();
-            WatchFile();
         }
 
         public TValue GetConfig<TValue>(string name, TValue defaultValue = default)
@@ -80,7 +76,7 @@ namespace Mix.Heart.Services
                                     ? ReflectionHelper.ParseObject(AppSettings).ToString(Formatting.None)
                                     : ReflectionHelper.ParseObject(
                                         new JObject(
-                                            new JProperty(SectionName, ReflectionHelper.ParseObject         (AppSettings))))
+                                            new JProperty(SectionName, ReflectionHelper.ParseObject(AppSettings))))
                                     .ToString(Formatting.None);
                 if (_isEncrypt)
                 {
@@ -93,20 +89,6 @@ namespace Mix.Heart.Services
             {
                 return false;
             }
-        }
-
-        protected void WatchFile()
-        {
-            watcher.Path = FilePath[..FilePath.LastIndexOf('/')];
-            watcher.Filter = "";
-            watcher.Changed += new FileSystemEventHandler(OnChanged);
-            watcher.EnableRaisingEvents = true;
-        }
-
-        private void OnChanged(object sender, FileSystemEventArgs e)
-        {
-            Thread.Sleep(500);
-            LoadAppSettings();
         }
 
         protected virtual void LoadAppSettings()
