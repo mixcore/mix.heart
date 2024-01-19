@@ -11,7 +11,7 @@ namespace Mix.Heart.Services
     public class ConfigurationServiceBase<T>
     {
         private string filePath;
-        private JObject _obj;
+        public JObject RawSettings;
         protected bool _isEncrypt;
         public string AesKey { get; set; }
         public string SectionName { get; set; }
@@ -33,37 +33,37 @@ namespace Mix.Heart.Services
 
         public TValue GetConfig<TValue>(string name, TValue defaultValue = default)
         {
-            var result = _obj[name];
+            var result = RawSettings[name];
             return result != null ? result.Value<TValue>() : defaultValue;
         }
 
         public TValue GetConfig<TValue>(string culture, string name, TValue defaultValue = default)
         {
             JToken result = null;
-            if (!string.IsNullOrEmpty(culture) && _obj[culture] != null)
+            if (!string.IsNullOrEmpty(culture) && RawSettings[culture] != null)
             {
-                result = _obj[culture][name];
+                result = RawSettings[culture][name];
             }
             return result != null ? result.Value<TValue>() : defaultValue;
         }
 
         public TValue GetEnumConfig<TValue>(string name)
         {
-            Enum.TryParse(typeof(TValue), _obj[name]?.Value<string>(), true, out object result);
+            Enum.TryParse(typeof(TValue), RawSettings[name]?.Value<string>(), true, out object result);
             return result != null ? (TValue)result : default;
         }
 
         public void SetConfig<TValue>(string name, TValue value)
         {
-            _obj[name] = value != null ? JToken.FromObject(value) : null;
-            AppSettings = _obj.ToObject<T>();
+            RawSettings[name] = value != null ? JToken.FromObject(value) : null;
+            AppSettings = RawSettings.ToObject<T>();
             SaveSettings();
         }
 
         public void SetConfig<TValue>(string culture, string name, TValue value)
         {
-            _obj[culture][name] = value.ToString();
-            AppSettings = _obj.ToObject<T>();
+            RawSettings[culture][name] = value.ToString();
+            AppSettings = RawSettings.ToObject<T>();
             SaveSettings();
         }
 
@@ -101,9 +101,9 @@ namespace Mix.Heart.Services
                 content = AesEncryptionHelper.DecryptString(content, AesKey);
             }
 
-            _obj = JObject.Parse(content);
-            AppSettings = string.IsNullOrEmpty(SectionName) ? _obj.ToObject<T>()
-                : _obj[SectionName].ToObject<T>();
+            RawSettings = JObject.Parse(content);
+            AppSettings = string.IsNullOrEmpty(SectionName) ? RawSettings.ToObject<T>()
+                : RawSettings[SectionName].ToObject<T>();
         }
     }
 }

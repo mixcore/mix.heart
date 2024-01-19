@@ -54,11 +54,7 @@ namespace Mix.Heart.Services
             foreach (var endpoint in endpoints)
             {
                 var server = _connectionMultiplexer.GetServer(endpoint);
-                var keys = server.Keys();
-                foreach (var key in keys)
-                {
-                    await _database.KeyDeleteAsync(key);
-                }
+                await server.FlushAllDatabasesAsync();
             }
         }
     }
