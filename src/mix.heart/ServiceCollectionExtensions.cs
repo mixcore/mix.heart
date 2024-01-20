@@ -24,6 +24,10 @@ namespace Microsoft.Extensions.DependencyInjection
                     options.Configuration = configuration.GetSection("Redis")["ConnectionString"];
                 });
             }
+            else
+            {
+                services.AddDistributedMemoryCache();
+            }
             services.TryAddScoped<MixDitributedCache>();
             services.TryAddScoped<MixCacheService>();
 
