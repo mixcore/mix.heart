@@ -12,12 +12,13 @@ namespace Mix.Heart.Extensions
             return (T)Enum.Parse(typeof(T), str);
         }
 
-        public static string ToHypenCase(this string source, char replaceChar = '-', bool isLower = true)
+        public static string ToHyphenCase(this string source, char? replaceChar, bool isLower = true, bool isUpper = false)
         {
             return Regex.Replace(source, @"[A-Z]", delegate (Match match)
             {
                 string v = match.ToString();
-                var c = isLower ? char.ToLower(v[0]) : v[0];
+                var c = isLower ? char.ToLower(v[0])
+                            : isUpper ? char.ToLower(v[0]) : v[0];
                 return $"{replaceChar}{c}{v[1..]}";
             });
         }
@@ -38,6 +39,15 @@ namespace Mix.Heart.Extensions
                 return char.ToUpperInvariant(str[0]) + str[1..];
             }
             return str;
+        }
+
+        public static string ToColumnName(this string str, bool isTitleCase = true)
+        {
+            return !string.IsNullOrEmpty(str)
+                ? isTitleCase
+                    ? str.ToHyphenCase(null, false, true)
+                    : str.ToSEOString('_')
+                : str;
         }
 
         public static string ToSEOString(this string str, char replaceChar = '-')
@@ -72,7 +82,7 @@ namespace Mix.Heart.Extensions
                 return false;
             }
         }
-        
+
         public static string ToBase64Stream(this string base64String)
         {
             return base64String?.IndexOf(',') >= 0
