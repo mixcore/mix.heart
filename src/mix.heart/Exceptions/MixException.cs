@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Mix.Heart.Exceptions
@@ -27,7 +28,7 @@ namespace Mix.Heart.Exceptions
             LogException(message: Message);
         }
 
-        public MixException(MixErrorStatus status, object description, params object[] messages) : base(string.Join('\n', messages))
+        public MixException(MixErrorStatus status, params object[] messages) : base(string.Join('\n', messages))
         {
             Status = status;
             Value = messages;

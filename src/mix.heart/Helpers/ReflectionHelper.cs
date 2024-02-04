@@ -167,7 +167,7 @@ namespace Mix.Heart.Helpers
 
         public static object GetPropertyValue<T>(T data, string fieldName)
         {
-            var prop = data.GetType().GetProperty(fieldName.ToTitleCase());
+            var prop = data.GetType().GetProperty(fieldName);
             if (prop != null)
             {
                 // System.ComponentModel.TypeConverter conv =

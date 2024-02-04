@@ -36,23 +36,23 @@ namespace Mix.Heart.ViewModel
 
         protected ValidationContext ValidateContext;
         public bool IsDeleted { get; set; }
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public static bool IsCache { get; set; } = true;
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public static string CacheFolder { get; set; } = typeof(TEntity).FullName;
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         protected bool IsValid { get; set; }
 
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         protected UnitOfWorkInfo UowInfo { get; set; }
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         protected MixCacheService CacheService { get; set; }
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         protected List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
         protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public List<ModifiedEntityModel> ModifiedEntities { get; set; } = new();
 
         #endregion
