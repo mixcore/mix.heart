@@ -79,6 +79,7 @@ namespace Mix.Heart.Repository
             if (paging.PageSize.HasValue)
             {
                 query = query.Skip(paging.PageIndex * paging.PageSize.Value).Take(paging.PageSize.Value);
+                paging.TotalPage = (int)Math.Ceiling((double)paging.Total / paging.PageSize.Value);
             }
 
             return query;
