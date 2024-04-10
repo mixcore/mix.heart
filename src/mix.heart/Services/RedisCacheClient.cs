@@ -2,6 +2,7 @@
 using Mix.Heart.Interfaces;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace Mix.Heart.Services
         private readonly DistributedCacheEntryOptions _options;
         public RedisCacheClient(string connectionString, IDistributedCache cache, DistributedCacheEntryOptions options)
         {
-            _connectionMultiplexer = ConnectionMultiplexer.Connect(connectionString);
+            _connectionMultiplexer = ConnectionMultiplexer.Connect(connectionString, m => m.AllowAdmin = true);
             _database = _connectionMultiplexer.GetDatabase();
             _cache = cache;
             _options = options;
@@ -51,10 +52,17 @@ namespace Mix.Heart.Services
         public async Task ClearAllCache(CancellationToken cancellationToken = default)
         {
             var endpoints = _connectionMultiplexer.GetEndPoints();
-            foreach (var endpoint in endpoints)
+            try
             {
-                var server = _connectionMultiplexer.GetServer(endpoint);
-                await server.FlushAllDatabasesAsync();
+                foreach (var endpoint in endpoints)
+                {
+                    var server = _connectionMultiplexer.GetServer(endpoint);
+                    await server.FlushDatabaseAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+
             }
         }
     }
