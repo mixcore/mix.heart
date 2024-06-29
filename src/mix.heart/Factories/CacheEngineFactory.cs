@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Mix.Heart.Entities.Cache;
 using Mix.Heart.Enums;
 using Mix.Heart.Interfaces;
@@ -12,7 +13,7 @@ namespace Mix.Heart.Factories
 {
     public class CacheEngineFactory
     {
-        public static IDitributedCacheClient CreateCacheClient(
+        public static IDitributedCacheClient? CreateCacheClient(
             MixHeartConfigurationModel mixHeartConfiguration,
             UnitOfWorkInfo<MixCacheDbContext> uow = null,
             IConfiguration configuration = null,
@@ -28,24 +29,31 @@ namespace Mix.Heart.Factories
                     cacheClient = new MixDatabaseCacheClient(uow);
                     break;
                 case MixCacheMode.REDIS:
-
-                    var _configs = new RedisCacheConfigurationModel();
-                    configuration.GetSection("Redis").Bind(_configs);
-
-                    var options = new DistributedCacheEntryOptions()
+                    try
                     {
-                        SlidingExpiration = TimeSpan.FromMinutes(_configs.SlidingExpirationInMinute),
-                    };
-                    if (_configs.AbsoluteExpirationInMinute.HasValue)
-                    {
-                        options.SetAbsoluteExpiration(TimeSpan.FromMinutes(_configs.AbsoluteExpirationInMinute.Value));
+                        var _configs = new RedisCacheConfigurationModel();
+                        configuration.GetSection("Redis").Bind(_configs);
+
+                        var options = new DistributedCacheEntryOptions()
+                        {
+                            SlidingExpiration = TimeSpan.FromMinutes(_configs.SlidingExpirationInMinute),
+                        };
+                        if (_configs.AbsoluteExpirationInMinute.HasValue)
+                        {
+                            options.SetAbsoluteExpiration(TimeSpan.FromMinutes(_configs.AbsoluteExpirationInMinute.Value));
+                        }
+                        if (_configs.AbsoluteExpirationRelativeToNowInMinute.HasValue)
+                        {
+                            options.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_configs.AbsoluteExpirationRelativeToNowInMinute.Value);
+                        }
+
+                        cacheClient = new RedisCacheClient(_configs.ConnectionString, cache, options);
                     }
-                    if (_configs.AbsoluteExpirationRelativeToNowInMinute.HasValue)
+                    catch (Exception ex)
                     {
-                        options.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_configs.AbsoluteExpirationRelativeToNowInMinute.Value);
+                        Console.WriteLine($"Cannot create redis client: {ex.Message}, using JSON cache instead");
+                        return default;
                     }
-
-                    cacheClient = new RedisCacheClient(_configs.ConnectionString, cache, options);
                     break;
                 default:
                     break;
