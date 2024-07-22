@@ -56,6 +56,11 @@ namespace Mix.Heart.Helpers
 
         private static string DecryptString(string cipherText, byte[] key, byte[] iv)
         {
+            if (string.IsNullOrEmpty(cipherText))
+            {
+                return cipherText;
+            }
+
             using var aesAlg = Aes.Create();
             aesAlg.Mode = CipherMode.CBC;
             aesAlg.Padding = PaddingMode.PKCS7;
