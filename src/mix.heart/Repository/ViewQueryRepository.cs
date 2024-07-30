@@ -181,23 +181,16 @@ namespace Mix.Heart.Repository
 
         public virtual async Task<TView> GetSingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            try
+            cancellationToken.ThrowIfCancellationRequested();
+            var entity = await Table.AsNoTracking()
+                            .Where(predicate)
+                            .SelectMembers(KeyMembers)
+                            .SingleOrDefaultAsync(cancellationToken);
+            if (entity != null)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                var entity = await Table.AsNoTracking()
-                                .Where(predicate)
-                                .SelectMembers(KeyMembers)
-                                .SingleOrDefaultAsync(cancellationToken);
-                if (entity != null)
-                {
-                    return await GetSingleAsync(entity.Id, cancellationToken);
-                }
-                return null;
+                return await GetSingleAsync(entity.Id, cancellationToken);
             }
-            catch (Exception ex)
-            {
-                throw new MixException(MixErrorStatus.ServerError, ex);
-            }
+            return null;
         }
 
         public virtual async Task<TView> GetFirstAsync(

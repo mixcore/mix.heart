@@ -1,5 +1,4 @@
 ﻿using Mix.Heart.Constants;
-using Mix.Heart.Extensions;
 using Mix.Heart.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -97,20 +96,11 @@ namespace Mix.Heart.Services
             var settings = MixFileHelper.GetFileByFullName($"{FilePath}{MixFileExtensions.Json}", true, "{}");
             string content = string.IsNullOrWhiteSpace(settings.Content) ? "{}" : settings.Content;
 
-            if (_isEncrypt)
+            if (_isEncrypt && !content.StartsWith('{'))
             {
-                if (!content.IsJsonString())
-                {
-                    content = AesEncryptionHelper.DecryptString(content, AesKey);
-                }
-                else
-                {
-                    // Encrypt and save to setting file if not encrypted
-                    settings.Content = AesEncryptionHelper.EncryptString(content, AesKey);
-                    MixFileHelper.SaveFile(settings);
-                }
-
+                content = AesEncryptionHelper.DecryptString(content, AesKey);
             }
+
             RawSettings = JObject.Parse(content);
             AppSettings = string.IsNullOrEmpty(SectionName) ? RawSettings.ToObject<T>()
                 : RawSettings[SectionName].ToObject<T>();
