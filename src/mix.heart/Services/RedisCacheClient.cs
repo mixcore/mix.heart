@@ -11,16 +11,17 @@ namespace Mix.Heart.Services
 {
     public class RedisCacheClient : IDitributedCacheClient
     {
-        private readonly ConnectionMultiplexer _connectionMultiplexer;
         private readonly IDatabase _database;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _options;
+        private readonly ConnectionMultiplexer _connectionMultiplexer;
+
         public RedisCacheClient(string connectionString, IDistributedCache cache, DistributedCacheEntryOptions options)
         {
-            _connectionMultiplexer = ConnectionMultiplexer.Connect(connectionString, m => m.AllowAdmin = true);
-            _database = _connectionMultiplexer.GetDatabase();
             _cache = cache;
             _options = options;
+            _connectionMultiplexer = ConnectionMultiplexer.Connect(connectionString, m => m.AllowAdmin = true);
+            _database = _connectionMultiplexer.GetDatabase();
         }
 
         public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
@@ -32,7 +33,7 @@ namespace Mix.Heart.Services
         public async Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
         {
             var response = JsonConvert.SerializeObject(value);
-            await _cache.SetStringAsync(key, response, cancellationToken);
+            await _cache.SetStringAsync(key, response, _options, cancellationToken);
         }
 
         public async Task ClearCache(string key, CancellationToken cancellationToken = default)
@@ -41,7 +42,7 @@ namespace Mix.Heart.Services
             foreach (var endpoint in endpoints)
             {
                 var server = _connectionMultiplexer.GetServer(endpoint);
-                var keys = server.Keys().Select(m => m.ToString()).Where(k => k.Contains(key)).ToList();
+                var keys = server.Keys(pattern: key + "*").ToList();
                 foreach (var k in keys)
                 {
                     await _database.KeyDeleteAsync(k);
@@ -62,7 +63,7 @@ namespace Mix.Heart.Services
             }
             catch (Exception ex)
             {
-
+                Console.Error.WriteLine(ex.Message);
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Mix.Heart.Entities.Cache;
 using Mix.Heart.Enums;
 using Mix.Heart.Interfaces;
