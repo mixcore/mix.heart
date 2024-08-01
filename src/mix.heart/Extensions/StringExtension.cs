@@ -14,6 +14,7 @@ namespace Mix.Heart.Extensions
 
         public static string ToHyphenCase(this string source, char? replaceChar, bool isLower = true, bool isUpper = false)
         {
+            source = char.ToLowerInvariant(source[0]) + source[1..];
             return Regex.Replace(source, @"[A-Z]", delegate (Match match)
             {
                 string v = match.ToString();
