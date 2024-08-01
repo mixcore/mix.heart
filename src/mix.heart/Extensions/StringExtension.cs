@@ -62,6 +62,11 @@ namespace Mix.Heart.Extensions
             return !string.IsNullOrEmpty(jsonString) && jsonString.Trim().StartsWith("{") && jsonString.Trim().EndsWith("}");
         }
 
+        public static bool IsJArrayString(this string jarrayString)
+        {
+            return !string.IsNullOrEmpty(jarrayString) && jarrayString.Trim().StartsWith("[") && jarrayString.Trim().EndsWith("]");
+        }
+
         public static bool IsBase64(this string base64String)
         {
             base64String = base64String?.IndexOf(',') >= 0
