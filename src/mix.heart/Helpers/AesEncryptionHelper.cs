@@ -8,6 +8,10 @@ namespace Mix.Heart.Helpers
     {
         public static string EncryptString(string text, string iCompleteEncodedKey)
         {
+            if (text is null)
+            {
+                return default;
+            }
             string[] keyStrings =
                 Encoding.UTF8.GetString(Convert.FromBase64String(iCompleteEncodedKey))
                     .Split(',');
