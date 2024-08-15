@@ -41,7 +41,7 @@ namespace Mix.Heart.Repository
         public MixCacheService CacheService { get; set; }
 
         public string CacheFilename { get; private set; } = "full";
-        public string CacheFolder { get; set; } = $"{typeof(TEntity).Assembly.GetName()}_{typeof(TEntity).Name}";
+        public string CacheFolder { get; set; } = $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
 
         public string[] SelectedMembers { get; private set; }
 
@@ -115,7 +115,7 @@ namespace Mix.Heart.Repository
         public void UpdateCacheSettings(bool isCache, string cacheFolder = null)
         {
             IsCache = CacheService != null && isCache;
-            CacheFolder = cacheFolder ?? $"{typeof(TEntity).Assembly.GetName()}_{typeof(TEntity).Name}";
+            CacheFolder = cacheFolder ?? $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
         }
 
         public void SetCacheService(MixCacheService cacheService)
