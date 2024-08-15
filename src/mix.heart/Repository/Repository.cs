@@ -21,11 +21,11 @@ namespace Mix.Heart.Repository
     {
         public Repository(UnitOfWorkInfo uowInfo) : base(uowInfo)
         {
-            CacheFolder = typeof(TEntity).FullName;
+            CacheFolder = $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
         }
         public Repository(TDbContext dbContext) : base(dbContext)
         {
-            CacheFolder = typeof(TEntity).FullName;
+            CacheFolder = $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
         }
 
         #region Async
