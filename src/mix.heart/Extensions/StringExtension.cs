@@ -110,7 +110,7 @@ namespace Mix.Heart.Extensions
 
         public static string Encrypt(this string text, string key)
         {
-            return AesEncryptionHelper.EncryptString(text, key, key);
+            return AesEncryptionHelper.EncryptString(text, key);
         }
 
         public static string Decrypt(this string cipherText, string key)
