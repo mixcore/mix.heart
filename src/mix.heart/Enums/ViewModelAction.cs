@@ -1,9 +1,9 @@
 ﻿namespace Mix.Heart.Enums
 {
-    public enum ViewModelAction
-    {
-        Create,
-        Update,
-        Delete
-    }
+public enum ViewModelAction
+{
+    Create,
+    Update,
+    Delete
+}
 }
