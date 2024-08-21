@@ -26,7 +26,7 @@ namespace Mix.Heart.Services
         public async Task<T> GetAsync<T>(string key, string cacheFolder, string filename, CancellationToken cancellationToken = default)
             where T : class
         {
-            var result = await _cache.GetFromCache<T>($"{cacheFolder}_{key}_{filename}", cancellationToken); ;
+            var result = await _cache.GetFromCache<T>($"{cacheFolder}_{key}_{filename}".ToLower(), cancellationToken); ;
             return result ?? default;
         }
         #endregion
@@ -36,7 +36,7 @@ namespace Mix.Heart.Services
         public Task SetAsync<T>(string key, T value, string cacheFolder, string filename, CancellationToken cancellationToken = default)
             where T : class
         {
-            return _cache.SetCache($"{cacheFolder}_{key}_{filename}", value, cancellationToken);
+            return _cache.SetCache($"{cacheFolder}_{key}_{filename}".ToLower(), value, cancellationToken);
         }
         #endregion
 
@@ -60,7 +60,7 @@ namespace Mix.Heart.Services
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return _cache.ClearCache($"{cacheFolder}_{key}", cancellationToken);
+                return _cache.ClearCache($"{cacheFolder}_{key}".ToLower(), cancellationToken);
             }
             catch
             {

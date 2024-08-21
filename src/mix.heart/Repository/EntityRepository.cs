@@ -24,7 +24,7 @@ namespace Mix.Heart.Repository
         where TEntity : class, IEntity<TPrimaryKey>
     {
         public bool IsCache { get; set; } = true;
-        public string CacheFolder { get; set; } = typeof(TEntity).FullName;
+        public string CacheFolder { get; set; } = $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
 
         public EntityRepository(UnitOfWorkInfo uowInfo) : base(uowInfo) { }
         public EntityRepository(TDbContext dbContext) : base(dbContext) { }

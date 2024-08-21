@@ -39,7 +39,7 @@ namespace Mix.Heart.Repository
 
         public string CacheFilename { get; private set; } = "full";
 
-        public string CacheFolder { get; set; } = typeof(TEntity).FullName;
+        public string CacheFolder { get; set; } = $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
 
         public string[] SelectedMembers { get; private set; }
 
@@ -113,7 +113,7 @@ namespace Mix.Heart.Repository
         public void UpdateCacheSettings(bool isCache, string cacheFolder = null)
         {
             IsCache = CacheService != null && isCache;
-            CacheFolder = cacheFolder ?? typeof(TEntity).FullName;
+            CacheFolder = cacheFolder ?? $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
         }
 
         public void SetCacheService(MixCacheService cacheService)
@@ -157,7 +157,7 @@ namespace Mix.Heart.Repository
             cancellationToken.ThrowIfCancellationRequested();
             if (IsCache && CacheService != null && CacheService.IsCacheEnabled)
             {
-                var key = $"{id}/{typeof(TView).FullName}";
+                var key = $"{id}/{typeof(TView).Name}";
                 var result = await CacheService.GetAsync<TView>(key, CacheFolder, CacheFilename, cancellationToken);
                 if (result != null)
                 {
@@ -315,7 +315,7 @@ namespace Mix.Heart.Repository
 
                 if (result != null && IsCache && CacheService != null)
                 {
-                    var key = $"{entity.Id}/{typeof(TView).FullName}";
+                    var key = $"{entity.Id}/{typeof(TView).Name}";
                     if (CacheFilename == "full")
                     {
                         result.SetUowInfo(UowInfo, CacheService);

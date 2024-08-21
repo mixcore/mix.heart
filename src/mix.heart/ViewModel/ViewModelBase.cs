@@ -47,7 +47,8 @@ namespace Mix.Heart.ViewModel
         public static bool IsCache { get; set; } = true;
 
         [Newtonsoft.Json.JsonIgnore]
-        public static string CacheFolder { get; set; } = typeof(TEntity).FullName;
+
+        public static string CacheFolder { get; set; } = $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
 
         [Newtonsoft.Json.JsonIgnore]
         protected bool IsValid { get; set; }
