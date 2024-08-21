@@ -82,7 +82,7 @@ namespace Mix.Heart.ViewModel
                         $"{dbContextType}: Contructor Parameterless Notfound");
             }
 
-            return (TDbContext)contextCtorInfo.Invoke(new object[] { });
+            return (TDbContext)contextCtorInfo.Invoke([]);
         }
     }
 }

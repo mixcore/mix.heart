@@ -55,7 +55,6 @@ namespace Mix.Heart.Repository
         {
             UowInfo ??= new UnitOfWorkInfo(InitDbContext());
             _isRoot = true;
-
         }
 
         protected virtual async Task CloseUowAsync()
@@ -88,7 +87,7 @@ namespace Mix.Heart.Repository
                 HandleExceptionAsync(new MixException(MixErrorStatus.ServerError, $"{dbContextType}: Contructor Parameterless Notfound"));
             }
 
-            return (TDbContext)contextCtorInfo.Invoke(new object[] { });
+            return (TDbContext)contextCtorInfo.Invoke([]);
         }
 
         public Task HandleExceptionAsync(Exception ex)

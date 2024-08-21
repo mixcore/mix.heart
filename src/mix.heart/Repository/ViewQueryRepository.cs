@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
 using Mix.Heart.Enums;
-using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
 using Mix.Heart.Helpers;
 using Mix.Heart.Models;
@@ -12,11 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Mix.Heart.Repository
 {
@@ -41,6 +38,7 @@ namespace Mix.Heart.Repository
         public MixCacheService CacheService { get; set; }
 
         public string CacheFilename { get; private set; } = "full";
+
         public string CacheFolder { get; set; } = typeof(TEntity).FullName;
 
         public string[] SelectedMembers { get; private set; }
@@ -270,17 +268,10 @@ namespace Mix.Heart.Repository
 
         public async Task<List<TView>> ToListViewModelAsync(IQueryable<TEntity> source, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var entities = await source.SelectMembers(KeyMembers).AsNoTracking().ToListAsync(cancellationToken);
-                var data = await ParseEntitiesAsync(entities, cancellationToken);
-                return data;
-            }
-            catch (Exception ex)
-            {
-                throw new MixException(ex.Message);
-            }
+            cancellationToken.ThrowIfCancellationRequested();
+            var entities = await source.SelectMembers(KeyMembers).AsNoTracking().ToListAsync(cancellationToken);
+            var data = await ParseEntitiesAsync(entities, cancellationToken);
+            return data;
         }
 
         protected async Task<PagingResponseModel<TView>> ToPagingViewModelAsync(
@@ -288,18 +279,11 @@ namespace Mix.Heart.Repository
             PagingModel pagingData,
             CancellationToken cancellationToken = default)
         {
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var entities = await GetEntitiesAsync(source, cancellationToken);
-                List<TView> data = await ParseEntitiesAsync(entities, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            var entities = await GetEntitiesAsync(source, cancellationToken);
+            List<TView> data = await ParseEntitiesAsync(entities, cancellationToken);
 
-                return new PagingResponseModel<TView>(data, pagingData);
-            }
-            catch (Exception ex)
-            {
-                throw new MixException(ex.Message);
-            }
+            return new PagingResponseModel<TView>(data, pagingData);
         }
 
         protected async Task<List<TEntity>> GetEntitiesAsync(IQueryable<TEntity> source, CancellationToken cancellationToken = default)
@@ -318,6 +302,7 @@ namespace Mix.Heart.Repository
                 var view = await GetSingleAsync(entity.Id, cancellationToken);
                 data.Add(view);
             }
+
             return data;
         }
 
@@ -346,14 +331,16 @@ namespace Mix.Heart.Repository
 
                 return result;
             }
+
             return default;
         }
 
         protected TView GetViewModel(TEntity entity)
         {
-            ConstructorInfo classConstructor = typeof(TView).GetConstructor(
-                new Type[] { typeof(TEntity), typeof(UnitOfWorkInfo) });
-            return (TView)classConstructor.Invoke(new object[] { entity, UowInfo });
+            ConstructorInfo classConstructor = typeof(TView)
+                .GetConstructor([typeof(TEntity), typeof(UnitOfWorkInfo)]);
+
+            return (TView)classConstructor.Invoke([entity, UowInfo]);
         }
 
         #endregion
