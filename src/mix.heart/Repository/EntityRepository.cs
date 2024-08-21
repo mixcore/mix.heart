@@ -98,17 +98,10 @@ namespace Mix.Heart.Repository
            MixCacheService cacheService = null,
            CancellationToken cancellationToken = default)
         {
-            try
-            {
-                var entities = await GetEntitiesAsync(source, cancellationToken);
-                List<TEntity> data = await ParseEntitiesAsync(entities, cancellationToken);
+            var entities = await GetEntitiesAsync(source, cancellationToken);
+            List<TEntity> data = await ParseEntitiesAsync(entities, cancellationToken);
 
-                return new PagingResponseModel<TEntity>(data, pagingData);
-            }
-            catch (Exception ex)
-            {
-                throw new MixException(ex.Message);
-            }
+            return new PagingResponseModel<TEntity>(data, pagingData);
         }
 
         public virtual async Task<int> MaxAsync(Expression<Func<TEntity, int>> predicate)

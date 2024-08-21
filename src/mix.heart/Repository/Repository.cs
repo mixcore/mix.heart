@@ -40,7 +40,7 @@ namespace Mix.Heart.Repository
             try
             {
                 BeginUow();
-                await Context.Set<TEntity>().AddAsync(entity);
+                await Context.Set<TEntity>().AddAsync(entity, cancellationToken);
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
             }
@@ -79,7 +79,6 @@ namespace Mix.Heart.Repository
             {
                 await CloseUowAsync();
             }
-
         }
 
         public virtual async Task SaveAsync(TEntity entity, CancellationToken cancellationToken = default)

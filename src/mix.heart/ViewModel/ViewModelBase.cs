@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,31 +26,47 @@ namespace Mix.Heart.ViewModel
         #region Properties
 
         public TPrimaryKey Id { get; set; }
+
         public DateTime CreatedDateTime { get; set; }
+
         public DateTime? LastModified { get; set; }
+
         public string CreatedBy { get; set; }
+
         public string ModifiedBy { get; set; }
+
         public int Priority { get; set; }
+
         public MixContentStatus Status { get; set; } = MixContentStatus.Published;
 
         protected ValidationContext ValidateContext;
+
         public bool IsDeleted { get; set; }
+
         [Newtonsoft.Json.JsonIgnore]
         public static bool IsCache { get; set; } = true;
+
         [Newtonsoft.Json.JsonIgnore]
+
         public static string CacheFolder { get; set; } = $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
+
         [Newtonsoft.Json.JsonIgnore]
         protected bool IsValid { get; set; }
 
         [Newtonsoft.Json.JsonIgnore]
         protected UnitOfWorkInfo UowInfo { get; set; }
+
         [Newtonsoft.Json.JsonIgnore]
         protected MixCacheService CacheService { get; set; }
+
         [Newtonsoft.Json.JsonIgnore]
         protected List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
+
         [Newtonsoft.Json.JsonIgnore]
         protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
+
         protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
+
         [Newtonsoft.Json.JsonIgnore]
         public List<ModifiedEntityModel> ModifiedEntities { get; set; } = new();
 
@@ -148,8 +163,6 @@ namespace Mix.Heart.ViewModel
             Type classType = typeof(TEntity);
             return (TEntity)Activator.CreateInstance(classType);
         }
-
-
 
         public virtual Task<TEntity> ParseEntity(CancellationToken cancellationToken = default)
         {

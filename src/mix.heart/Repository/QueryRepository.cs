@@ -19,7 +19,6 @@ namespace Mix.Heart.Repository
         where TEntity : class, IEntity<TPrimaryKey>
         where TPrimaryKey : IComparable
     {
-
         #region Properties
 
         protected MixCacheService CacheService { get; set; }
@@ -134,54 +133,22 @@ namespace Mix.Heart.Repository
 
         public TEntity GetSingle(Expression<Func<TEntity, bool>> predicate)
         {
-            try
-            {
-                return GetAllQuery().SingleOrDefault(predicate);
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex);
-                return default;
-            }
+            return GetAllQuery().SingleOrDefault(predicate);
         }
 
         public virtual TEntity GetById(TPrimaryKey id)
         {
-            try
-            {
-                return Context.Set<TEntity>().Find(id);
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex);
-                return default;
-            }
+            return Context.Set<TEntity>().Find(id);
         }
 
         public virtual int Max(Func<TEntity, int> predicate)
         {
-            try
-            {
-                return GetAllQuery().Max(predicate);
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex);
-                return default;
-            }
+            return GetAllQuery().Max(predicate);
         }
 
         public TEntity GetFirst(Expression<Func<TEntity, bool>> predicate)
         {
-            try
-            {
-                return GetAllQuery().FirstOrDefault(predicate);
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex);
-                return default;
-            }
+            return GetAllQuery().FirstOrDefault(predicate);
         }
 
         #endregion
