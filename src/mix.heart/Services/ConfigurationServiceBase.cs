@@ -1,8 +1,10 @@
 ﻿using Mix.Heart.Constants;
+using Mix.Heart.Extensions;
 using Mix.Heart.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace Mix.Heart.Services
 {
@@ -108,8 +110,10 @@ namespace Mix.Heart.Services
         {
             var settings = MixFileHelper.GetFileByFullName($"{FilePath}{MixFileExtensions.Json}", true, "{}");
             string content = string.IsNullOrWhiteSpace(settings.Content) ? "{}" : settings.Content;
+            bool isContentEncrypted = !content.IsJsonString();
 
-            if (!content.StartsWith('{'))
+
+            if (isContentEncrypted)
             {
                 content = AesEncryptionHelper.DecryptString(content, AesKey);
             }
@@ -117,6 +121,12 @@ namespace Mix.Heart.Services
             RawSettings = JObject.Parse(content);
             AppSettings = string.IsNullOrEmpty(SectionName) ? RawSettings.ToObject<T>()
                 : RawSettings[SectionName].ToObject<T>();
+
+            if (_isEncrypt && !isContentEncrypted)
+            {
+                SaveSettings();
+            }
+
         }
     }
 }
