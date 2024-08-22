@@ -88,10 +88,10 @@ namespace Mix.Heart.Services
             if (settings != null)
             {
                 settings.Content = string.IsNullOrEmpty(SectionName)
-                                    ? ReflectionHelper.ParseObject(AppSettings).ToString(Formatting.None)
+                                    ? RawSettings.ToString(Formatting.None)
                                     : ReflectionHelper.ParseObject(
                                         new JObject(
-                                            new JProperty(SectionName, ReflectionHelper.ParseObject(AppSettings))))
+                                            new JProperty(SectionName, RawSettings)))
                                     .ToString(Formatting.None);
                 if (_isEncrypt)
                 {
