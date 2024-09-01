@@ -72,7 +72,6 @@ namespace Mix.Heart.Services
         {
             RawSettings[name] = value != null ? JToken.FromObject(value) : null;
             AppSettings = RawSettings.ToObject<T>();
-            SaveSettings();
         }
 
         public void SetConfig<TValue>(string culture, string name, TValue value)
@@ -118,9 +117,11 @@ namespace Mix.Heart.Services
                 content = AesEncryptionHelper.DecryptString(content, AesKey);
             }
 
-            RawSettings = JObject.Parse(content);
-            AppSettings = string.IsNullOrEmpty(SectionName) ? RawSettings.ToObject<T>()
-                : RawSettings[SectionName].ToObject<T>();
+            var rawSettings = JObject.Parse(content);
+            RawSettings = !string.IsNullOrEmpty(SectionName) 
+                ? rawSettings[SectionName] as JObject
+                : rawSettings;
+            AppSettings = RawSettings.ToObject<T>();
 
             if (_isEncrypt && !isContentEncrypted)
             {
