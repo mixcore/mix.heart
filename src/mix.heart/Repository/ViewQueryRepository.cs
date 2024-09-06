@@ -22,7 +22,7 @@ namespace Mix.Heart.Repository
         where TDbContext : DbContext
         where TEntity : class, IEntity<TPrimaryKey>
         where TPrimaryKey : IComparable
-        where TView : ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
+        where TView : ViewModelQueryBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
         public bool IsCache { get; set; } = true;
         public ViewQueryRepository(TDbContext dbContext) : base(dbContext)

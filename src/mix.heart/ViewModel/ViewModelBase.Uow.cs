@@ -33,18 +33,6 @@ namespace Mix.Heart.ViewModel
             Repository.CacheFolder = CacheFolder;
         }
 
-        public void SetUowInfo(UnitOfWorkInfo unitOfWorkInfo, MixCacheService cacheService)
-        {
-            if (unitOfWorkInfo != null)
-            {
-                UowInfo = unitOfWorkInfo;
-                _isRoot = false;
-                Repository ??= GetRepository(UowInfo, CacheService);
-            }
-            SetCacheService(cacheService);
-        }
-
-
         protected virtual void InitRootUow()
         {
             UowInfo ??= new UnitOfWorkInfo(InitDbContext());

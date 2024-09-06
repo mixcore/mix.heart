@@ -3,21 +3,15 @@ using Mix.Heart.Entities;
 using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Helpers;
-using Mix.Heart.Model;
-using Mix.Heart.Repository;
-using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
-        : IViewModel
+    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView> : ViewModelQueryBase<TDbContext, TEntity, TPrimaryKey, TView>
         where TPrimaryKey : IComparable
         where TEntity : class, IEntity<TPrimaryKey>
         where TDbContext : DbContext
@@ -39,67 +33,27 @@ namespace Mix.Heart.ViewModel
 
         public MixContentStatus Status { get; set; } = MixContentStatus.Published;
 
-        protected ValidationContext ValidateContext;
-
         public bool IsDeleted { get; set; }
-
-        [Newtonsoft.Json.JsonIgnore]
-        public static bool IsCache { get; set; } = true;
-
-        [Newtonsoft.Json.JsonIgnore]
-
-        public static string CacheFolder { get; set; } = $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
-
-        [Newtonsoft.Json.JsonIgnore]
-        protected bool IsValid { get; set; }
-
-        [Newtonsoft.Json.JsonIgnore]
-        protected UnitOfWorkInfo UowInfo { get; set; }
-
-        [Newtonsoft.Json.JsonIgnore]
-        protected MixCacheService CacheService { get; set; }
-
-        [Newtonsoft.Json.JsonIgnore]
-        protected List<ValidationResult> Errors { get; set; } = new List<ValidationResult>();
-
-        [Newtonsoft.Json.JsonIgnore]
-        protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
-
-        protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
-
-        [Newtonsoft.Json.JsonIgnore]
-        public List<ModifiedEntityModel> ModifiedEntities { get; set; } = new();
 
         #endregion
 
         #region Constructors
 
-        public ViewModelBase()
+        public ViewModelBase() : base()
         {
-            ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-            Repository ??= GetRepository(UowInfo, CacheService);
         }
 
-        public ViewModelBase(TDbContext context)
+        public ViewModelBase(TDbContext context) : base(context)
         {
-            ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-            UowInfo = new UnitOfWorkInfo(context);
-            Repository ??= GetRepository(UowInfo, CacheService);
-
             _isRoot = true;
         }
 
-        public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo)
+        public ViewModelBase(TEntity entity, UnitOfWorkInfo uowInfo) : base(entity, uowInfo)
         {
-            ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-            SetUowInfo(uowInfo, CacheService);
-            ParseView(entity);
         }
 
-        public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo)
+        public ViewModelBase(UnitOfWorkInfo unitOfWorkInfo) : base(unitOfWorkInfo)
         {
-            ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-            SetUowInfo(unitOfWorkInfo, CacheService);
         }
 
         #endregion
@@ -114,31 +68,6 @@ namespace Mix.Heart.ViewModel
 
         #endregion
 
-        public virtual Task ExpandView(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return Task.CompletedTask;
-        }
-
-        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo, MixCacheService cacheService, bool isCache = true, string cacheFolder = null)
-        {
-            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
-            {
-                IsCache = isCache,
-                CacheFolder = cacheFolder ?? CacheFolder,
-                CacheService = cacheService
-            };
-        }
-
-        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRootRepository(TDbContext context, MixCacheService cacheService)
-        {
-            return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(context)
-            {
-                IsCache = cacheService != null,
-                CacheFolder = CacheFolder
-            };
-        }
-
         public virtual async Task Validate(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -151,11 +80,6 @@ namespace Mix.Heart.ViewModel
         public void SetDbContext(TDbContext context)
         {
             UowInfo = new UnitOfWorkInfo(context);
-        }
-
-        public void SetCacheService(MixCacheService cacheService)
-        {
-            CacheService ??= cacheService;
         }
 
         public virtual TEntity InitModel()
@@ -176,13 +100,6 @@ namespace Mix.Heart.ViewModel
             var entity = Activator.CreateInstance<TEntity>();
             ReflectionHelper.Map(this as TView, entity);
             return Task.FromResult(entity);
-        }
-
-        public virtual void ParseView<TSource>(TSource sourceObject, CancellationToken cancellationToken = default)
-            where TSource : TEntity
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ReflectionHelper.Map(sourceObject, this as TView);
         }
 
         public bool IsDefaultId(TPrimaryKey id)
