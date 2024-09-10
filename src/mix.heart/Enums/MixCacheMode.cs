@@ -3,7 +3,6 @@
     public enum MixCacheMode
     {
         JSON,
-        DATABASE,
         REDIS
     }
 }

@@ -15,10 +15,10 @@ namespace Mix.Heart.Services
     {
         private readonly IDitributedCacheClient? _cacheClient;
         private readonly MixHeartConfigurationModel _configs;
-        public MixDitributedCache(IConfiguration configuration, IDistributedCache cache, UnitOfWorkInfo<MixCacheDbContext> cacheUow)
+        public MixDitributedCache(IConfiguration configuration, IDistributedCache cache)
         {
             _configs = MixHeartConfigService.Instance.AppSettings;
-            _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, cacheUow, configuration, cache);
+            _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, default, configuration, cache);
         }
 
         public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class

@@ -24,9 +24,6 @@ namespace Mix.Heart.Factories
                 case MixCacheMode.JSON:
                     cacheClient = new MixStaticFileCacheClient(mixHeartConfiguration.CacheFolder);
                     break;
-                case MixCacheMode.DATABASE:
-                    cacheClient = new MixDatabaseCacheClient(uow);
-                    break;
                 case MixCacheMode.REDIS:
                     try
                     {
