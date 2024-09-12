@@ -4,7 +4,6 @@ using Mix.Heart.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Diagnostics.Contracts;
 
 namespace Mix.Heart.Services
 {

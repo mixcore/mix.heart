@@ -1,7 +1,6 @@
 ﻿using Mix.Heart.Model;
 using Mix.Heart.Models;
 using Mix.Shared.Services;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,6 @@ namespace Mix.Heart.Services
         private readonly MixDitributedCache _cache;
         private readonly MixHeartConfigurationModel _configs;
         public bool IsCacheEnabled { get => _configs.IsCache; }
-        protected JsonSerializer serializer;
 
         public MixCacheService(MixDitributedCache ditributedCache)
         {

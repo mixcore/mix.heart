@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.Services
 {
+    [Obsolete("This feature will be removed.", true)]
     public class MixDatabaseCacheClient : IDitributedCacheClient
     {
         private readonly JsonSerializer serializer;

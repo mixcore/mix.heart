@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Mix.Heart.Entities.Cache;
 using Mix.Heart.Factories;
 using Mix.Heart.Interfaces;
 using Mix.Heart.Models;
-using Mix.Heart.UnitOfWork;
 using Mix.Shared.Services;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,12 +11,12 @@ namespace Mix.Heart.Services
 {
     public class MixDitributedCache
     {
-        private readonly IDitributedCacheClient? _cacheClient;
+        private readonly IDitributedCacheClient _cacheClient;
         private readonly MixHeartConfigurationModel _configs;
-        public MixDitributedCache(IConfiguration configuration, IDistributedCache cache, UnitOfWorkInfo<MixCacheDbContext> cacheUow)
+        public MixDitributedCache(IConfiguration configuration, IDistributedCache cache)
         {
             _configs = MixHeartConfigService.Instance.AppSettings;
-            _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, cacheUow, configuration, cache);
+            _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, configuration, cache);
         }
 
         public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class

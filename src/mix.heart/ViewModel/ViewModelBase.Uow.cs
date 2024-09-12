@@ -1,6 +1,5 @@
 ﻿using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
-using Mix.Heart.Services;
 using Mix.Heart.UnitOfWork;
 using System;
 using System.Threading;
