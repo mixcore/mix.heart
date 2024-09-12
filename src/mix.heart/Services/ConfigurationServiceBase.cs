@@ -47,8 +47,11 @@ namespace Mix.Heart.Services
 
         public TValue GetConfig<TValue>(string name, TValue defaultValue = default)
         {
-            var result = RawSettings[name];
-            return result != null ? result.Value<TValue>() : defaultValue;
+            if(RawSettings.TryGetValue(name, StringComparison.OrdinalIgnoreCase, out var result))
+            {
+                return result.Value<TValue>();
+            }
+            return defaultValue;
         }
 
         public TValue GetConfig<TValue>(string culture, string name, TValue defaultValue = default)
@@ -69,7 +72,7 @@ namespace Mix.Heart.Services
 
         public void SetConfig<TValue>(string name, TValue value)
         {
-            RawSettings[name] = value != null ? JToken.FromObject(value) : null;
+            RawSettings[RawSettings.Property(name, StringComparison.OrdinalIgnoreCase).Name] = value != null ? JToken.FromObject(value) : null;
             AppSettings = RawSettings.ToObject<T>();
         }
 
@@ -117,7 +120,7 @@ namespace Mix.Heart.Services
             }
 
             var rawSettings = JObject.Parse(content);
-            RawSettings = !string.IsNullOrEmpty(SectionName) 
+            RawSettings = !string.IsNullOrEmpty(SectionName)
                 ? rawSettings[SectionName] as JObject
                 : rawSettings;
             AppSettings = RawSettings.ToObject<T>();
