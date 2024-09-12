@@ -1,20 +1,17 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Mix.Heart.Entities.Cache;
 using Mix.Heart.Enums;
 using Mix.Heart.Interfaces;
 using Mix.Heart.Models;
 using Mix.Heart.Services;
-using Mix.Heart.UnitOfWork;
 using System;
 
 namespace Mix.Heart.Factories
 {
     public class CacheEngineFactory
     {
-        public static IDitributedCacheClient? CreateCacheClient(
+        public static IDitributedCacheClient CreateCacheClient(
             MixHeartConfigurationModel mixHeartConfiguration,
-            UnitOfWorkInfo<MixCacheDbContext> uow = null,
             IConfiguration configuration = null,
             IDistributedCache cache = null)
         {
