@@ -6,16 +6,11 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.UnitOfWork
 {
-    public class UnitOfWorkInfo : IUnitOfWorkInfo
+    public class UnitOfWorkInfo(DbContext dbContext) : IUnitOfWorkInfo
     {
-        public DbContext ActiveDbContext { get; private set; }
+        public DbContext ActiveDbContext { get; private set; } = dbContext;
 
         public IDbContextTransaction ActiveTransaction { get; private set; }
-
-        public UnitOfWorkInfo(DbContext dbContext)
-        {
-            ActiveDbContext = dbContext;
-        }
 
         public void SetDbContext(DbContext dbContext)
         {
@@ -37,83 +32,82 @@ namespace Mix.Heart.UnitOfWork
             }
         }
 
-        /// <summary>
-        /// TODO: implement multiple db context
-        /// </summary>
         public void Close()
         {
-            //ActiveDbContext.Dispose();
             ActiveTransaction?.Dispose();
         }
 
-        /// <summary>
-        /// TODO: implement multiple db context
-        /// </summary>
         public async Task CloseAsync()
         {
-            //if (ActiveDbContext != null)
-            //    await ActiveDbContext.DisposeAsync();
             if (ActiveTransaction != null)
             {
                 await ActiveTransaction.DisposeAsync();
             }
         }
 
-        /// <summary>
-        /// TODO: implement multiple db context
-        /// </summary>
         public void Complete()
         {
             if (ActiveDbContext != null && ActiveTransaction != null)
             {
                 ActiveDbContext.SaveChanges();
-                ActiveTransaction?.Commit();
-                ActiveTransaction?.Dispose();
+                ActiveTransaction.Commit();
+
+                ActiveTransaction.Dispose();
+                ActiveDbContext.Dispose();
+
                 ActiveTransaction = null;
+                ActiveDbContext = null;
             }
         }
-        /// <summary>
-        /// TODO: implement multiple db context
-        /// </summary>
+
         public void Rollback()
         {
             if (ActiveDbContext != null && ActiveTransaction != null)
             {
-                ActiveTransaction?.Rollback();
-                ActiveTransaction?.Dispose();
+                ActiveTransaction.Rollback();
+
+                ActiveTransaction.Dispose();
+                ActiveDbContext.Dispose();
+
                 ActiveTransaction = null;
+                ActiveDbContext = null;
             }
         }
 
-        /// <summary>
-        /// TODO: implement multiple db context
-        /// </summary>
         public async Task CompleteAsync(CancellationToken cancellationToken = default)
         {
             if (ActiveDbContext != null && ActiveTransaction != null)
             {
                 await ActiveDbContext.SaveChangesAsync(cancellationToken);
                 await ActiveTransaction.CommitAsync(cancellationToken);
+
                 await ActiveTransaction.DisposeAsync();
+                await ActiveDbContext.DisposeAsync();
+
                 ActiveTransaction = null;
+                ActiveDbContext = null;
             }
         }
-        /// <summary>
-        /// TODO: implement multiple db context
-        /// </summary>
+
         public async Task RollbackAsync(CancellationToken cancellationToken = default)
         {
             if (ActiveDbContext != null && ActiveTransaction != null)
             {
                 await ActiveTransaction.RollbackAsync(cancellationToken);
+
                 await ActiveTransaction.DisposeAsync();
+                await ActiveDbContext.DisposeAsync();
+
                 ActiveTransaction = null;
+                ActiveDbContext = null;
             }
         }
 
         public void Dispose()
         {
+            ActiveTransaction?.Dispose();
             ActiveDbContext?.Dispose();
+
             GC.SuppressFinalize(this);
             GC.WaitForPendingFinalizers();
         }

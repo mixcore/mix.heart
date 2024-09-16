@@ -2,12 +2,8 @@
 
 namespace Mix.Heart.UnitOfWork
 {
-    public class UnitOfWorkInfo<T> : UnitOfWorkInfo
-        where T : DbContext
+    public class UnitOfWorkInfo<T>(T dbContext) : UnitOfWorkInfo(dbContext) where T : DbContext
     {
         public T DbContext => (T)ActiveDbContext;
-        public UnitOfWorkInfo(T dbContext) : base(dbContext)
-        {
-        }
     }
 }
