@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mix.Heart.ViewModel
 {
-    public abstract partial class ViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
+    public abstract partial class SimpleViewModelBase<TDbContext, TEntity, TPrimaryKey, TView>
     {
         private bool _isRoot;
 
