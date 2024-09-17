@@ -13,6 +13,7 @@ namespace Mix.Heart.Helpers
             {
                 return default;
             }
+
             string[] keyStrings =
                 Encoding.UTF8.GetString(Convert.FromBase64String(iCompleteEncodedKey))
                     .Split(',');
@@ -32,14 +33,15 @@ namespace Mix.Heart.Helpers
             return DecryptString(cipherText, key, iv, encoding ?? Encoding.UTF8);
         }
 
-        public static string EncryptString(string text, string keyString, string ivString,Encoding encoding = default)
+        public static string EncryptString(string text, string keyString, string ivString, Encoding encoding = default)
         {
             var iv = Encoding.UTF8.GetBytes(ivString);
             var key = Encoding.UTF8.GetBytes(keyString);
             return EncryptString(text, key, iv, encoding ?? Encoding.UTF8);
         }
 
-        public static string DecryptString(string cipherText, string keyString, string ivString, Encoding encoding = default)
+        public static string DecryptString(string cipherText, string keyString, string ivString,
+            Encoding encoding = default)
         {
             var iv = Encoding.UTF8.GetBytes(ivString);
             var key = Encoding.UTF8.GetBytes(keyString);
@@ -63,12 +65,12 @@ namespace Mix.Heart.Helpers
                     {
                         swEncrypt.Write(plainText);
                     }
+
                     cipherText = msEncrypt.ToArray();
                 }
             }
+
             return Convert.ToBase64String(cipherText);
-
-
         }
 
         private static string DecryptString(string cipherText, byte[] key, byte[] iv, Encoding encoding)
@@ -99,6 +101,33 @@ namespace Mix.Heart.Helpers
             string completeKey = ivStr + "," + keyStr;
 
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(completeKey));
+        }
+
+        public static bool IsEncrypted(string input, string iCompleteEncodedKey)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return false;
+            }
+
+            try
+            {
+                var cipherBytes = Convert.FromBase64String(input);
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+
+            try
+            {
+                DecryptString(input, iCompleteEncodedKey);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
