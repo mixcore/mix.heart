@@ -115,7 +115,7 @@ namespace Mix.Heart.Extensions
 
         public static string Decrypt(this string cipherText, string key)
         {
-            return AesEncryptionHelper.DecryptString(cipherText, key, key);
+            return AesEncryptionHelper.DecryptString(cipherText, key);
         }
 
         public static string WhiteSpaceToHyphen(string str, char replaceChar = '-')
