@@ -15,7 +15,7 @@ namespace Mix.Heart.ViewModel
     {
         #region Async
 
-        public async Task DeleteAsync(CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Mix.Heart.ViewModel
             await DeleteEntityRelationshipAsync(cancellationToken);
         }
 
-        public async Task<TPrimaryKey> SaveAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<TPrimaryKey> SaveAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -70,7 +70,7 @@ namespace Mix.Heart.ViewModel
             }
         }
 
-        public async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties, CancellationToken cancellationToken = default)
+        public virtual async Task<TPrimaryKey> SaveFieldsAsync(IEnumerable<EntityPropertyModel> properties, CancellationToken cancellationToken = default)
         {
             try
             {

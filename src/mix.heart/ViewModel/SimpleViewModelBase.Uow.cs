@@ -67,7 +67,7 @@ namespace Mix.Heart.ViewModel
             {
                 throw new MixException(
                         MixErrorStatus.ServerError,
-                        $"{dbContextType}: Contructor Parameterless Notfound");
+                        $"{dbContextType}: Constructor Parameterless Notfound");
             }
 
             return (TDbContext)contextCtorInfo.Invoke([]);
