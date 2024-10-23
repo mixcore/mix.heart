@@ -296,6 +296,10 @@ namespace Mix.Heart.Helpers
                 expression = GetNumericExpression(expressionMethod, fieldPropertyExpression, fieldPropertyType, parsedValue);
 
             }
+            else if (IsDateTime(parsedValue))
+            {
+                expression = GetNumericExpression(expressionMethod, fieldPropertyExpression, fieldPropertyType, parsedValue);
+            }
             else if (parsedValue is string)
             {
                 parsedValue = parsedValue.ToString().Replace("'", "");
@@ -428,6 +432,11 @@ namespace Mix.Heart.Helpers
                    value is float ||
                    value is double ||
                    value is decimal;
+        }
+
+        private static bool IsDateTime(object value)
+        {
+            return value is DateTime;
         }
 
         private static Expression GetStringContainsExpression(Expression fieldExpression, string propertyName, object propertyValue)
