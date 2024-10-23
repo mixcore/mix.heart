@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -18,7 +19,7 @@ namespace Mix.Heart.Helpers
 {
     public class ReflectionHelper
     {
-        public static JsonSerializer serializer = InitSerializer();
+        public static JsonSerializer Serializer = InitSerializer();
 
         private static JsonSerializer InitSerializer()
         {
@@ -36,12 +37,12 @@ namespace Mix.Heart.Helpers
 
         public static JArray ParseArray<T>(T obj)
         {
-            return obj != null ? JArray.FromObject(obj, serializer) : null;
+            return obj != null ? JArray.FromObject(obj, Serializer) : null;
         }
 
         public static JObject ParseObject<T>(T obj)
         {
-            return obj != null ? JObject.FromObject(obj, serializer) : null;
+            return obj != null ? JObject.FromObject(obj, Serializer) : null;
         }
 
         public static T ParseStringToObject<T>(string obj)
@@ -56,6 +57,7 @@ namespace Mix.Heart.Helpers
                 throw new MixException(MixErrorStatus.Badrequest, ex);
             }
         }
+
         public static T ParseStringToArray<T>(string obj)
         {
             try
@@ -68,6 +70,7 @@ namespace Mix.Heart.Helpers
                 throw new MixException(MixErrorStatus.Badrequest, ex);
             }
         }
+
         public static JsonSerializer FormattingData()
         {
             var jsonSerializersettings = new JsonSerializer
@@ -85,24 +88,24 @@ namespace Mix.Heart.Helpers
             return JObject.FromObject(camelCaseData, FormattingData());
         }
 
-        public static Dictionary<string, string> ConverObjectToDictinary(object someObject)
+        public static Dictionary<string, string> ConvertObjectToDictinary(object someObject)
         {
             return someObject.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .ToDictionary(prop => prop.Name, prop => prop.GetValue(someObject, null)?.ToString());
         }
 
-        public static TSource CloneObject<TSource>(TSource sourceObject, TSource destObject = default)
+        public static TSource CloneObject<TSource>(TSource sourceObject, TSource destinationObject = default)
             where TSource : class
         {
-            destObject ??= (TSource)Activator.CreateInstance(typeof(TSource));
-            Map(sourceObject, destObject);
-            return destObject;
+            destinationObject ??= (TSource)Activator.CreateInstance(typeof(TSource));
+            Map(sourceObject, destinationObject);
+            return destinationObject;
         }
 
         public static Expression<Func<TEntity, bool>> BuildExpressionByKeys<TEntity, TDbContext>(
-            TEntity model, TDbContext context)
-            where TDbContext : DbContext
+            TEntity model,
+            TDbContext context) where TDbContext : DbContext
         {
 
             Expression<Func<TEntity, bool>> predicate = null;
@@ -131,8 +134,8 @@ namespace Mix.Heart.Helpers
         public static JObject GetMembers<TEntity>(TEntity model, string[] selectMembers)
            where TEntity : class
         {
-            serializer.Converters.Add(new StringEnumConverter());
-            var result = JObject.FromObject(model, serializer).Properties()
+            Serializer.Converters.Add(new StringEnumConverter());
+            var result = JObject.FromObject(model, Serializer).Properties()
                             .Where(p => selectMembers.Any(m => m.ToLower() == p.Name.ToLower()));
             return new JObject() { result };
         }
@@ -145,18 +148,13 @@ namespace Mix.Heart.Helpers
             if (fieldInfo == null)
             {
                 PropertyInfo propertyInfo = type.GetProperty(name);
-
-                // if (propertyInfo == null)
-                //{
-                //    throw new Exception();
-                //}
-
                 fieldPropertyType = propertyInfo?.PropertyType;
             }
             else
             {
                 fieldPropertyType = fieldInfo.FieldType;
             }
+
             return fieldPropertyType;
         }
 
@@ -170,9 +168,6 @@ namespace Mix.Heart.Helpers
             var prop = data.GetType().GetProperty(fieldName);
             if (prop != null)
             {
-                // System.ComponentModel.TypeConverter conv =
-                // System.ComponentModel.TypeDescriptor.GetConverter(prop.PropertyType);
-                // var obj = conv.ConvertFrom();
                 return prop.GetValue(data);
             }
             return default;
@@ -197,179 +192,171 @@ namespace Mix.Heart.Helpers
             return Expression.Lambda(memberExpression, parameter);
         }
 
-        public static void SetPropertyValue<T>(T data, EntityPropertyModel propety) where T
-            : class
+        public static void SetPropertyValue<T>(T data, EntityPropertyModel property) where T : class
         {
-            var prop = data.GetType().GetProperty(propety.PropertyName.ToTitleCase());
+            var prop = data.GetType().GetProperty(property.PropertyName.ToTitleCase());
             if (prop != null)
             {
-                object val = propety.PropertyValue;
+                object val = property.PropertyValue;
                 if (prop.PropertyType.BaseType == typeof(Enum))
                 {
-                    val = Enum.Parse(prop.PropertyType, propety.PropertyValue.ToString());
+                    val = Enum.Parse(prop.PropertyType, property.PropertyValue.ToString());
                 }
                 prop.SetValue(data, val);
             }
         }
 
-        public static TDestinate Map<TSource, TDestinate>(TSource source, TDestinate destination)
-            where TDestinate : class
+        public static TDestination Map<TSource, TDestination>(TSource source, TDestination destination)
+            where TDestination : class
         {
-            if (source != null)
+            if (source is null)
             {
-                try
+                return default;
+            }
+
+            var inPropDict = typeof(TSource)
+                .GetProperties()
+                .Where(p => p.CanRead)
+                .DistinctBy(p => p.Name)
+                .ToDictionary(p => p.Name);
+
+            var outProps = typeof(TDestination)
+                .GetProperties()
+                .Where(p => p.CanWrite);
+
+            foreach (var outProp in outProps)
+            {
+                if (inPropDict.TryGetValue(outProp.Name, out var inProp))
                 {
-                    var inPropDict = typeof(TSource).GetProperties()
-                        .Where(p => p.CanRead)
-                        .DistinctBy(p => p.Name)
-                        .ToDictionary(p => p.Name);
-                    var outProps = typeof(TDestinate).GetProperties()
-                        .Where(p => p.CanWrite);
-                    foreach (var outProp in outProps)
-                    {
-                        if (inPropDict.TryGetValue(outProp.Name, out var inProp))
-                        {
-                            object sourceValue = inProp.GetValue(source);
-                            //if (inProp.PropertyType != outProp.PropertyType)
-                            //{
-                            //    sourceValue = Convert.ChangeType(sourceValue, outProp.PropertyType);
-                            //}
-                            outProp.SetValue(destination, sourceValue);
-                        }
-                    }
-                    return destination;
-                }
-                catch (Exception ex)
-                {
-                    throw new MixException(MixErrorStatus.ServerError, ex);
+                    object sourceValue = inProp.GetValue(source);
+                    outProp.SetValue(destination, sourceValue);
                 }
             }
-            return default;
+
+            return destination;
         }
 
         public static Expression<Func<T, bool>> GetExpression<T>(
-                        string propertyName,
-                        object propertyValue,
-                        ExpressionMethod kind,
-                        string name = "model")
+            string propertyName,
+            object propertyValue,
+            ExpressionMethod expressionMethod,
+            string name = "model")
         {
-            try
+            Type type = typeof(T);
+            var par = Expression.Parameter(type, name);
+
+            Type fieldPropertyType;
+            Expression fieldPropertyExpression;
+
+            FieldInfo fieldInfo = type.GetField(propertyName.ToTitleCase());
+
+            if (fieldInfo != null)
             {
-                Type type = typeof(T);
-                var par = Expression.Parameter(type, name);
-
-                Type fieldPropertyType;
-                Expression fieldPropertyExpression;
-
-                FieldInfo fieldInfo = type.GetField(propertyName.ToTitleCase());
-
-                if (fieldInfo != null)
-                {
-                    fieldPropertyType = fieldInfo.FieldType;
-                    fieldPropertyExpression = Expression.Field(par, fieldInfo);
-                }
-                else
-                {
-
-                    PropertyInfo propertyInfo =
-                        type.GetProperty(propertyName.ToTitleCase());
-
-                    if (propertyInfo == null)
-                    {
-                        return null;
-                    }
-
-                    fieldPropertyType = propertyInfo.PropertyType;
-                    fieldPropertyExpression = Expression.Property(par, propertyInfo);
-                }
-                object parsedValue;
-                if (fieldPropertyType.IsGenericType &&
-                    fieldPropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                {
-                    System.ComponentModel.TypeConverter conv =
-                        System.ComponentModel.TypeDescriptor.GetConverter(
-                            fieldPropertyType);
-                    parsedValue = conv.ConvertFrom(propertyValue);
-                }
-                else
-                {
-                    if (fieldPropertyType.BaseType == typeof(Enum))
-                    {
-                        parsedValue = Enum.Parse(fieldPropertyType, propertyValue.ToString());
-                    }
-                    else
-                    {
-                        parsedValue = kind != ExpressionMethod.In && kind != ExpressionMethod.NotIn
-                            ? Convert.ChangeType(propertyValue, fieldPropertyType)
-                            : propertyValue;
-                    }
-                }
-
-                Expression expression = null;
-
-                if (IsNumeric(parsedValue))
-                {
-                    expression = GetNumericExpression(kind, fieldPropertyExpression, fieldPropertyType, parsedValue);
-
-                }
-                else if (parsedValue is string)
-                {
-                    parsedValue = parsedValue.ToString().Replace("'", "");
-                    expression = GetStringExpression(kind, fieldPropertyExpression, fieldPropertyType, parsedValue, propertyName, propertyValue);
-                }
-                else
-                {
-                    expression = Expression.Equal(fieldPropertyExpression,
-                                                      Expression.Constant(parsedValue, fieldPropertyType));
-                }
-                return Expression.Lambda<Func<T, bool>>(expression, par);
+                fieldPropertyType = fieldInfo.FieldType;
+                fieldPropertyExpression = Expression.Field(par, fieldInfo);
             }
-            catch (Exception ex)
+            else
             {
-                throw new MixException(MixErrorStatus.ServerError, ex);
+                var propertyInfo = type.GetProperty(propertyName.ToTitleCase());
+                if (propertyInfo == null)
+                {
+                    return null;
+                }
+
+                fieldPropertyType = propertyInfo.PropertyType;
+                fieldPropertyExpression = Expression.Property(par, propertyInfo);
             }
+
+            object parsedValue;
+            if (fieldPropertyType.IsGenericType &&
+                fieldPropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                TypeConverter ypeConverter = TypeDescriptor
+                    .GetConverter(fieldPropertyType);
+
+                parsedValue = ypeConverter.ConvertFrom(propertyValue);
+            }
+            else
+            {
+                if (fieldPropertyType.BaseType == typeof(Enum))
+                {
+                    parsedValue = Enum.Parse(fieldPropertyType, propertyValue.ToString());
+                }
+                else
+                {
+                    parsedValue = expressionMethod != ExpressionMethod.In && expressionMethod != ExpressionMethod.NotIn
+                        ? Convert.ChangeType(propertyValue, fieldPropertyType)
+                        : propertyValue;
+                }
+            }
+
+            Expression expression;
+            if (IsNumeric(parsedValue))
+            {
+                expression = GetNumericExpression(expressionMethod, fieldPropertyExpression, fieldPropertyType, parsedValue);
+
+            }
+            else if (parsedValue is string)
+            {
+                parsedValue = parsedValue.ToString().Replace("'", "");
+                expression = GetStringExpression(expressionMethod, fieldPropertyExpression, fieldPropertyType, parsedValue, propertyName, propertyValue);
+            }
+            else
+            {
+                expression = Expression
+                    .Equal(fieldPropertyExpression, Expression.Constant(parsedValue, fieldPropertyType));
+            }
+
+            return Expression.Lambda<Func<T, bool>>(expression, par);
         }
 
         private static Expression GetStringExpression(
             ExpressionMethod kind,
             Expression fieldPropertyExpression,
             Type fieldPropertyType,
-            object data2, string propertyName, object propertyValue)
+            object data,
+            string propertyName,
+            object propertyValue)
         {
             switch (kind)
             {
                 case ExpressionMethod.Equal:
-                    return Expression.Equal(fieldPropertyExpression,
-                                          Expression.Constant(data2, fieldPropertyType));
+                    return Expression.Equal(fieldPropertyExpression, Expression.Constant(data, fieldPropertyType));
                 case ExpressionMethod.NotEqual:
-                    return Expression.NotEqual(fieldPropertyExpression,
-                                          Expression.Constant(data2, fieldPropertyType));
+                    return Expression.NotEqual(fieldPropertyExpression, Expression.Constant(data, fieldPropertyType));
                 case ExpressionMethod.Like:
                     return GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
                 case ExpressionMethod.In:
-                    string[] arr = data2.ToString().Split(',');
-                    BinaryExpression exp = null;
+                    string[] arr = data.ToString().Split(',');
+                    BinaryExpression binaryExpression = null;
                     foreach (string val in arr)
                     {
-                        BinaryExpression eq = Expression.Equal(fieldPropertyExpression,
-                                                Expression.Constant(Convert.ChangeType(val, fieldPropertyType), fieldPropertyType));
-                        if (exp == null)
+                        BinaryExpression newBinaryExpression = Expression
+                            .Equal(
+                                fieldPropertyExpression,
+                                Expression.Constant(Convert.ChangeType(val, fieldPropertyType), fieldPropertyType));
+
+                        if (binaryExpression == null)
                         {
-                            exp = eq;
+                            binaryExpression = newBinaryExpression;
                         }
                         else
                         {
-                            exp = Expression.OrElse(exp, eq);
+                            binaryExpression = Expression.OrElse(binaryExpression, newBinaryExpression);
                         }
                     }
-                    return exp;
+
+                    return binaryExpression;
                 case ExpressionMethod.NotIn:
-                    string[] notarr = data2.ToString().Split(',');
+                    string[] notarr = data.ToString().Split(',');
                     BinaryExpression notexp = null;
                     foreach (string val in notarr)
                     {
-                        BinaryExpression eq = Expression.NotEqual(fieldPropertyExpression,
-                                                Expression.Constant(Convert.ChangeType(val, fieldPropertyType), fieldPropertyType));
+                        BinaryExpression eq = Expression
+                            .NotEqual(
+                                fieldPropertyExpression,
+                                Expression.Constant(Convert.ChangeType(val, fieldPropertyType), fieldPropertyType));
+
                         if (notexp == null)
                         {
                             notexp = eq;
@@ -381,44 +368,50 @@ namespace Mix.Heart.Helpers
                     }
                     return notexp;
                 default:
-                    return Expression.Equal(fieldPropertyExpression,
-                                          Expression.Constant(data2, fieldPropertyType));
+                    return Expression
+                        .Equal(
+                            fieldPropertyExpression,
+                            Expression.Constant(data, fieldPropertyType));
             }
         }
 
-        private static Expression GetNumericExpression(ExpressionMethod kind, Expression fieldPropertyExpression, Type fieldPropertyType, object data2)
+        private static BinaryExpression GetNumericExpression(
+            ExpressionMethod kind,
+            Expression fieldPropertyExpression,
+            Type fieldPropertyType,
+            object data)
         {
             switch (kind)
             {
                 case ExpressionMethod.Equal:
                     return Expression.Equal(fieldPropertyExpression,
-                                          Expression.Constant(data2, fieldPropertyType));
+                                          Expression.Constant(data, fieldPropertyType));
 
                 case ExpressionMethod.LessThan:
                     return Expression.LessThan(fieldPropertyExpression,
-                                             Expression.Constant(data2, fieldPropertyType));
+                                             Expression.Constant(data, fieldPropertyType));
 
                 case ExpressionMethod.GreaterThan:
                     return Expression.GreaterThan(
                         fieldPropertyExpression,
-                        Expression.Constant(data2, fieldPropertyType));
+                        Expression.Constant(data, fieldPropertyType));
 
                 case ExpressionMethod.LessThanOrEqual:
                     return Expression.LessThanOrEqual(
                         fieldPropertyExpression,
-                        Expression.Constant(data2, fieldPropertyType));
+                        Expression.Constant(data, fieldPropertyType));
 
                 case ExpressionMethod.GreaterThanOrEqual:
                     return Expression.GreaterThanOrEqual(
                         fieldPropertyExpression,
-                        Expression.Constant(data2, fieldPropertyType));
+                        Expression.Constant(data, fieldPropertyType));
 
                 case ExpressionMethod.NotEqual:
                     return Expression.NotEqual(fieldPropertyExpression,
-                                      Expression.Constant(data2, fieldPropertyType));
+                                      Expression.Constant(data, fieldPropertyType));
                 default:
                     return Expression.Equal(fieldPropertyExpression,
-                                                  Expression.Constant(data2, fieldPropertyType));
+                                                  Expression.Constant(data, fieldPropertyType));
             }
         }
 
@@ -436,16 +429,17 @@ namespace Mix.Heart.Helpers
                    value is double ||
                    value is decimal;
         }
+
         private static Expression GetStringContainsExpression(Expression fieldExpression, string propertyName, object propertyValue)
         {
             var likeMethod = typeof(DbFunctionsExtensions).GetMethod("Like",
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
                 null,
-                new[] { typeof(DbFunctions), typeof(string), typeof(string) },
+                [typeof(DbFunctions), typeof(string), typeof(string)],
                 null);
             string pattern = $"%{propertyValue}%";
             ConstantExpression likeConstant = Expression.Constant(pattern, typeof(string));
-            return Expression.Call(method: likeMethod, arguments: new[] { Expression.Property(null, typeof(EF), nameof(EF.Functions)), fieldExpression, likeConstant });
+            return Expression.Call(method: likeMethod, arguments: [Expression.Property(null, typeof(EF), nameof(EF.Functions)), fieldExpression, likeConstant]);
         }
 
         public static T InitModel<T>()
@@ -477,8 +471,9 @@ namespace Mix.Heart.Helpers
             private readonly Expression _oldValue;
             private readonly Expression _newValue;
 
-            public ReplaceExpressionVisitor(Expression oldValue,
-                                            Expression newValue)
+            public ReplaceExpressionVisitor(
+                Expression oldValue,
+                Expression newValue)
             {
                 _oldValue = oldValue;
                 _newValue = newValue;
