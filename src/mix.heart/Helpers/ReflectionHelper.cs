@@ -19,7 +19,7 @@ namespace Mix.Heart.Helpers
 {
     public class ReflectionHelper
     {
-        public static JsonSerializer Serializer = InitSerializer();
+        private static JsonSerializer Serializer = InitSerializer();
 
         private static JsonSerializer InitSerializer()
         {
@@ -80,7 +80,6 @@ namespace Mix.Heart.Helpers
             return jsonSerializersettings;
         }
 
-
         public static JObject CamelCaseData(JObject jObject)
         {
             dynamic camelCaseData =
@@ -88,7 +87,7 @@ namespace Mix.Heart.Helpers
             return JObject.FromObject(camelCaseData, FormattingData());
         }
 
-        public static Dictionary<string, string> ConvertObjectToDictinary(object someObject)
+        public static Dictionary<string, string> ConvertObjectToDictionary(object someObject)
         {
             return someObject.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -131,12 +130,15 @@ namespace Mix.Heart.Helpers
                 .ToArray();
         }
 
-        public static JObject GetMembers<TEntity>(TEntity model, string[] selectMembers)
-           where TEntity : class
+        public static JObject GetMembers<TEntity>(
+            TEntity model,
+            string[] selectMembers,
+            JsonSerializer serializer = null) where TEntity : class
         {
-            Serializer.Converters.Add(new StringEnumConverter());
-            var result = JObject.FromObject(model, Serializer).Properties()
-                            .Where(p => selectMembers.Any(m => m.ToLower() == p.Name.ToLower()));
+            var result = JObject.FromObject(model, serializer ?? Serializer)
+                .Properties()
+                .Where(p => selectMembers.Any(m => m.Equals(p.Name, StringComparison.CurrentCultureIgnoreCase)));
+
             return new JObject() { result };
         }
 
@@ -271,10 +273,10 @@ namespace Mix.Heart.Helpers
             if (fieldPropertyType.IsGenericType &&
                 fieldPropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                TypeConverter ypeConverter = TypeDescriptor
+                TypeConverter typeConverter = TypeDescriptor
                     .GetConverter(fieldPropertyType);
 
-                parsedValue = ypeConverter.ConvertFrom(propertyValue);
+                parsedValue = typeConverter.ConvertFrom(propertyValue);
             }
             else
             {
