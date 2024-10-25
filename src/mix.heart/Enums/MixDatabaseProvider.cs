@@ -5,6 +5,7 @@
         SQLSERVER,
         MySQL,
         PostgreSQL,
-        SQLITE
+        SQLITE,
+        SCYLLADB
     }
 }

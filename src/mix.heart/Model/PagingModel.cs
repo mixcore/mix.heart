@@ -1,4 +1,6 @@
 ﻿using Mix.Heart.Enums;
+using Mix.Heart.Model;
+using System.Collections.Generic;
 
 namespace Mix.Heart.Models
 {
@@ -13,8 +15,6 @@ namespace Mix.Heart.Models
 
         public int TotalPage { get; set; }
 
-        public string SortBy { get; set; }
-
-        public SortDirection SortDirection { get; set; }
+        public List<MixSortByField> SortByFields { get; set; } = new List<MixSortByField>();
     }
 }

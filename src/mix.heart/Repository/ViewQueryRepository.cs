@@ -81,16 +81,26 @@ namespace Mix.Heart.Repository
             cancellationToken.ThrowIfCancellationRequested();
 
             var query = GetListQuery(predicate, cancellationToken);
-            dynamic sortBy = GetLambda(paging.SortBy);
-
-            switch (paging.SortDirection)
+            if (paging.SortByFields != null && paging.SortByFields.Any())
             {
-                case SortDirection.Asc:
-                    query = Queryable.OrderBy(query, sortBy);
-                    break;
-                case SortDirection.Desc:
-                    query = Queryable.OrderByDescending(query, sortBy);
-                    break;
+                foreach (var sortByField in paging.SortByFields)
+                {
+                    dynamic sortBy = GetLambda(sortByField.FieldName);
+                    var isFirst = paging.SortByFields.IndexOf(sortByField) == 0;
+                    switch (sortByField.Direction)
+                    {
+                        case Enums.SortDirection.Asc:
+                            query = isFirst
+                                ? Queryable.OrderBy(query, sortBy)
+                                : Queryable.ThenBy(query, sortBy);
+                            break;
+                        case Enums.SortDirection.Desc:
+                            query = isFirst
+                                ? Queryable.OrderByDescending(query, sortBy)
+                                : Queryable.ThenByDescending(query, sortBy);
+                            break;
+                    }
+                }
             }
 
             paging.Total = query.Count();
