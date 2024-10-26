@@ -8,7 +8,7 @@ namespace Mix.Heart.Models
     {
         public int Page { get; set; }
         public int PageIndex { get; set; }
-
+        public string? PagingState { get; set; } // use for Cassandra only
         public int? PageSize { get; set; }
 
         public long Total { get; set; }
