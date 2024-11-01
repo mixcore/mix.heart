@@ -53,10 +53,8 @@ namespace Mix.Heart.UnitOfWork
                 ActiveTransaction.Commit();
 
                 ActiveTransaction.Dispose();
-                ActiveDbContext.Dispose();
 
                 ActiveTransaction = null;
-                ActiveDbContext = null;
             }
         }
 
@@ -67,10 +65,8 @@ namespace Mix.Heart.UnitOfWork
                 ActiveTransaction.Rollback();
 
                 ActiveTransaction.Dispose();
-                ActiveDbContext.Dispose();
 
                 ActiveTransaction = null;
-                ActiveDbContext = null;
             }
         }
 
@@ -82,10 +78,8 @@ namespace Mix.Heart.UnitOfWork
                 await ActiveTransaction.CommitAsync(cancellationToken);
 
                 await ActiveTransaction.DisposeAsync();
-                await ActiveDbContext.DisposeAsync();
 
                 ActiveTransaction = null;
-                ActiveDbContext = null;
             }
         }
 
@@ -96,10 +90,8 @@ namespace Mix.Heart.UnitOfWork
                 await ActiveTransaction.RollbackAsync(cancellationToken);
 
                 await ActiveTransaction.DisposeAsync();
-                await ActiveDbContext.DisposeAsync();
 
                 ActiveTransaction = null;
-                ActiveDbContext = null;
             }
         }
 
