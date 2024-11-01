@@ -1,6 +1,6 @@
-﻿using Mix.Heart.Model;
+﻿using Microsoft.Extensions.Configuration;
+using Mix.Heart.Model;
 using Mix.Heart.Models;
-using Mix.Shared.Services;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,9 +13,9 @@ namespace Mix.Heart.Services
         private readonly MixHeartConfigurationModel _configs;
         public bool IsCacheEnabled { get => _configs.IsCache; }
 
-        public MixCacheService(MixDitributedCache ditributedCache)
+        public MixCacheService(IConfiguration configuration, MixDitributedCache ditributedCache)
         {
-            _configs = MixHeartConfigService.Instance.AppSettings;
+            _configs = configuration.Get<MixHeartConfigurationModel>();
             _cache = ditributedCache;
         }
 

@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Mix.Heart.Factories;
 using Mix.Heart.Interfaces;
 using Mix.Heart.Models;
-using Mix.Shared.Services;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,7 +14,7 @@ namespace Mix.Heart.Services
         private readonly MixHeartConfigurationModel _configs;
         public MixDitributedCache(IConfiguration configuration, IDistributedCache cache)
         {
-            _configs = MixHeartConfigService.Instance.AppSettings;
+            _configs = configuration.Get<MixHeartConfigurationModel>();
             _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, configuration, cache);
         }
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Mix.Heart.Enums;
 using Mix.Heart.Models;
-using Mix.Shared.Services;
 
 namespace Mix.Heart.Entities.Cache
 {
@@ -9,9 +9,9 @@ namespace Mix.Heart.Entities.Cache
     {
         private readonly MixHeartConfigurationModel _configs;
 
-        public MixCacheDbContext()
+        public MixCacheDbContext(IConfiguration configuration)
         {
-            _configs = MixHeartConfigService.Instance.AppSettings;
+            _configs = configuration.Get<MixHeartConfigurationModel>();
         }
 
         public virtual DbSet<MixCache> MixCache { get; set; }

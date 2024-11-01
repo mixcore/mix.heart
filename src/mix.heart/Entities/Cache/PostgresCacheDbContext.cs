@@ -1,12 +1,13 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Mix.Heart.EntityFrameworkCore.Extensions;
 
 namespace Mix.Heart.Entities.Cache
 {
     public partial class PostgresCacheDbContext : MixCacheDbContext
     {
-        public PostgresCacheDbContext() : base()
+        public PostgresCacheDbContext(IConfiguration configuration) : base(configuration)
         {
 
         }
