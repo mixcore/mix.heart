@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
+using Mix.Heart.Extensions;
 using Mix.Heart.Interfaces;
-using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Buffers.Text;
+using System.Text;
+using Newtonsoft.Json;
 namespace Mix.Heart.Services
 {
     public class RedisCacheClient : IDitributedCacheClient
@@ -26,14 +28,17 @@ namespace Mix.Heart.Services
 
         public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
         {
-            var cachedResponse = await _cache.GetStringAsync(key, cancellationToken);
-            return cachedResponse == null ? null : JsonConvert.DeserializeObject<T>(cachedResponse);
+            var cachedResponse = await _cache.GetAsync(key, cancellationToken);
+            return cachedResponse == null ? null : JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(cachedResponse));
         }
 
-        public async Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
+        public async Task SetCache<T>(string key, T value, TimeSpan? cacheExpiration = default, CancellationToken cancellationToken = default) where T : class
         {
-            var response = JsonConvert.SerializeObject(value);
-            await _cache.SetStringAsync(key, response, _options, cancellationToken);
+            if (cacheExpiration != null)
+            {
+                _options.SlidingExpiration = cacheExpiration;
+            }
+            await _cache.SetAsync(key, JsonConvert.SerializeObject(value).ToByteArray(), _options, cancellationToken);
         }
 
         public async Task ClearCache(string key, CancellationToken cancellationToken = default)
@@ -42,11 +47,8 @@ namespace Mix.Heart.Services
             foreach (var endpoint in endpoints)
             {
                 var server = _connectionMultiplexer.GetServer(endpoint);
-                var keys = server.Keys(pattern: key + "*").ToList();
-                foreach (var k in keys)
-                {
-                    await _database.KeyDeleteAsync(k);
-                }
+                //var keys = server.Keys(pattern: .ToList();
+                await _database.KeyDeleteAsync(key.Split(':')[0]);
             }
         }
 
@@ -66,5 +68,10 @@ namespace Mix.Heart.Services
                 Console.Error.WriteLine(ex.Message);
             }
         }
+
+        #region Binary Helper
+
+
+        #endregion
     }
 }

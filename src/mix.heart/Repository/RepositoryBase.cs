@@ -13,9 +13,8 @@ namespace Mix.Heart.Repository
         where TDbContext : DbContext
     {
         public UnitOfWorkInfo UowInfo { get; set; }
-
+        public TimeSpan? CacheExpiration { get; set; }
         public virtual TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
-
         private bool _isRoot;
 
         public RepositoryBase()

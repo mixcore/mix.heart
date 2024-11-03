@@ -58,7 +58,7 @@ namespace Mix.Heart.Services
             }
         }
 
-        public async Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
+        public async Task SetCache<T>(string key, T value, TimeSpan? cacheExpiration = default, CancellationToken cancellationToken = default) where T : class
         {
             if (value != null)
             {

@@ -58,6 +58,11 @@ namespace Mix.Heart.Extensions
                 : str;
         }
 
+        public static byte[] ToByteArray(this string plainText)
+        {
+            return Encoding.UTF8.GetBytes(plainText);
+        }
+
         public static bool IsJsonString(this string jsonString)
         {
             return !string.IsNullOrEmpty(jsonString) && jsonString.Trim().StartsWith("{") && jsonString.Trim().EndsWith("}");
@@ -95,7 +100,7 @@ namespace Mix.Heart.Extensions
                                ? base64String.Split(',')[1]
                                : base64String;
         }
-
+        
         public static string Base64Encode(string plainText)
         {
             var plainTextBytes = Encoding.UTF8.GetBytes(plainText);

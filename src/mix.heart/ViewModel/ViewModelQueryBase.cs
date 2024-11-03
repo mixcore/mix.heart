@@ -23,6 +23,9 @@ namespace Mix.Heart.ViewModel
         protected ValidationContext ValidateContext;
 
         [JsonIgnore]
+        public static TimeSpan CacheExpiration { get; set; }
+        
+        [JsonIgnore]
         public static bool IsCache { get; set; } = true;
 
         [JsonIgnore]
@@ -51,7 +54,7 @@ namespace Mix.Heart.ViewModel
         public ViewModelQueryBase()
         {
             ValidateContext = new ValidationContext(this, serviceProvider: null, items: null);
-            Repository ??= GetRepository(UowInfo, CacheService);
+            Repository ??= GetRepository(UowInfo, CacheService, CacheExpiration);
         }
 
         public ViewModelQueryBase(TDbContext context)
@@ -103,11 +106,14 @@ namespace Mix.Heart.ViewModel
             CacheService ??= cacheService;
         }
 
-        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(UnitOfWorkInfo uowInfo, MixCacheService cacheService, bool isCache = true, string cacheFolder = null)
+        public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(
+            UnitOfWorkInfo uowInfo, 
+            MixCacheService cacheService, TimeSpan? cacheExpiration = null, bool isCache = true, string cacheFolder = null)
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
             {
                 IsCache = isCache,
+                CacheExpiration = cacheExpiration,
                 CacheFolder = cacheFolder ?? CacheFolder,
                 CacheService = cacheService
             };

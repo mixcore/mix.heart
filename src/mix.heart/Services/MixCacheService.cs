@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Mix.Heart.Model;
 using Mix.Heart.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,6 @@ namespace Mix.Heart.Services
         private readonly MixDitributedCache _cache;
         private readonly MixHeartConfigurationModel _configs;
         public bool IsCacheEnabled { get => _configs.IsCache; }
-
         public MixCacheService(IConfiguration configuration, MixDitributedCache ditributedCache)
         {
             _configs = configuration.Get<MixHeartConfigurationModel>();
@@ -24,17 +24,17 @@ namespace Mix.Heart.Services
         public async Task<T> GetAsync<T>(string key, string cacheFolder, string filename, CancellationToken cancellationToken = default)
             where T : class
         {
-            var result = await _cache.GetFromCache<T>($"{cacheFolder}_{key}_{filename}".ToLower(), cancellationToken); ;
+            var result = await _cache.GetFromCache<T>($"{cacheFolder}:{key}:{filename}".ToLower(), cancellationToken);
             return result ?? default;
         }
         #endregion
 
         #region Set
 
-        public Task SetAsync<T>(string key, T value, string cacheFolder, string filename, CancellationToken cancellationToken = default)
+        public Task SetAsync<T>(string key, T value, string cacheFolder, string filename, TimeSpan? cacheExpiration = null, CancellationToken cancellationToken = default)
             where T : class
         {
-            return _cache.SetCache($"{cacheFolder}_{key}_{filename}".ToLower(), value, cancellationToken);
+            return _cache.SetCache($"{cacheFolder}:{key}:{filename}".ToLower(), value, cacheExpiration, cancellationToken);
         }
         #endregion
 

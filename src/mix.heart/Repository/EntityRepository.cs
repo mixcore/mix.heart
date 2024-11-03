@@ -48,12 +48,12 @@ namespace Mix.Heart.Repository
                 var key = $"{result.Id}/{typeof(TEntity).FullName}";
                 if (CacheFilename == "full")
                 {
-                    await CacheService.SetAsync(key, result, CacheFolder, CacheFilename, cancellationToken);
+                    await CacheService.SetAsync(key, result, CacheFolder, CacheFilename, CacheExpiration, cancellationToken);
                 }
                 else
                 {
                     var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
-                    await CacheService.SetAsync(key, obj, CacheFolder, CacheFilename, cancellationToken);
+                    await CacheService.SetAsync(key, obj, CacheFolder, CacheFilename, CacheExpiration, cancellationToken);
                 }
             }
 
@@ -65,7 +65,7 @@ namespace Mix.Heart.Repository
 
             if (CacheService != null && CacheService.IsCacheEnabled)
             {
-                var key = $"{id}/{typeof(TEntity).FullName}";
+                var key = $"{id}:{typeof(TEntity).FullName}";
                 var result = await CacheService.GetAsync<TEntity>(key, typeof(TEntity).FullName, CacheFilename, cancellationToken);
                 if (result != null)
                 {

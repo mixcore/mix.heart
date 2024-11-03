@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Mix.Heart.Factories;
 using Mix.Heart.Interfaces;
 using Mix.Heart.Models;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,11 +29,11 @@ namespace Mix.Heart.Services
             return default;
         }
 
-        public Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
+        public Task SetCache<T>(string key, T value, TimeSpan? cacheExpiration = default, CancellationToken cancellationToken = default) where T : class
         {
             if (_cacheClient != null)
             {
-                return _cacheClient?.SetCache<T>(key, value, cancellationToken);
+                return _cacheClient?.SetCache<T>(key, value, cacheExpiration, cancellationToken);
             }
             return Task.CompletedTask;
         }

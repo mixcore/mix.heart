@@ -39,7 +39,7 @@ namespace Mix.Heart.Repository
 
         public string CacheFilename { get; private set; } = "full";
 
-        public string CacheFolder { get; set; } = $"{typeof(TEntity).Assembly.GetName().Name}_{typeof(TEntity).Name}";
+        public string CacheFolder { get; set; } = $"{typeof(TEntity).Assembly.GetName().Name}:{typeof(TEntity).Name}";
 
         public string[] SelectedMembers { get; private set; }
 
@@ -167,7 +167,7 @@ namespace Mix.Heart.Repository
             cancellationToken.ThrowIfCancellationRequested();
             if (IsCache && CacheService != null && CacheService.IsCacheEnabled)
             {
-                var key = $"{id}/{typeof(TView).Name}";
+                var key = $"{id}:{typeof(TView).Name}";
                 var result = await CacheService.GetAsync<TView>(key, CacheFolder, CacheFilename, cancellationToken);
                 if (result != null)
                 {
@@ -325,17 +325,17 @@ namespace Mix.Heart.Repository
 
                 if (result != null && IsCache && CacheService != null)
                 {
-                    var key = $"{entity.Id}/{typeof(TView).Name}";
+                    var key = $"{entity.Id}:{typeof(TView).Name}";
                     if (CacheFilename == "full")
                     {
                         result.SetUowInfo(UowInfo, CacheService);
                         await result.ExpandView(cancellationToken);
-                        await CacheService.SetAsync(key, result, CacheFolder, CacheFilename, cancellationToken);
+                        await CacheService.SetAsync(key, result, CacheFolder, CacheFilename, CacheExpiration, cancellationToken);
                     }
                     else
                     {
                         var obj = ReflectionHelper.GetMembers(result, SelectedMembers);
-                        await CacheService.SetAsync(key, obj, CacheFolder, CacheFilename, cancellationToken);
+                        await CacheService.SetAsync(key, obj, CacheFolder, CacheFilename, CacheExpiration, cancellationToken);
                     }
                 }
 

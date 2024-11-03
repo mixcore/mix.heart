@@ -53,7 +53,7 @@ namespace Mix.Heart.Services
             return Task.FromResult(default(T));
         }
 
-        public Task SetCache<T>(string key, T value, CancellationToken cancellationToken = default) where T : class
+        public Task SetCache<T>(string key, T value, TimeSpan? cacheExpiration = default, CancellationToken cancellationToken = default) where T : class
         {
             try
             {
