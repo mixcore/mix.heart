@@ -58,7 +58,7 @@ namespace Mix.Heart.Services
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return _cache.ClearCache($"{cacheFolder}_{key}".ToLower(), cancellationToken);
+                return _cache.ClearCache($"{cacheFolder}:{key}".ToLower(), cancellationToken);
             }
             catch
             {

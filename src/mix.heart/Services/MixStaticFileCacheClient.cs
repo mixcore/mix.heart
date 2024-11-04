@@ -78,7 +78,7 @@ namespace Mix.Heart.Services
 
         public Task ClearCache(string key, CancellationToken cancellationToken = default)
         {
-            MixFileHelper.DeleteFolder($"{_cacheFolder}/{key}");
+            MixFileHelper.DeleteFolder($"{_cacheFolder}:{key}");
             return Task.CompletedTask;
         }
 
