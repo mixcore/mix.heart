@@ -13,27 +13,30 @@ namespace Mix.Heart.Services
 {
     public class RedisCacheClient : IDitributedCacheClient
     {
-        private readonly IDatabase _database;
+        private IDatabase _database;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _options;
-        private readonly ConnectionMultiplexer _connectionMultiplexer;
-
+        private ConnectionMultiplexer _connectionMultiplexer;
+        private readonly string _connectionString;
         public RedisCacheClient(string connectionString, IDistributedCache cache, DistributedCacheEntryOptions options)
         {
             _cache = cache;
             _options = options;
-            _connectionMultiplexer = ConnectionMultiplexer.Connect(connectionString, m => m.AllowAdmin = true);
-            _database = _connectionMultiplexer.GetDatabase();
+            _connectionString = connectionString;
+            
         }
 
         public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
         {
+            await TryConnect();
             var cachedResponse = await _cache.GetAsync(key, cancellationToken);
             return cachedResponse == null ? null : JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(cachedResponse));
         }
 
+        
         public async Task SetCache<T>(string key, T value, TimeSpan? cacheExpiration = default, CancellationToken cancellationToken = default) where T : class
         {
+            await TryConnect();
             if (cacheExpiration != null)
             {
                 _options.SlidingExpiration = cacheExpiration;
@@ -43,6 +46,7 @@ namespace Mix.Heart.Services
 
         public async Task ClearCache(string key, CancellationToken cancellationToken = default)
         {
+            await TryConnect();
             var endpoints = _connectionMultiplexer.GetEndPoints();
             foreach (var endpoint in endpoints)
             {
@@ -53,6 +57,7 @@ namespace Mix.Heart.Services
 
         public async Task ClearAllCache(CancellationToken cancellationToken = default)
         {
+            await TryConnect();
             var endpoints = _connectionMultiplexer.GetEndPoints();
             try
             {
@@ -72,5 +77,19 @@ namespace Mix.Heart.Services
 
 
         #endregion
+
+        private async Task TryConnect()
+        {
+            while (_connectionMultiplexer == null || !_connectionMultiplexer.IsConnected)
+            {
+                _connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(_connectionString, m => m.AllowAdmin = true);
+                _database = _connectionMultiplexer.GetDatabase();
+                if (!_connectionMultiplexer.IsConnected)
+                {
+                    Thread.Sleep(2000);
+                }
+            }
+        }
+
     }
 }
