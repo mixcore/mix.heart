@@ -2,9 +2,9 @@
 using Mix.Heart.Enums;
 namespace Mix.Heart.Model
 {
-    public class MixSortByField
+    public class MixSortByColumn
     {
-        public MixSortByField(string fieldName, SortDirection sortDirection)
+        public MixSortByColumn(string fieldName, SortDirection sortDirection)
         {
             FieldName = fieldName;
             Direction = sortDirection;

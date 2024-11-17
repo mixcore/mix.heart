@@ -16,6 +16,6 @@ namespace Mix.Heart.Models
 
         public int TotalPage { get; set; }
 
-        public List<MixSortByField> SortByColumns { get; set; } = new List<MixSortByField>();
+        public List<MixSortByColumn> SortByColumns { get; set; } = new List<MixSortByColumn>();
     }
 }
