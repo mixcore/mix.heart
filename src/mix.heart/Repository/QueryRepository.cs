@@ -63,12 +63,12 @@ namespace Mix.Heart.Repository
         {
             var query = GetListQuery(predicate);
             paging.Total = query.Count();
-            if (paging.SortByFields != null && paging.SortByFields.Any())
+            if (paging.SortByColumns != null && paging.SortByColumns.Any())
             {
-                foreach (var sortByField in paging.SortByFields)
+                foreach (var sortByField in paging.SortByColumns)
                 {
                     dynamic sortBy = GetLambda(sortByField.FieldName);
-                    var isFirst = paging.SortByFields.IndexOf(sortByField) == 0;
+                    var isFirst = paging.SortByColumns.IndexOf(sortByField) == 0;
                     switch (sortByField.Direction)
                     {
                         case Enums.SortDirection.Asc:
