@@ -93,7 +93,35 @@ namespace Mix.Heart.Helpers
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .ToDictionary(prop => prop.Name, prop => prop.GetValue(someObject, null)?.ToString());
         }
+        public static bool AreEqual<T>(T obj1, T obj2)
+        {
+            if (obj1 == null || obj2 == null)
+                return obj1 == null && obj2 == null;
+            Type type = typeof(T);
+            foreach (PropertyInfo property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                object value1 = property.GetValue(obj1);
+                object value2 = property.GetValue(obj2);
+                if (value1 == null || value2 == null)
+                {
+                    if (value1 != value2) // One is null and the other is not
+                        return false;
+                }
+                else if (property.PropertyType != typeof(string) && property.PropertyType.IsClass)
+                {
+                    if (!AreEqual(value1, value2))
+                    {
+                        return false;
+                    }
+                }
+                else if (!value1.Equals(value2))
+                {
+                    return false;
+                }
 
+            }
+            return true;
+        }
         public static TSource CloneObject<TSource>(TSource sourceObject, TSource destinationObject = default)
             where TSource : class
         {
