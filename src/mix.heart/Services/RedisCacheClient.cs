@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Buffers.Text;
 using System.Text;
 using Newtonsoft.Json;
+using Mix.Heart.Helpers;
 namespace Mix.Heart.Services
 {
     public class RedisCacheClient : IDitributedCacheClient
@@ -29,7 +30,7 @@ namespace Mix.Heart.Services
         public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
         {
             var cachedResponse = await _cache.GetAsync(key, cancellationToken);
-            return cachedResponse == null ? null : JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(cachedResponse));
+            return cachedResponse == null ? null : ReflectionHelper.FromByteArray<T>(cachedResponse);
         }
 
         public async Task SetCache<T>(string key, T value, TimeSpan? cacheExpiration = default, CancellationToken cancellationToken = default) where T : class
@@ -38,7 +39,7 @@ namespace Mix.Heart.Services
             {
                 _options.SlidingExpiration = cacheExpiration;
             }
-            await _cache.SetAsync(key, JsonConvert.SerializeObject(value).ToByteArray(), _options, cancellationToken);
+            await _cache.SetAsync(key, ReflectionHelper.ToByteArray(value), _options, cancellationToken);
         }
 
         public async Task ClearCache(string key, CancellationToken cancellationToken = default)

@@ -14,16 +14,17 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
 namespace Mix.Heart.Helpers
 {
     public class ReflectionHelper
     {
-        private static JsonSerializer Serializer = InitSerializer();
+        private static Newtonsoft.Json.JsonSerializer Serializer = InitSerializer();
 
-        private static JsonSerializer InitSerializer()
+        private static Newtonsoft.Json.JsonSerializer InitSerializer()
         {
-            var serializer = new JsonSerializer()
+            var serializer = new Newtonsoft.Json.JsonSerializer()
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
@@ -32,7 +33,21 @@ namespace Mix.Heart.Helpers
         }
 
         #region Binary
+        public static byte[] ToByteArray<T>(T obj)
+        {
+            if (obj == null)
+                return null;
+            return
+                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(obj);
+        }
 
+        public static T FromByteArray<T>(byte[] data)
+        {
+            if (data == null)
+                return default;
+            return
+                System.Text.Json.JsonSerializer.Deserialize<T>(data);
+        }
         #endregion
 
         public static JArray ParseArray<T>(T obj)
@@ -71,9 +86,9 @@ namespace Mix.Heart.Helpers
             }
         }
 
-        public static JsonSerializer FormattingData()
+        public static Newtonsoft.Json.JsonSerializer FormattingData()
         {
-            var jsonSerializersettings = new JsonSerializer
+            var jsonSerializersettings = new Newtonsoft.Json.JsonSerializer
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
@@ -161,7 +176,7 @@ namespace Mix.Heart.Helpers
         public static JObject GetMembers<TEntity>(
             TEntity model,
             string[] selectMembers,
-            JsonSerializer serializer = null) where TEntity : class
+            Newtonsoft.Json.JsonSerializer serializer = null) where TEntity : class
         {
             var result = JObject.FromObject(model, serializer ?? Serializer)
                 .Properties()
