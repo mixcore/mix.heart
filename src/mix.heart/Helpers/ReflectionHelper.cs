@@ -4,7 +4,6 @@ using Mix.Heart.Enums;
 using Mix.Heart.Exceptions;
 using Mix.Heart.Extensions;
 using Mix.Heart.Models;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -16,12 +15,24 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 namespace Mix.Heart.Helpers
 {
     public class ReflectionHelper
     {
         private static Newtonsoft.Json.JsonSerializer Serializer = InitSerializer();
+        private static System.Text.Json.JsonSerializerOptions SystemSerializer = InitSystemSerializer();
 
+        private static System.Text.Json.JsonSerializerOptions InitSystemSerializer()
+        {
+            var serializer = new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+            serializer.Converters.Add(new JTokenConverter());
+            return serializer;
+        }
+        
         private static Newtonsoft.Json.JsonSerializer InitSerializer()
         {
             var serializer = new Newtonsoft.Json.JsonSerializer()
@@ -37,8 +48,9 @@ namespace Mix.Heart.Helpers
         {
             if (obj == null)
                 return null;
+
             return
-                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(obj);
+                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(obj, SystemSerializer);
         }
 
         public static T FromByteArray<T>(byte[] data)
@@ -46,7 +58,7 @@ namespace Mix.Heart.Helpers
             if (data == null)
                 return default;
             return
-                System.Text.Json.JsonSerializer.Deserialize<T>(data);
+                System.Text.Json.JsonSerializer.Deserialize<T>(data, SystemSerializer);
         }
         #endregion
 
@@ -98,7 +110,7 @@ namespace Mix.Heart.Helpers
         public static JObject CamelCaseData(JObject jObject)
         {
             dynamic camelCaseData =
-            JsonConvert.DeserializeObject(jObject.ToString(), new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            Newtonsoft.Json.JsonConvert.DeserializeObject(jObject.ToString(), new Newtonsoft.Json.JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() });
             return JObject.FromObject(camelCaseData, FormattingData());
         }
 
@@ -539,6 +551,22 @@ namespace Mix.Heart.Helpers
                     return _newValue;
                 return base.Visit(node);
             }
+        }
+    }
+    public class JTokenConverter : JsonConverter<JToken>
+    {
+        public override bool CanConvert(Type typeToConvert) => typeof(JToken).IsAssignableFrom(typeToConvert);
+        public override JToken Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            // Use JsonDocument to parse the JSON and create a JToken from it
+            using JsonDocument document = JsonDocument.ParseValue(ref reader);
+            return JToken.Parse(document.RootElement.GetRawText());
+        }
+
+        public override void Write(Utf8JsonWriter writer, JToken value, JsonSerializerOptions options)
+        {
+            // Write the raw JSON from the JToken to the writer
+            writer.WriteRawValue(value.ToString());
         }
     }
 }
