@@ -55,6 +55,7 @@ namespace Mix.Heart.ViewModel
         public override void InitDefaultValues(string language = null, int? cultureId = null)
         {
             CreatedDateTime = DateTime.UtcNow;
+            LastModified = DateTime.UtcNow;
             Status = MixContentStatus.Published;
             IsDeleted = false;
         }
