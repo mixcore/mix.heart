@@ -21,18 +21,18 @@ namespace Mix.Heart.Helpers
     public class ReflectionHelper
     {
         private static Newtonsoft.Json.JsonSerializer Serializer = InitSerializer();
-        private static System.Text.Json.JsonSerializerOptions SystemSerializer = InitSystemSerializer();
+        private static JsonSerializerOptions SystemSerializer = InitSystemSerializer();
 
-        private static System.Text.Json.JsonSerializerOptions InitSystemSerializer()
+        private static JsonSerializerOptions InitSystemSerializer()
         {
-            var serializer = new System.Text.Json.JsonSerializerOptions
+            var serializer = new JsonSerializerOptions
             {
-                WriteIndented = true
+                WriteIndented = false
             };
             serializer.Converters.Add(new JTokenConverter());
             return serializer;
         }
-        
+
         private static Newtonsoft.Json.JsonSerializer InitSerializer()
         {
             var serializer = new Newtonsoft.Json.JsonSerializer()
@@ -50,7 +50,7 @@ namespace Mix.Heart.Helpers
                 return null;
 
             return
-                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(obj, SystemSerializer);
+                JsonSerializer.SerializeToUtf8Bytes(obj, SystemSerializer);
         }
 
         public static T FromByteArray<T>(byte[] data)
@@ -58,7 +58,7 @@ namespace Mix.Heart.Helpers
             if (data == null)
                 return default;
             return
-                System.Text.Json.JsonSerializer.Deserialize<T>(data, SystemSerializer);
+                JsonSerializer.Deserialize<T>(data, SystemSerializer);
         }
         #endregion
 
