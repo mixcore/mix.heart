@@ -387,6 +387,8 @@ namespace Mix.Heart.Helpers
                     return Expression.NotEqual(fieldPropertyExpression, Expression.Constant(data, fieldPropertyType));
                 case ExpressionMethod.Like:
                     return GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
+                case ExpressionMethod.ILike:
+                    return GetILikeStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
                 case ExpressionMethod.In:
                     string[] arr = data.ToString().Split(',');
                     BinaryExpression binaryExpression = null;
@@ -499,6 +501,18 @@ namespace Mix.Heart.Helpers
         private static Expression GetStringContainsExpression(Expression fieldExpression, string propertyName, object propertyValue)
         {
             var likeMethod = typeof(DbFunctionsExtensions).GetMethod("Like",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                [typeof(DbFunctions), typeof(string), typeof(string)],
+                null);
+            string pattern = $"%{propertyValue}%";
+            ConstantExpression likeConstant = Expression.Constant(pattern, typeof(string));
+            return Expression.Call(method: likeMethod, arguments: [Expression.Property(null, typeof(EF), nameof(EF.Functions)), fieldExpression, likeConstant]);
+        }
+        
+        private static Expression GetILikeStringContainsExpression(Expression fieldExpression, string propertyName, object propertyValue)
+        {
+            var likeMethod = typeof(NpgsqlDbFunctionsExtensions).GetMethod(nameof(NpgsqlDbFunctionsExtensions.ILike),
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
                 null,
                 [typeof(DbFunctions), typeof(string), typeof(string)],
