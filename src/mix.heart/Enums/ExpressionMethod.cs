@@ -5,6 +5,7 @@
         Equal,
         Like,
         ILike,
+        ILikeUnaccent,
         In,
         NotIn,
         NotEqual,
