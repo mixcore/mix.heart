@@ -386,7 +386,11 @@ namespace Mix.Heart.Helpers
                 case ExpressionMethod.NotEqual:
                     return Expression.NotEqual(fieldPropertyExpression, Expression.Constant(data, fieldPropertyType));
                 case ExpressionMethod.Like:
-                    return GetStringContainsExpression(fieldPropertyExpression, propertyName, propertyValue);
+                    return GetStringContainsExpression(fieldPropertyExpression, propertyValue);
+                case ExpressionMethod.ILike:
+                    return GetILikeExpression(fieldPropertyExpression, propertyValue);
+                case ExpressionMethod.ILikeUnaccent:
+                    return GetILikeUnaccentExpression(fieldPropertyExpression, propertyValue);
                 case ExpressionMethod.In:
                     string[] arr = data.ToString().Split(',');
                     BinaryExpression binaryExpression = null;
@@ -496,7 +500,7 @@ namespace Mix.Heart.Helpers
             return value is DateTime;
         }
 
-        private static Expression GetStringContainsExpression(Expression fieldExpression, string propertyName, object propertyValue)
+        private static Expression GetStringContainsExpression(Expression fieldExpression, object propertyValue)
         {
             var likeMethod = typeof(DbFunctionsExtensions).GetMethod("Like",
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
@@ -506,6 +510,44 @@ namespace Mix.Heart.Helpers
             string pattern = $"%{propertyValue}%";
             ConstantExpression likeConstant = Expression.Constant(pattern, typeof(string));
             return Expression.Call(method: likeMethod, arguments: [Expression.Property(null, typeof(EF), nameof(EF.Functions)), fieldExpression, likeConstant]);
+        }
+
+        private static Expression GetILikeExpression(Expression fieldExpression, object propertyValue)
+        {
+            var likeMethod = typeof(NpgsqlDbFunctionsExtensions).GetMethod(nameof(NpgsqlDbFunctionsExtensions.ILike),
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                [typeof(DbFunctions), typeof(string), typeof(string)],
+                null);
+            string pattern = $"%{propertyValue}%";
+            ConstantExpression likeConstant = Expression.Constant(pattern, typeof(string));
+            return Expression.Call(method: likeMethod, arguments: [Expression.Property(null, typeof(EF), nameof(EF.Functions)), fieldExpression, likeConstant]);
+        }
+
+        private static Expression GetILikeUnaccentExpression(Expression fieldExpression, object propertyValue)
+        {
+            var likeMethod = typeof(NpgsqlDbFunctionsExtensions).GetMethod(nameof(NpgsqlDbFunctionsExtensions.ILike),
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                [typeof(DbFunctions), typeof(string), typeof(string)],
+                null);
+
+            var unaccentMethod = typeof(NpgsqlFullTextSearchDbFunctionsExtensions).GetMethod(nameof(NpgsqlFullTextSearchDbFunctionsExtensions.Unaccent),
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                [typeof(DbFunctions), typeof(string)],
+                null);
+
+            string pattern = $"%{propertyValue}%";
+            ConstantExpression likeConstant = Expression.Constant(pattern, typeof(string));
+
+            var unaccentExpression
+                = Expression.Call(method: unaccentMethod, arguments: [Expression.Property(null, typeof(EF), nameof(EF.Functions)), likeConstant]);
+
+            var unaccentFieldExpression
+                = Expression.Call(method: unaccentMethod, arguments: [Expression.Property(null, typeof(EF), nameof(EF.Functions)), fieldExpression]);
+
+            return Expression.Call(method: likeMethod, arguments: [Expression.Property(null, typeof(EF), nameof(EF.Functions)), unaccentFieldExpression, unaccentExpression]);
         }
 
         public static T InitModel<T>()
