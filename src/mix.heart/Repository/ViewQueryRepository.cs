@@ -92,12 +92,12 @@ namespace Mix.Heart.Repository
                         case Enums.SortDirection.Asc:
                             query = isFirst
                                 ? Queryable.OrderBy(query, sortBy)
-                                : Queryable.ThenBy(query, sortBy);
+                                : Queryable.ThenBy((IOrderedQueryable<TEntity>)query, sortBy);
                             break;
                         case Enums.SortDirection.Desc:
                             query = isFirst
                                 ? Queryable.OrderByDescending(query, sortBy)
-                                : Queryable.ThenByDescending(query, sortBy);
+                                : Queryable.ThenByDescending((IOrderedQueryable<TEntity>)query, sortBy);
                             break;
                     }
                 }
