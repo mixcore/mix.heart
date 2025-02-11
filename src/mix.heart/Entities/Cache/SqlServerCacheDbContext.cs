@@ -4,9 +4,9 @@ using Mix.Heart.EntityFrameworkCore.Extensions;
 
 namespace Mix.Heart.Entities.Cache
 {
-    public partial class MsSqlCacheDbContext : MixCacheDbContext
+    public partial class SqlServerCacheDbContext : MixCacheDbContext
     {
-        public MsSqlCacheDbContext(IConfiguration configuration) : base(configuration)
+        public SqlServerCacheDbContext(IConfiguration configuration) : base(configuration)
         {
 
         }
@@ -14,7 +14,7 @@ namespace Mix.Heart.Entities.Cache
         {
             modelBuilder.ApplyAllConfigurationsFromNamespace(
                 this.GetType().Assembly,
-                "Mix.Heart.Infrastructure.EntityConfigurations.MySQL");
+                "Mix.Heart.Infrastructure.EntityConfigurations.MSSQL");
             OnModelCreatingPartial(modelBuilder);
         }
 

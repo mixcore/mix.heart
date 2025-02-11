@@ -14,37 +14,48 @@ namespace Mix.Heart.Infrastructure.EntityConfigurations.MySQL
             string dtType = "datetime";
 
             entity.HasIndex(e => e.ExpiredDateTime)
-                .HasDatabaseName("Index_ExpiresAtTime");
+                .HasDatabaseName("index_expires_at_time");
 
             entity.Property(e => e.Keyword)
-                .HasColumnType("varchar(400)")
-                .IsRequired();
+                .HasColumnName("keyword")
+                 .HasColumnType("varchar(400)")
+                 .IsRequired();
 
             entity.Property(e => e.Id)
+                .HasColumnName("id")
                 .ValueGeneratedOnAdd();
 
             entity.Property(e => e.CreatedBy)
+                .HasColumnName("created_by")
                 .HasColumnType("varchar(50)")
                 .IsRequired(false);
 
-            entity.Property(e => e.CreatedDateTime).HasColumnType(dtType);
+            entity.Property(e => e.CreatedDateTime)
+                .HasColumnName("created_date_time")
+                .HasColumnType(dtType);
 
-            entity.Property(e => e.ExpiredDateTime).HasColumnType(dtType);
+            entity.Property(e => e.ExpiredDateTime)
+                .HasColumnName("expired_date_time")
+                .HasColumnType(dtType);
 
-            entity.Property(e => e.LastModified).HasColumnType(dtType).IsRequired(false);
-
+            entity.Property(e => e.LastModified)
+                .HasColumnName("last_modified")
+                .HasColumnType(dtType).IsRequired(false);
 
             entity.Property(e => e.ModifiedBy)
+                .HasColumnName("modified_by")
                 .HasColumnType("varchar(50)")
                 .IsRequired(false);
 
             entity.Property(e => e.Status)
                 .IsRequired()
+                .HasColumnName("status")
                 .HasConversion(new EnumToStringConverter<MixCacheStatus>())
                 .HasColumnType("varchar(50)");
 
             entity.Property(e => e.Value)
             .IsRequired()
+            .HasColumnName("value")
             .HasColumnType(valueType);
         }
     }

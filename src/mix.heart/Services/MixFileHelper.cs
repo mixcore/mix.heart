@@ -84,8 +84,8 @@ namespace Mix.Heart.Services
             string fullPath = $"{CurrentDirectory}/{fullName}";
 
             FileInfo fileinfo = new FileInfo(fullPath);
-            string folder = fullName[..fullName.LastIndexOf('/')];
-            string filename = fullName[(fullName.LastIndexOf('/') + 1)..];
+            string folder = fullPath[..fullPath.LastIndexOf('/')];
+            string filename = fullPath[(fullPath.LastIndexOf('/') + 1)..];
             string name = filename[..filename.LastIndexOf('.')];
             string ext = filename[filename.LastIndexOf('.')..];
             if (fileinfo.Exists)
