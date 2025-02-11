@@ -29,8 +29,8 @@ namespace Mix.Heart.Services
 
         public Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
         {
-            string filename = key.Substring(key.LastIndexOf('/') + 1);
-            string folder = key.Substring(0, key.LastIndexOf('/'));
+            string filename = key.Substring(key.LastIndexOf(':') + 1);
+            string folder = key.Substring(0, key.LastIndexOf(':'));
             string filePath = $"{_cacheFolder}/{folder}/{filename}.json";
             if (File.Exists(filePath))
             {
