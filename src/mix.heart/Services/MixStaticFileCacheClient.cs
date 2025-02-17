@@ -58,6 +58,7 @@ namespace Mix.Heart.Services
             try
             {
                 var jobj = JObject.FromObject(value, serializer);
+                key = key.Replace(":", "/");
                 string filename = key.Substring(key.LastIndexOf('/') + 1);
                 string folder = key.Substring(0, key.LastIndexOf('/'));
                 var cacheFile = new FileModel()

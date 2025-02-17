@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Configuration;
+using Mix.Heart.Factories;
+using Mix.Heart.Interfaces;
 using Mix.Heart.Model;
 using Mix.Heart.Models;
 using System;
@@ -10,13 +14,13 @@ namespace Mix.Heart.Services
 {
     public class MixCacheService
     {
-        private readonly MixDitributedCache _cache;
+        private readonly IDitributedCacheClient _cacheClient;
         private readonly MixHeartConfigurationModel _configs;
         public bool IsCacheEnabled { get => _configs.IsCache; }
-        public MixCacheService(IConfiguration configuration, MixDitributedCache ditributedCache)
+        public MixCacheService(IConfiguration configuration, HybridCache hybridCache, IDistributedCache cache)
         {
             _configs = configuration.Get<MixHeartConfigurationModel>();
-            _cache = ditributedCache;
+            _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, hybridCache, configuration, cache);
         }
 
         #region Get
@@ -24,7 +28,7 @@ namespace Mix.Heart.Services
         public async Task<T> GetAsync<T>(string key, string cacheFolder, string filename, CancellationToken cancellationToken = default)
             where T : class
         {
-            var result = await _cache.GetFromCache<T>($"{cacheFolder}:{key}:{filename}".ToLower(), cancellationToken);
+            var result = await _cacheClient.GetFromCache<T>($"{cacheFolder}:{key}_{filename}".ToLower(), cancellationToken);
             return result ?? default;
         }
         #endregion
@@ -34,7 +38,7 @@ namespace Mix.Heart.Services
         public Task SetAsync<T>(string key, T value, string cacheFolder, string filename, TimeSpan? cacheExpiration = null, CancellationToken cancellationToken = default)
             where T : class
         {
-            return _cache.SetCache($"{cacheFolder}:{key}:{filename}".ToLower(), value, cacheExpiration, cancellationToken);
+            return _cacheClient.SetCache($"{cacheFolder}:{key}_{filename}".ToLower(), value, cacheExpiration, cancellationToken);
         }
         #endregion
 
@@ -45,7 +49,7 @@ namespace Mix.Heart.Services
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return _cache.ClearAllCache(cancellationToken);
+                return _cacheClient.ClearAllCache(cancellationToken);
             }
             catch
             {
@@ -58,7 +62,7 @@ namespace Mix.Heart.Services
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return _cache.ClearCache($"{cacheFolder}:{key}".ToLower(), cancellationToken);
+                return _cacheClient.ClearCache($"{cacheFolder}:{key}".ToLower(), cancellationToken);
             }
             catch
             {

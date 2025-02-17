@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Mix.Heart.Enums;
 using Mix.Heart.Interfaces;
@@ -12,6 +13,7 @@ namespace Mix.Heart.Factories
     {
         public static IDitributedCacheClient CreateCacheClient(
             MixHeartConfigurationModel mixHeartConfiguration,
+            HybridCache hybridCache,
             IConfiguration configuration = null,
             IDistributedCache cache = null)
         {
@@ -20,6 +22,9 @@ namespace Mix.Heart.Factories
             {
                 case MixCacheMode.JSON:
                     cacheClient = new MixStaticFileCacheClient(mixHeartConfiguration.CacheFolder);
+                    break;
+                case MixCacheMode.HYBRID:
+                    cacheClient = new HybridCacheClient(hybridCache);
                     break;
                 case MixCacheMode.REDIS:
                     try
