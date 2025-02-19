@@ -46,6 +46,7 @@ namespace Mix.Heart.Services
 
         public async Task ClearCache(string key, CancellationToken cancellationToken = default)
         {
+            await _cache.RemoveAsync(key);
             await _cache.RemoveByTagAsync(key);
         }
 

@@ -19,7 +19,7 @@ namespace Mix.Heart.Services
         public bool IsCacheEnabled { get => _configs.IsCache; }
         public MixCacheService(IConfiguration configuration, HybridCache hybridCache, IDistributedCache cache)
         {
-            _configs = configuration.Get<MixHeartConfigurationModel>();
+            _configs = configuration.GetSection("MixHeart").Get<MixHeartConfigurationModel>();
             _cacheClient = CacheEngineFactory.CreateCacheClient(_configs, hybridCache, configuration, cache);
         }
 
@@ -31,6 +31,13 @@ namespace Mix.Heart.Services
             var result = await _cacheClient.GetFromCache<T>($"{cacheFolder}:{key}_{filename}".ToLower(), cancellationToken);
             return result ?? default;
         }
+        
+        public async Task<T> GetAsync<T>(string key, CancellationToken cancellationToken = default)
+            where T : class
+        {
+            var result = await _cacheClient.GetFromCache<T>(key, cancellationToken);
+            return result ?? default;
+        }
         #endregion
 
         #region Set
@@ -39,6 +46,12 @@ namespace Mix.Heart.Services
             where T : class
         {
             return _cacheClient.SetCache($"{cacheFolder}:{key}_{filename}".ToLower(), value, cacheExpiration, cancellationToken);
+        }
+        
+        public Task SetAsync<T>(string key, T value, TimeSpan? cacheExpiration = null, CancellationToken cancellationToken = default)
+            where T : class
+        {
+            return _cacheClient.SetCache(key, value, cacheExpiration, cancellationToken);
         }
         #endregion
 
@@ -63,6 +76,19 @@ namespace Mix.Heart.Services
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 return _cacheClient.ClearCache($"{cacheFolder}:{key}".ToLower(), cancellationToken);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        
+        public Task RemoveCacheAsync(string key, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return _cacheClient.ClearCache(key, cancellationToken);
             }
             catch
             {
