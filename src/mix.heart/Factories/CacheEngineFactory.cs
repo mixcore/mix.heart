@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Mix.Heart.Enums;
 using Mix.Heart.Interfaces;
 using Mix.Heart.Models;
@@ -24,7 +25,11 @@ namespace Mix.Heart.Factories
                     cacheClient = new MixStaticFileCacheClient(mixHeartConfiguration.CacheFolder);
                     break;
                 case MixCacheMode.HYBRID:
-                    cacheClient = new HybridCacheClient(hybridCache);
+                    cacheClient = new HybridCacheClient(hybridCache, new HybridCacheEntryOptions()
+                    {
+                        Expiration = TimeSpan.FromMinutes(mixHeartConfiguration.SlidingExpirationInMinute),
+                        LocalCacheExpiration = TimeSpan.FromMinutes(mixHeartConfiguration.SlidingExpirationInMinute),
+                    });
                     break;
                 case MixCacheMode.REDIS:
                     try

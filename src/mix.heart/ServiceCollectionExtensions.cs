@@ -15,16 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddMixCache(this IServiceCollection services, IConfiguration configuration)
         {
 #pragma warning disable EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            services.AddHybridCache(options =>
-            {
-                options.MaximumPayloadBytes = 1024 * 1024;
-                options.MaximumKeyLength = 1024;
-                options.DefaultEntryOptions = new HybridCacheEntryOptions
-                {
-                    Expiration = TimeSpan.FromMinutes(5),
-                    LocalCacheExpiration = TimeSpan.FromMinutes(5)
-                };
-            });
+            services.AddHybridCache();
 #pragma warning restore EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             services.TryAddScoped<MixCacheDbContext>();

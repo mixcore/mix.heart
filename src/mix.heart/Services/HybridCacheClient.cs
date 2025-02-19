@@ -11,10 +11,12 @@ namespace Mix.Heart.Services
     public class HybridCacheClient : IDitributedCacheClient
     {
         private readonly HybridCache _cache;
+        private readonly HybridCacheEntryOptions _option;
 
-        public HybridCacheClient(HybridCache cache)
+        public HybridCacheClient(HybridCache cache, HybridCacheEntryOptions option)
         {
             _cache = cache;
+            _option = option;
         }
 
         public async Task<T> GetFromCache<T>(string key, CancellationToken cancellationToken = default) where T : class
@@ -34,7 +36,11 @@ namespace Mix.Heart.Services
         public async Task SetCache<T>(string key, T value, TimeSpan? cacheExpiration = default, CancellationToken cancellationToken = default) where T : class
         {
             await _cache.SetAsync(key, ReflectionHelper.ToByteArray(value),
-                tags: new[] { key[..key.LastIndexOf(':')] , "mix"},
+                options: cacheExpiration.HasValue ? new HybridCacheEntryOptions()
+                {
+                    Expiration = cacheExpiration.Value
+                } : _option,
+                tags: new[] { key[..key.LastIndexOf(':')], "mix" },
                 cancellationToken: cancellationToken);
         }
 
