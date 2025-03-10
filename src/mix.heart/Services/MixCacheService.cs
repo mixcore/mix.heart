@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
+using Mix.Heart.Factories;
+using Mix.Heart.Interfaces;
 using Mix.Heart.Model;
 using Mix.Heart.Models;
 using System;
@@ -24,7 +27,14 @@ namespace Mix.Heart.Services
         public async Task<T> GetAsync<T>(string key, string cacheFolder, string filename, CancellationToken cancellationToken = default)
             where T : class
         {
-            var result = await _cache.GetFromCache<T>($"{cacheFolder}:{key}:{filename}".ToLower(), cancellationToken);
+            var result = await _cache.GetFromCache<T>($"{cacheFolder}:{key}_{filename}".ToLower(), cancellationToken);
+            return result ?? default;
+        }
+
+        public async Task<T> GetAsync<T>(string key, CancellationToken cancellationToken = default)
+            where T : class
+        {
+            var result = await _cache.GetFromCache<T>(key, cancellationToken);
             return result ?? default;
         }
         #endregion
@@ -34,7 +44,13 @@ namespace Mix.Heart.Services
         public Task SetAsync<T>(string key, T value, string cacheFolder, string filename, TimeSpan? cacheExpiration = null, CancellationToken cancellationToken = default)
             where T : class
         {
-            return _cache.SetCache($"{cacheFolder}:{key}:{filename}".ToLower(), value, cacheExpiration, cancellationToken);
+            return _cache.SetCache($"{cacheFolder}:{key}_{filename}".ToLower(), value, cacheExpiration, cancellationToken);
+        }
+
+        public Task SetAsync<T>(string key, T value, TimeSpan? cacheExpiration = null, CancellationToken cancellationToken = default)
+            where T : class
+        {
+            return _cache.SetCache(key, value, cacheExpiration, cancellationToken);
         }
         #endregion
 
@@ -59,6 +75,19 @@ namespace Mix.Heart.Services
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 return _cache.ClearCache($"{cacheFolder}:{key}".ToLower(), cancellationToken);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public Task RemoveCacheAsync(string key, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return _cache.ClearCache(key, cancellationToken);
             }
             catch
             {
