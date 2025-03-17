@@ -24,7 +24,7 @@ namespace Mix.Heart.ViewModel
 
         [JsonIgnore]
         public static TimeSpan CacheExpiration { get; set; }
-        
+
         [JsonIgnore]
         public static bool IsCache { get; set; } = true;
 
@@ -46,7 +46,7 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
 
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public List<ModifiedEntityModel> ModifiedEntities { get; set; } = [];
 
         protected TDbContext Context { get => (TDbContext)UowInfo?.ActiveDbContext; }
@@ -107,7 +107,7 @@ namespace Mix.Heart.ViewModel
         }
 
         public static Repository<TDbContext, TEntity, TPrimaryKey, TView> GetRepository(
-            UnitOfWorkInfo uowInfo, 
+            UnitOfWorkInfo uowInfo,
             MixCacheService cacheService, TimeSpan? cacheExpiration = null, bool isCache = true, string cacheFolder = null)
         {
             return new Repository<TDbContext, TEntity, TPrimaryKey, TView>(uowInfo)
