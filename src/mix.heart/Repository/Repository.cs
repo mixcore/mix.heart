@@ -66,10 +66,12 @@ namespace Mix.Heart.Repository
                 Context.Set<TEntity>().Update(entity);
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
-                if (CacheService != null)
+                if (CacheService is null || !IsCache)
                 {
-                    await CacheService.RemoveCacheAsync(entity.Id, CacheFolder, cancellationToken);
+                    return;
                 }
+
+                await CacheService.RemoveCacheAsync(entity.Id, CacheFolder, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -158,8 +160,10 @@ namespace Mix.Heart.Repository
         {
             try
             {
-                var entities = await Context.Set<TEntity>().Where(predicate)
-                                .ToListAsync();
+                var entities = await Context.Set<TEntity>()
+                    .Where(predicate)
+                    .ToListAsync(cancellationToken);
+
                 foreach (var entity in entities)
                 {
                     await DeleteAsync(entity, cancellationToken);
@@ -190,10 +194,13 @@ namespace Mix.Heart.Repository
                 Context.Entry(entity).State = EntityState.Deleted;
                 await Context.SaveChangesAsync(cancellationToken);
                 await CompleteUowAsync(cancellationToken);
-                if (CacheService != null)
+
+                if (CacheService is null || !IsCache)
                 {
-                    await CacheService?.RemoveCacheAsync($"{typeof(TEntity).FullName}_{entity.Id}*", CacheFolder, cancellationToken);
+                    return;
                 }
+
+                await CacheService?.RemoveCacheAsync($"{typeof(TEntity).FullName}_{entity.Id}*", CacheFolder, cancellationToken);
             }
             catch (Exception ex)
             {
