@@ -46,6 +46,7 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
 
+        [JsonIgnore]
         [System.Text.Json.Serialization.JsonIgnore]
         public List<ModifiedEntityModel> ModifiedEntities { get; set; } = [];
 
