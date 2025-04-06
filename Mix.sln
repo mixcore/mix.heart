@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32002.185
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{460FB0EE-E92B-437D-918F-EEB2D26924AC}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C12EFDFD-B12D-4EF1-8806-D092C3E6AB8D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{54B23A77-1D3A-4D62-9A9F-0DEB25C409B0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mix.heart.tests", "src\test\mix.heart.tests\mix.heart.tests.csproj", "{3C9F0332-73E0-4DDB-A800-C5C52F71EA3C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mix.heart", "src\mix.heart\mix.heart.csproj", "{7571297A-502E-4723-BD22-1D8675A31E6D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mix.example", "src\mix.example\mix.example.csproj", "{15B3BAB8-13D7-4085-AD16-2A4FC69D168F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3C9F0332-73E0-4DDB-A800-C5C52F71EA3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C9F0332-73E0-4DDB-A800-C5C52F71EA3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C9F0332-73E0-4DDB-A800-C5C52F71EA3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C9F0332-73E0-4DDB-A800-C5C52F71EA3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7571297A-502E-4723-BD22-1D8675A31E6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7571297A-502E-4723-BD22-1D8675A31E6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7571297A-502E-4723-BD22-1D8675A31E6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7571297A-502E-4723-BD22-1D8675A31E6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15B3BAB8-13D7-4085-AD16-2A4FC69D168F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15B3BAB8-13D7-4085-AD16-2A4FC69D168F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15B3BAB8-13D7-4085-AD16-2A4FC69D168F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15B3BAB8-13D7-4085-AD16-2A4FC69D168F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3C9F0332-73E0-4DDB-A800-C5C52F71EA3C} = {54B23A77-1D3A-4D62-9A9F-0DEB25C409B0}
+		{7571297A-502E-4723-BD22-1D8675A31E6D} = {C12EFDFD-B12D-4EF1-8806-D092C3E6AB8D}
+		{15B3BAB8-13D7-4085-AD16-2A4FC69D168F} = {C12EFDFD-B12D-4EF1-8806-D092C3E6AB8D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7303B8AC-CF3B-4627-B68C-11FADE06B5B0}
+	EndGlobalSection
+EndGlobal
