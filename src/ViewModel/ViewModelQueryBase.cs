@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Mix.Heart.Entities;
 using Mix.Heart.Repository;
 using Mix.Heart.Services;
@@ -46,7 +46,6 @@ namespace Mix.Heart.ViewModel
         [JsonIgnore]
         protected Repository<TDbContext, TEntity, TPrimaryKey, TView> Repository { get; set; }
 
-        [JsonIgnore]
         [System.Text.Json.Serialization.JsonIgnore]
         public List<ModifiedEntityModel> ModifiedEntities { get; set; } = [];
 
