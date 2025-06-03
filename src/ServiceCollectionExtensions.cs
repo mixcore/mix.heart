@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 services.AddDistributedMemoryCache();
             }
-            services.TryAddScoped<MixCacheService>();
+            services.TryAddSingleton<MixCacheService>();
 
 
             return services;
